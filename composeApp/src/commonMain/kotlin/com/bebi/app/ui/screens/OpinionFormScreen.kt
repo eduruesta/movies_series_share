@@ -7,7 +7,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -24,6 +24,8 @@ import com.bebi.app.viewmodel.MediaOpinionViewModel
 import org.jetbrains.compose.resources.stringResource
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.comment_field
+import moviesseriesshare.composeapp.generated.resources.content_rating_field
+import moviesseriesshare.composeapp.generated.resources.duration_field
 import moviesseriesshare.composeapp.generated.resources.genre_field
 import moviesseriesshare.composeapp.generated.resources.image_field
 import moviesseriesshare.composeapp.generated.resources.new_critic
@@ -33,6 +35,7 @@ import moviesseriesshare.composeapp.generated.resources.save_button
 import moviesseriesshare.composeapp.generated.resources.search_online
 import moviesseriesshare.composeapp.generated.resources.select_from_gallery
 import moviesseriesshare.composeapp.generated.resources.title_field
+import moviesseriesshare.composeapp.generated.resources.year_field
 import org.koin.compose.koinInject
 
 class OpinionFormScreen : Screen {
@@ -41,7 +44,7 @@ class OpinionFormScreen : Screen {
     override fun Content() {
         var mediaOpinion by remember { mutableStateOf(MediaOpinion()) }
         val navigator = LocalNavigator.currentOrThrow
-        val viewModel: MediaOpinionViewModel = koinInject()
+        val viewModel = koinInject<MediaOpinionViewModel>()
         
         Scaffold(
             topBar = {
@@ -50,7 +53,7 @@ class OpinionFormScreen : Screen {
                     navigationIcon = {
                         IconButton(onClick = { navigator.pop() }) {
                             Icon(
-                                imageVector = Icons.Default.ArrowBack,
+                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Volver atrás"
                             )
                         }
@@ -78,7 +81,7 @@ class OpinionFormScreen : Screen {
                     modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
                 )
-                
+
                 // Rating field with stars
                 Column {
                     Text(
@@ -167,6 +170,30 @@ class OpinionFormScreen : Screen {
                     }
                 }
                 
+                // Genre and Platform fields in a row
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    // Genre field
+                    OutlinedTextField(
+                        value = mediaOpinion.genre,
+                        onValueChange = { mediaOpinion = mediaOpinion.copy(genre = it) },
+                        label = { Text(stringResource(Res.string.genre_field)) },
+                        modifier = Modifier.weight(1f),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+                    )
+                    
+                    // Platform field
+                    OutlinedTextField(
+                        value = mediaOpinion.platform,
+                        onValueChange = { mediaOpinion = mediaOpinion.copy(platform = it) },
+                        label = { Text(stringResource(Res.string.platform_field)) },
+                        modifier = Modifier.weight(1f),
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
+                    )
+                }
+                
                 // Comment field
                 OutlinedTextField(
                     value = mediaOpinion.comment,
@@ -175,24 +202,6 @@ class OpinionFormScreen : Screen {
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(120.dp),
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
-                )
-                
-                // Genre field
-                OutlinedTextField(
-                    value = mediaOpinion.genre,
-                    onValueChange = { mediaOpinion = mediaOpinion.copy(genre = it) },
-                    label = { Text(stringResource(Res.string.genre_field)) },
-                    modifier = Modifier.fillMaxWidth(),
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
-                )
-                
-                // Platform field
-                OutlinedTextField(
-                    value = mediaOpinion.platform,
-                    onValueChange = { mediaOpinion = mediaOpinion.copy(platform = it) },
-                    label = { Text(stringResource(Res.string.platform_field)) },
-                    modifier = Modifier.fillMaxWidth(),
                     keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
                 )
                 

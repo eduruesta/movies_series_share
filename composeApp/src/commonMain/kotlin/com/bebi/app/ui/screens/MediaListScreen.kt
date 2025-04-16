@@ -15,18 +15,20 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.bebi.app.model.MediaOpinion
+import com.bebi.app.viewmodel.MediaOpinionViewModel
+import org.jetbrains.compose.resources.stringResource
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.create_critic_button
 import moviesseriesshare.composeapp.generated.resources.empty_list_message
 import moviesseriesshare.composeapp.generated.resources.media_list_title
-import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 
 class MediaListScreen : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
-        // This would be replaced with actual data from a repository in the future
-        val mediaOpinions = remember { mutableStateListOf<MediaOpinion>() }
+        val viewModel = koinInject<MediaOpinionViewModel>()
+        val uiState by viewModel.uiState.collectAsState()
         val navigator = LocalNavigator.currentOrThrow
         
         Scaffold(
@@ -56,7 +58,7 @@ class MediaListScreen : Screen {
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
-                if (mediaOpinions.isEmpty()) {
+                if (uiState.opinions.isEmpty()) {
                     // Empty state
                     Column(
                         modifier = Modifier
@@ -86,8 +88,11 @@ class MediaListScreen : Screen {
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        items(mediaOpinions) { opinion ->
-                            MediaOpinionItem(opinion)
+                        items(uiState.opinions) { opinion ->
+                            MediaOpinionItem(
+                                opinion = opinion,
+                                onItemClick = { /* Will be implemented later */ }
+                            )
                         }
                     }
                 }
@@ -98,11 +103,13 @@ class MediaListScreen : Screen {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun MediaOpinionItem(opinion: MediaOpinion) {
+private fun MediaOpinionItem(
+    opinion: MediaOpinion,
+    onItemClick: () -> Unit
+) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth(),
-        onClick = { /* Will be implemented later to navigate to detail screen */ }
+        modifier = Modifier.fillMaxWidth(),
+        onClick = onItemClick
     ) {
         Column(
             modifier = Modifier

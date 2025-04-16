@@ -20,6 +20,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.bebi.app.model.MediaOpinion
 import com.bebi.app.ui.components.StarRating
+import com.bebi.app.viewmodel.MediaOpinionViewModel
 import org.jetbrains.compose.resources.stringResource
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.comment_field
@@ -32,6 +33,7 @@ import moviesseriesshare.composeapp.generated.resources.save_button
 import moviesseriesshare.composeapp.generated.resources.search_online
 import moviesseriesshare.composeapp.generated.resources.select_from_gallery
 import moviesseriesshare.composeapp.generated.resources.title_field
+import org.koin.compose.koinInject
 
 class OpinionFormScreen : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -39,6 +41,7 @@ class OpinionFormScreen : Screen {
     override fun Content() {
         var mediaOpinion by remember { mutableStateOf(MediaOpinion()) }
         val navigator = LocalNavigator.currentOrThrow
+        val viewModel: MediaOpinionViewModel = koinInject()
         
         Scaffold(
             topBar = {
@@ -196,7 +199,8 @@ class OpinionFormScreen : Screen {
                 // Save button
                 Button(
                     onClick = { 
-                        // Will be implemented later to save the opinion
+                        // Save the opinion using the ViewModel
+                        viewModel.saveOpinion(mediaOpinion)
                         navigator.pop()
                     },
                     modifier = Modifier

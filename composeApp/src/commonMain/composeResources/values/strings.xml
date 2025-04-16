@@ -4,4 +4,22 @@
     <string name="run">Run</string>
     <string name="stop">Stop</string>
     <string name="theme">Theme</string>
+    
+    <!-- Opinion Form Strings -->
+    <string name="new_opinion">Nueva Crîtica</string>
+    <string name="title_field">Nombre de Serie o Película</string>
+    <string name="rating_field">Puntuación</string>
+    <string name="comment_field">Comentario</string>
+    <string name="genre_field">Género</string>
+    <string name="platform_field">Plataforma</string>
+    <string name="save_button">Guardar Crîtica</string>
+    <string name="image_field">Imagen</string>
+    <string name="select_from_gallery">Seleccionar de la galería</string>
+    <string name="search_online">Buscar online</string>
+    <string name="new_critic">Nueva Crîtica</string>
+    
+    <!-- Media List Screen Strings -->
+    <string name="media_list_title">Mis Críticas</string>
+    <string name="empty_list_message">No hay críticas disponibles. Crea tu primera crítica haciendo clic en el botón de abajo.</string>
+    <string name="create_critic_button">Crear Crítica</string>
 </resources>

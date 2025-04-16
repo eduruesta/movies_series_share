@@ -1,26 +1,16 @@
 package com.bebi.app
 
-import androidx.compose.animation.core.*
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.*
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
-import androidx.compose.ui.graphics.ColorFilter
-import androidx.compose.ui.platform.LocalUriHandler
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.unit.dp
-import moviesseriesshare.composeapp.generated.resources.*
+import androidx.compose.runtime.Composable
+import cafe.adriel.voyager.navigator.Navigator
+import cafe.adriel.voyager.transitions.SlideTransition
 import com.bebi.app.theme.AppTheme
-import com.bebi.app.theme.LocalThemeIsDark
-import kotlinx.coroutines.isActive
-import org.jetbrains.compose.resources.Font
-import org.jetbrains.compose.resources.stringResource
-import org.jetbrains.compose.resources.vectorResource
+import com.bebi.app.ui.screens.MediaListScreen
 
 @Composable
 internal fun App() = AppTheme {
-
+    Navigator(MediaListScreen()) { navigator ->
+        SlideTransition(navigator)
+    }
 }
+
+// Removed sealed class Screen as it is no longer used

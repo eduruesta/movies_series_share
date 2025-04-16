@@ -106,7 +106,7 @@ class MediaListScreen : Screen {
                             )
                             
                             if (index < uiState.opinions.size - 1) {
-                                Divider(
+                                HorizontalDivider(
                                     modifier = Modifier.padding(horizontal = 16.dp),
                                     color = MaterialTheme.colorScheme.outlineVariant
                                 )
@@ -213,15 +213,6 @@ private fun MediaOpinionItem(
                         fontWeight = FontWeight.Bold
                     )
                 }
-            }
-            
-            // Info icon
-            IconButton(onClick = onItemClick) {
-                Icon(
-                    imageVector = Icons.Default.Info,
-                    contentDescription = "Ver detalles",
-                    tint = MaterialTheme.colorScheme.primary
-                )
             }
         }
     }

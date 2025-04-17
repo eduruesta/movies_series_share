@@ -3,18 +3,16 @@ package com.bebi.app
 import androidx.compose.runtime.Composable
 import cafe.adriel.voyager.navigator.Navigator
 import cafe.adriel.voyager.transitions.SlideTransition
-import com.bebi.app.di.appModule
 import com.bebi.app.theme.AppTheme
 import com.bebi.app.ui.screens.MediaListScreen
-import org.koin.compose.KoinApplication
 
 @Composable
 internal fun App() = AppTheme {
-    KoinApplication(application = {
-        modules(appModule)
-    }) {
-        Navigator(MediaListScreen()) { navigator ->
-            SlideTransition(navigator)
-        }
+    // Initialize Koin for iOS (Android is initialized in Application class)
+
+    // Use KoinContext instead of KoinApplication to use the already initialized Koin instance
+    Navigator(MediaListScreen()) { navigator ->
+        SlideTransition(navigator)
     }
+
 }

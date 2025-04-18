@@ -44,6 +44,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.bebi.app.model.MediaOpinion
 import com.bebi.app.ui.components.StarRating
 import com.bebi.app.viewmodel.MediaOpinionViewModel
+import kotlinx.serialization.Serializable
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.comment_field
 import moviesseriesshare.composeapp.generated.resources.genre_field
@@ -58,6 +59,10 @@ import moviesseriesshare.composeapp.generated.resources.title_field
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 
+/**
+ * Screen for creating or editing a media opinion
+ */
+@Serializable
 class OpinionFormScreen : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable

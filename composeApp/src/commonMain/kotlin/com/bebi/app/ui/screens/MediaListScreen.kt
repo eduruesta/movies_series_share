@@ -21,6 +21,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -54,7 +55,12 @@ import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
+import kotlinx.serialization.Serializable
 
+/**
+ * Screen that displays a list of media opinions
+ */
+@Serializable
 class MediaListScreen : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
@@ -90,7 +96,29 @@ class MediaListScreen : Screen {
                     .fillMaxSize()
                     .padding(paddingValues)
             ) {
-                if (uiState.opinions.isEmpty()) {
+                if (uiState.isLoading) {
+                    // Loading state
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(16.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(50.dp),
+                            color = MaterialTheme.colorScheme.primary
+                        )
+                        
+                        Spacer(modifier = Modifier.height(16.dp))
+                        
+                        Text(
+                            text = "Cargando opiniones...",
+                            style = MaterialTheme.typography.bodyLarge,
+                            textAlign = TextAlign.Center
+                        )
+                    }
+                } else if (uiState.opinions.isEmpty()) {
                     // Empty state
                     Column(
                         modifier = Modifier
@@ -134,6 +162,30 @@ class MediaListScreen : Screen {
                                     color = MaterialTheme.colorScheme.outlineVariant
                                 )
                             }
+                        }
+                    }
+                }
+                
+                // Show error if present
+                uiState.error?.let { error ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                            .align(Alignment.BottomCenter)
+                    ) {
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.errorContainer
+                            )
+                        ) {
+                            Text(
+                                text = "Error: $error",
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onErrorContainer,
+                                modifier = Modifier.padding(16.dp)
+                            )
                         }
                     }
                 }

@@ -22,7 +22,13 @@ import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.placeholder_movie
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
+import kotlinx.serialization.Serializable
 
+/**
+ * Screen that displays the details of a media opinion
+ * Using @Serializable to make it work with Android's savedInstanceState
+ */
+@Serializable
 class MediaDetailScreen(private val opinion: MediaOpinion) : Screen {
 
     @OptIn(ExperimentalMaterial3Api::class, ExperimentalResourceApi::class)

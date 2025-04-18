@@ -1,15 +1,12 @@
 package com.bebi.app.di.module
 
-import androidx.lifecycle.viewmodel.viewModelFactory
 import com.bebi.app.data.database.AppDatabase
-import com.bebi.app.data.repository.MediaOpinionRepository
 import com.bebi.app.data.repository.RoomMediaOpinionRepository
 import com.bebi.app.viewmodel.MediaOpinionViewModel
 import org.koin.core.context.startKoin
 import org.koin.core.module.Module
 import org.koin.core.module.dsl.factoryOf
 import org.koin.dsl.KoinAppDeclaration
-import org.koin.dsl.bind
 import org.koin.dsl.module
 
 /**
@@ -19,10 +16,9 @@ val appModule = module {
     // Database
     single { get<DatabaseProvider>().getDatabase() }
     single { get<AppDatabase>().mediaOpinionDao }
-    
-    // Repositories
-    single { RoomMediaOpinionRepository(get()) } bind MediaOpinionRepository::class
 
+    // Repositories
+    factoryOf(::RoomMediaOpinionRepository)
 }
 
 val viewModelModule = module {

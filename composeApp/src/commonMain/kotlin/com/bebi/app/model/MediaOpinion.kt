@@ -4,10 +4,12 @@ import androidx.room.Entity
 import androidx.room.PrimaryKey
 import androidx.room.ColumnInfo
 import androidx.room.Index
+import kotlinx.serialization.Serializable
 
 /**
  * Model class for storing movie or series opinions
  */
+@Serializable
 @Entity(tableName = "media_opinions",
     indices = [Index(value = ["title"], unique = true)])
 data class MediaOpinion(

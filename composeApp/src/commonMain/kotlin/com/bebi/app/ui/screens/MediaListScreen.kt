@@ -152,7 +152,7 @@ class MediaListScreen : Screen {
                                 index = index + 1,
                                 opinion = opinion,
                                 onItemClick = { 
-                                    navigator.push(MediaDetailScreen(opinion))
+                                    navigator.push(MediaDetailScreen(opinion.id))
                                 }
                             )
                             

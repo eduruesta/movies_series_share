@@ -13,28 +13,39 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 
+/**
+ * A star rating component that can be editable or read-only
+ * If onRatingChanged is provided, the stars will be clickable
+ */
 @Composable
 fun StarRating(
     rating: Float,
     maxRating: Int = 10,
-    onRatingChanged: (Float) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onRatingChanged: ((Float) -> Unit)? = null
 ) {
     Row(modifier = modifier) {
         for (i in 1..maxRating) {
             val isFilled = i <= rating
             
+            val starModifier = if (onRatingChanged != null) {
+                Modifier
+                    .size(24.dp)
+                    .padding(end = 4.dp)
+                    .clickable {
+                        onRatingChanged(i.toFloat())
+                    }
+            } else {
+                Modifier
+                    .size(24.dp)
+                    .padding(end = 4.dp)
+            }
+            
             Icon(
                 imageVector = if (isFilled) Icons.Filled.Star else Icons.Outlined.Star,
                 contentDescription = "Star $i",
                 tint = if (isFilled) Color(0xFFFFD700) else Color.Gray, // Gold color for filled stars
-                modifier = Modifier
-                    .size(24.dp)
-                    .padding(end = 4.dp)
-                    .clickable {
-                        // Set rating to exactly the star number (no half stars)
-                        onRatingChanged(i.toFloat())
-                    }
+                modifier = starModifier
             )
         }
     }

@@ -54,21 +54,19 @@ import moviesseriesshare.composeapp.generated.resources.placeholder_movie
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
-import kotlinx.serialization.Serializable
+import org.koin.compose.viewmodel.koinViewModel
 
 /**
  * Screen that displays a list of media opinions
  */
-@Serializable
 class MediaListScreen : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
-        val viewModel = koinInject<MediaOpinionViewModel>()
+        val viewModel = koinViewModel<MediaOpinionViewModel>()
         val uiState by viewModel.uiState.collectAsState()
         val navigator = LocalNavigator.currentOrThrow
-        
+
         Scaffold(
             topBar = {
                 TopAppBar(
@@ -109,9 +107,9 @@ class MediaListScreen : Screen {
                             modifier = Modifier.size(50.dp),
                             color = MaterialTheme.colorScheme.primary
                         )
-                        
+
                         Spacer(modifier = Modifier.height(16.dp))
-                        
+
                         Text(
                             text = "Cargando opiniones...",
                             style = MaterialTheme.typography.bodyLarge,
@@ -132,9 +130,9 @@ class MediaListScreen : Screen {
                             style = MaterialTheme.typography.bodyLarge,
                             textAlign = TextAlign.Center
                         )
-                        
+
                         Spacer(modifier = Modifier.height(16.dp))
-                        
+
                         Button(
                             onClick = { navigator.push(OpinionFormScreen()) }
                         ) {
@@ -151,11 +149,11 @@ class MediaListScreen : Screen {
                             MediaOpinionItem(
                                 index = index + 1,
                                 opinion = opinion,
-                                onItemClick = { 
+                                onItemClick = {
                                     navigator.push(MediaDetailScreen(opinion.id))
                                 }
                             )
-                            
+
                             if (index < uiState.opinions.size - 1) {
                                 HorizontalDivider(
                                     modifier = Modifier.padding(horizontal = 16.dp),
@@ -165,7 +163,7 @@ class MediaListScreen : Screen {
                         }
                     }
                 }
-                
+
                 // Show error if present
                 uiState.error?.let { error ->
                     Box(
@@ -225,9 +223,9 @@ private fun MediaOpinionItem(
                     .height(120.dp),
                 contentScale = ContentScale.Crop
             )
-            
+
             Spacer(modifier = Modifier.width(16.dp))
-            
+
             // Content
             Column(
                 modifier = Modifier.weight(1f)
@@ -238,9 +236,9 @@ private fun MediaOpinionItem(
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold
                 )
-                
+
                 Spacer(modifier = Modifier.height(4.dp))
-                
+
                 // Year and duration (mocked for now)
                 Row {
                     Text(
@@ -248,17 +246,17 @@ private fun MediaOpinionItem(
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    
+
                     Spacer(modifier = Modifier.width(8.dp))
-                    
+
                     Text(
                         text = "2h 15m",
                         style = MaterialTheme.typography.bodyMedium,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
-                    
+
                     Spacer(modifier = Modifier.width(8.dp))
-                    
+
                     // Content rating (mocked)
                     Text(
                         text = "PG-13",
@@ -266,9 +264,9 @@ private fun MediaOpinionItem(
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                 }
-                
+
                 Spacer(modifier = Modifier.height(8.dp))
-                
+
                 // Rating
                 Row(
                     verticalAlignment = Alignment.CenterVertically
@@ -279,9 +277,9 @@ private fun MediaOpinionItem(
                         tint = Color(0xFFFFD700), // Gold/Yellow color
                         modifier = Modifier.size(20.dp)
                     )
-                    
+
                     Spacer(modifier = Modifier.width(4.dp))
-                    
+
                     Text(
                         text = "${opinion.rating.toInt()}",
                         style = MaterialTheme.typography.bodyLarge,

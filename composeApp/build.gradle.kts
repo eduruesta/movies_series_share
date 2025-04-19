@@ -46,17 +46,20 @@ kotlin {
             implementation(libs.ktor.client.serialization)
             implementation(libs.ktor.client.logging)
             implementation(libs.kotlinx.serialization.json)
+            implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
+            implementation(libs.koin.compose.viewmodel)
             implementation(libs.coil)
             implementation(libs.coil.network.ktor)
             implementation(libs.room.runtime)
-            
+            implementation(libs.androidx.sqlite.bundled)
+
+
             // Voyager Navigation
             implementation(libs.voyager.navigator)
             implementation(libs.voyager.screenModel)
             implementation(libs.voyager.transitions)
-            implementation(libs.voyager.koin)
         }
 
         commonTest.dependencies {

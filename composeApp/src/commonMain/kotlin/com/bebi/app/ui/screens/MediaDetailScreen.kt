@@ -42,12 +42,15 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.bebi.app.ui.components.StarRating
 import com.bebi.app.viewmodel.MediaDetailViewModel
+import com.bebi.app.viewmodel.MediaOpinionViewModel
 import kotlinx.serialization.Serializable
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.placeholder_movie
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.annotation.KoinExperimentalAPI
 
 /**
  * Screen that displays the details of a media opinion
@@ -56,11 +59,13 @@ import org.koin.compose.koinInject
 @Serializable
 class MediaDetailScreen(private val opinionId: Long) : Screen {
 
-    @OptIn(ExperimentalMaterial3Api::class, ExperimentalResourceApi::class)
+    @OptIn(ExperimentalMaterial3Api::class, ExperimentalResourceApi::class,
+        KoinExperimentalAPI::class
+    )
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        val viewModel = koinInject<MediaDetailViewModel>()
+        val viewModel: MediaDetailViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsState()
 
         // Load the opinion when the screen is first composed

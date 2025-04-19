@@ -58,6 +58,8 @@ import moviesseriesshare.composeapp.generated.resources.select_from_gallery
 import moviesseriesshare.composeapp.generated.resources.title_field
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
+import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.annotation.KoinExperimentalAPI
 
 /**
  * Screen for creating or editing a media opinion
@@ -69,8 +71,8 @@ class OpinionFormScreen : Screen {
     override fun Content() {
         var mediaOpinion by remember { mutableStateOf(MediaOpinion()) }
         val navigator = LocalNavigator.currentOrThrow
-        val viewModel = koinInject<MediaOpinionViewModel>()
-        
+        val viewModel: MediaOpinionViewModel = koinViewModel()
+
         Scaffold(
             topBar = {
                 TopAppBar(

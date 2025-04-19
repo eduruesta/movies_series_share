@@ -42,13 +42,11 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.bebi.app.ui.components.StarRating
 import com.bebi.app.viewmodel.MediaDetailViewModel
-import com.bebi.app.viewmodel.MediaOpinionViewModel
 import kotlinx.serialization.Serializable
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.placeholder_movie
 import org.jetbrains.compose.resources.ExperimentalResourceApi
 import org.jetbrains.compose.resources.painterResource
-import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
 

@@ -40,15 +40,14 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import coil3.compose.AsyncImage
 import com.bebi.app.ui.components.StarRating
 import com.bebi.app.viewmodel.MediaDetailViewModel
 import kotlinx.serialization.Serializable
-import moviesseriesshare.composeapp.generated.resources.Res
-import moviesseriesshare.composeapp.generated.resources.placeholder_movie
 import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
+import placeholder
 
 /**
  * Screen that displays the details of a media opinion
@@ -57,7 +56,8 @@ import org.koin.core.annotation.KoinExperimentalAPI
 @Serializable
 class MediaDetailScreen(private val opinionId: Long) : Screen {
 
-    @OptIn(ExperimentalMaterial3Api::class, ExperimentalResourceApi::class,
+    @OptIn(
+        ExperimentalMaterial3Api::class, ExperimentalResourceApi::class,
         KoinExperimentalAPI::class
     )
     @Composable
@@ -137,8 +137,8 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
                         if (opinion.imageUrl.isNotEmpty()) {
                             // If there's an image URL, we would load it here
                             // For now, just show a placeholder
-                            Image(
-                                painter = painterResource(Res.drawable.placeholder_movie),
+                            AsyncImage(
+                                model = opinion.imageUrl,
                                 contentDescription = opinion.title,
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -147,7 +147,7 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
                             )
                         } else {
                             Image(
-                                painter = painterResource(Res.drawable.placeholder_movie),
+                                imageVector = placeholder,
                                 contentDescription = opinion.title,
                                 modifier = Modifier
                                     .fillMaxWidth()

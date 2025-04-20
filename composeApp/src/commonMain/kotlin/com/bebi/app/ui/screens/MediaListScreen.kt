@@ -50,11 +50,10 @@ import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.create_critic_button
 import moviesseriesshare.composeapp.generated.resources.empty_list_message
 import moviesseriesshare.composeapp.generated.resources.media_list_title
-import moviesseriesshare.composeapp.generated.resources.placeholder_movie
 import org.jetbrains.compose.resources.ExperimentalResourceApi
-import org.jetbrains.compose.resources.painterResource
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
+import placeholder
 
 /**
  * Screen that displays a list of media opinions
@@ -216,7 +215,7 @@ private fun MediaOpinionItem(
         ) {
             // Thumbnail
             Image(
-                painter = painterResource(Res.drawable.placeholder_movie),
+                imageVector = placeholder,
                 contentDescription = opinion.title,
                 modifier = Modifier
                     .width(80.dp)

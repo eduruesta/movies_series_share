@@ -20,6 +20,7 @@
     <string name="year_field">Año</string>
     <string name="duration_field">Duración</string>
     <string name="content_rating_field">Clasificación</string>
+    <string name="synopsis_field">Sinopsis</string>
     
     <!-- Media List Screen Strings -->
     <string name="media_list_title">Mis Críticas</string>

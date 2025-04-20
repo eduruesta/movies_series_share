@@ -1,6 +1,7 @@
 import org.jetbrains.compose.ExperimentalComposeLibrary
 import org.jetbrains.kotlin.gradle.ExperimentalKotlinGradlePluginApi
 import org.jetbrains.kotlin.gradle.plugin.KotlinSourceSetTree
+import java.util.Properties
 
 plugins {
     alias(libs.plugins.multiplatform)
@@ -45,13 +46,15 @@ kotlin {
             implementation(libs.ktor.client.content.negotiation)
             implementation(libs.ktor.client.serialization)
             implementation(libs.ktor.client.logging)
-            implementation(libs.kotlinx.serialization.json)
+            implementation(libs.ktor.serialization.json)
             implementation(project.dependencies.platform(libs.koin.bom))
             implementation(libs.koin.core)
             implementation(libs.koin.compose)
             implementation(libs.koin.compose.viewmodel)
-            implementation(libs.coil)
+            implementation(libs.coil.compose.core)
+            implementation(libs.coil.mp)
             implementation(libs.coil.network.ktor)
+            implementation(libs.coil.compose)
             implementation(libs.room.runtime)
             implementation(libs.androidx.sqlite.bundled)
 
@@ -107,8 +110,13 @@ dependencies {
 }
 
 buildConfig {
-    // BuildConfig configuration here.
-    // https://github.com/gmazzo/gradle-buildconfig-plugin#usage-in-kts
+    packageName = "com.bebi.app"
+    val properties = Properties()
+    properties.load(project.rootProject.file("local.properties").reader())
+    val apiKey = properties.getProperty("api_key")
+
+    buildConfigField("api_key", apiKey)
+
 }
 
 room {

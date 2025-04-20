@@ -33,5 +33,9 @@ data class MediaOpinion(
     @ColumnInfo(name = "duration")
     val duration: String = "",
     @ColumnInfo(name = "content_rating")
-    val contentRating: String = ""
+    val contentRating: String = "",
+    @ColumnInfo(name = "synopsis")
+    val synopsis: String = "",
+    @ColumnInfo(name = "poster_url")
+    val posterUrl: String? = null
 )

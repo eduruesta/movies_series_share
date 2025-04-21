@@ -37,5 +37,15 @@ data class MediaOpinion(
     @ColumnInfo(name = "synopsis")
     val synopsis: String = "",
     @ColumnInfo(name = "poster_url")
-    val posterUrl: String? = null
+    val posterUrl: String? = null,
+    /**
+     * Número total de usuarios que han calificado esta película/serie
+     */
+    @ColumnInfo(name = "rating_count")
+    val ratingCount: Int = 0,
+    /**
+     * Calificación promedio de los usuarios (1-10)
+     */
+    @ColumnInfo(name = "average_rating")
+    val averageRating: Float = 0f
 )

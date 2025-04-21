@@ -6,17 +6,17 @@
     <string name="theme">Theme</string>
     
     <!-- Opinion Form Strings -->
-    <string name="new_opinion">Nueva Crîtica</string>
+    <string name="new_opinion">Nueva Crítica</string>
     <string name="title_field">Nombre de Serie o Película</string>
     <string name="rating_field">Puntuación</string>
     <string name="comment_field">Comentario</string>
     <string name="genre_field">Género</string>
     <string name="platform_field">Plataforma</string>
-    <string name="save_button">Guardar Crîtica</string>
+    <string name="save_button">Guardar Crítica</string>
     <string name="image_field">Poster</string>
     <string name="select_from_gallery">Seleccionar de la galería</string>
     <string name="search_online">Buscar online</string>
-    <string name="new_critic">Nueva Crîtica</string>
+    <string name="new_critic">Nueva Crítica</string>
     <string name="year_field">Año</string>
     <string name="duration_field">Duración</string>
     <string name="content_rating_field">Clasificación</string>
@@ -26,4 +26,5 @@
     <string name="media_list_title">Mis Críticas</string>
     <string name="empty_list_message">No hay críticas disponibles. Crea tu primera crítica haciendo clic en el botón de abajo.</string>
     <string name="create_critic_button">Crear Crítica</string>
+    <string name="opinion_count">%1$s (%2$s)</string>
 </resources>

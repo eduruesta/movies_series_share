@@ -49,7 +49,10 @@ import coil3.compose.AsyncImage
 import com.bebi.app.ui.components.StarRating
 import com.bebi.app.viewmodel.MediaDetailViewModel
 import kotlinx.serialization.Serializable
+import moviesseriesshare.composeapp.generated.resources.Res
+import moviesseriesshare.composeapp.generated.resources.opinion_count
 import org.jetbrains.compose.resources.ExperimentalResourceApi
+import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import org.koin.core.annotation.KoinExperimentalAPI
 import placeholder
@@ -196,10 +199,22 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
                             )
                             Spacer(modifier = Modifier.width(8.dp))
 
+                            val ratingText = if (opinion.ratingCount > 0) {
+                                // Usando una función de extensión compatible con KMP
+                                val formattedRating = opinion.averageRating.formatWithOneDecimal()
+                                stringResource(
+                                    Res.string.opinion_count,
+                                    formattedRating,
+                                    opinion.ratingCount.toString()
+                                )
+                            } else {
+                                // Si no hay calificaciones, mostramos la calificación original
+                                "${opinion.rating}/10"
+                            }
+
                             Text(
-                                text = "${opinion.rating}/10",
-                                style = MaterialTheme.typography.bodyLarge,
-                                fontWeight = FontWeight.Bold
+                                text = ratingText,
+                                style = MaterialTheme.typography.bodyMedium
                             )
                         }
 

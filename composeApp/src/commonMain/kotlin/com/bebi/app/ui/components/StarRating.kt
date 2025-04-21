@@ -1,6 +1,7 @@
 package com.bebi.app.ui.components
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -24,21 +25,24 @@ fun StarRating(
     modifier: Modifier = Modifier,
     onRatingChanged: ((Float) -> Unit)? = null
 ) {
-    Row(modifier = modifier) {
+    Row(
+        modifier = modifier,
+        horizontalArrangement = Arrangement.Center // Centrar las estrellas horizontalmente
+    ) {
         for (i in 1..maxRating) {
             val isFilled = i <= rating
             
             val starModifier = if (onRatingChanged != null) {
                 Modifier
                     .size(24.dp)
-                    .padding(end = 4.dp)
+                    .padding(horizontal = 2.dp) // Padding equilibrado a ambos lados
                     .clickable {
                         onRatingChanged(i.toFloat())
                     }
             } else {
                 Modifier
                     .size(24.dp)
-                    .padding(end = 4.dp)
+                    .padding(horizontal = 2.dp) // Padding equilibrado a ambos lados
             }
             
             Icon(

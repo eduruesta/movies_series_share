@@ -24,6 +24,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.bebi.app.model.MediaOpinion
+import moviesseriesshare.composeapp.generated.resources.Res
+import moviesseriesshare.composeapp.generated.resources.rate_action
+import org.jetbrains.compose.resources.stringResource
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,7 +52,7 @@ fun RatingBottomSheet(
         ) {
             // Título
             Text(
-                text = "Calificar",
+                text = stringResource(Res.string.rate_action),
                 style = MaterialTheme.typography.headlineLarge,
                 fontWeight = FontWeight.Bold,
                 textAlign = TextAlign.Center
@@ -98,7 +101,7 @@ fun RatingBottomSheet(
                 // Deshabilitar el botón si no hay calificación seleccionada
                 enabled = selectedRating > 0
             ) {
-                Text("Calificar")
+                Text(stringResource(Res.string.rate_action))
             }
 
             // Espacio al final para mejor apariencia

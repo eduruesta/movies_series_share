@@ -63,6 +63,7 @@ import moviesseriesshare.composeapp.generated.resources.create_critic_button
 import moviesseriesshare.composeapp.generated.resources.empty_list_message
 import moviesseriesshare.composeapp.generated.resources.media_list_title
 import moviesseriesshare.composeapp.generated.resources.opinion_count
+import moviesseriesshare.composeapp.generated.resources.rate_action
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import placeholder
@@ -287,13 +288,13 @@ private fun MediaOpinionItem(
                     )
 
                     // Rating text - Mostramos el promedio de calificación y la cantidad de usuarios
-                    val ratingText = if (opinion.ratingCount > 0) {
+                    val ratingText = if (opinion.ratingCount > 1) {
                         // Usando una función de extensión compatible con KMP
                         val formattedRating = opinion.averageRating.formatWithOneDecimal()
                         stringResource(Res.string.opinion_count, formattedRating, opinion.ratingCount.toString())
                     } else {
                         // Si no hay calificaciones, mostramos la calificación original
-                        "${opinion.rating}/10"
+                        "${opinion.rating}"
                     }
 
                     Text(
@@ -312,7 +313,7 @@ private fun MediaOpinionItem(
                     ) {
                         Icon(
                             imageVector = Icons.Default.Star,
-                            contentDescription = "Calificar",
+                            contentDescription = stringResource(Res.string.rate_action),
                             tint = MaterialTheme.colorScheme.primary,
                             modifier = Modifier.size(16.dp)
                         )
@@ -320,7 +321,7 @@ private fun MediaOpinionItem(
                         Spacer(modifier = Modifier.width(4.dp))
 
                         Text(
-                            text = "Calificar",
+                            text = stringResource(Res.string.rate_action),
                             style = MaterialTheme.typography.bodyMedium.copy(
                                 color = MaterialTheme.colorScheme.primary
                             )

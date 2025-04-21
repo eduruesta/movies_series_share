@@ -27,4 +27,10 @@
     <string name="empty_list_message">No hay críticas disponibles. Crea tu primera crítica haciendo clic en el botón de abajo.</string>
     <string name="create_critic_button">Crear Crítica</string>
     <string name="opinion_count">%1$s (%2$s)</string>
+    
+    <!-- Rating Strings -->
+    <string name="rate_action">Calificar</string>
+    <string name="rating_format">%s/10</string>
+    <string name="star_description">Estrella</string>
+    <string name="poster_description">Póster</string>
 </resources>

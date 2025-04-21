@@ -42,7 +42,7 @@ data class MediaOpinion(
      * Número total de usuarios que han calificado esta película/serie
      */
     @ColumnInfo(name = "rating_count")
-    val ratingCount: Int = 0,
+    val ratingCount: Int = 1,
     /**
      * Calificación promedio de los usuarios (1-10)
      */

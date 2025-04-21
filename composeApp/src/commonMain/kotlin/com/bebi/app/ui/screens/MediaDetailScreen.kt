@@ -38,6 +38,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -69,6 +70,7 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
         val navigator = LocalNavigator.currentOrThrow
         val viewModel: MediaDetailViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsState()
+        val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
         // Load the opinion when the screen is first composed
         LaunchedEffect(opinionId) {
@@ -90,9 +92,12 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer,
                         titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
+                    ),
+                    scrollBehavior = scrollBehavior
                 )
-            }
+            },
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+
         ) { paddingValues ->
             Box(
                 modifier = Modifier
@@ -186,16 +191,41 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
                         // Rating display
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             StarRating(
-                                rating = opinion.rating
+                                rating = opinion.rating,
+                                maxRating = 1,
                             )
                             Spacer(modifier = Modifier.width(8.dp))
+
                             Text(
-                                text = opinion.rating.toString(),
-                                style = MaterialTheme.typography.bodyLarge
+                                text = "${opinion.rating}/10",
+                                style = MaterialTheme.typography.bodyLarge,
+                                fontWeight = FontWeight.Bold
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(16.dp))
+                        // Sinopsis
+                        if (opinion.synopsis.isNotEmpty()) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp)
+                            ) {
+                                Text(
+                                    text = "Sinopsis",
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
+
+                                Spacer(modifier = Modifier.height(4.dp))
+
+                                Text(
+                                    text = opinion.synopsis ?: "",
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
 
                         // Additional metadata
                         if (opinion.year.isNotEmpty() || opinion.duration.isNotEmpty() || opinion.contentRating.isNotEmpty()) {

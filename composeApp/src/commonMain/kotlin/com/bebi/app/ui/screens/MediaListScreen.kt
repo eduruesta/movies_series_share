@@ -25,9 +25,9 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -103,20 +103,18 @@ class MediaListScreen : Screen {
                         containerColor = MaterialTheme.colorScheme.primaryContainer,
                         titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                     ),
+                    actions = {
+                        // Añadir botón para crear nueva crítica en la barra superior
+                        IconButton(onClick = { navigator.push(OpinionFormScreen()) }) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = stringResource(Res.string.create_critic_button),
+                                tint = MaterialTheme.colorScheme.primary
+                            )
+                        }
+                    },
                     scrollBehavior = scrollBehavior
                 )
-            },
-            floatingActionButton = {
-                FloatingActionButton(
-                    onClick = { navigator.push(OpinionFormScreen()) },
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.primary
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = stringResource(Res.string.create_critic_button)
-                    )
-                }
             },
             modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
 

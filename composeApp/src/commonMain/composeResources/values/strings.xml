@@ -9,7 +9,7 @@
     <string name="new_opinion">Nueva Crítica</string>
     <string name="title_field">Nombre de Serie o Película</string>
     <string name="rating_field">Puntuación</string>
-    <string name="comment_field">Comentario</string>
+    <string name="comment_field">Que te pareció?</string>
     <string name="genre_field">Género</string>
     <string name="platform_field">Plataforma</string>
     <string name="save_button">Guardar Crítica</string>

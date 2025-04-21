@@ -86,7 +86,16 @@ class MediaOpinionFormViewModel(
     private suspend fun fillFormWithMediaItem(mediaItem: TmdbMediaItem) {
         title = mediaItem.displayTitle
         synopsis = mediaItem.overview ?: ""
-        posterUrl = tmdbRepository.getFullPosterUrl(mediaItem.posterPath).toString()
+        
+        // Obtener la URL del póster y manejar correctamente valores null
+        println("DEBUG: Poster path: ${mediaItem.posterPath}")
+        val fullUrl = tmdbRepository.getFullPosterUrl(mediaItem.posterPath)
+        println("DEBUG: Full poster URL: $fullUrl")
+        
+        fullUrl?.let {
+            posterUrl = it
+            println("DEBUG: posterUrl actualizado a: $posterUrl")
+        }
 
         // Obtener géneros
         val genres = if (mediaItem.isMovie) {

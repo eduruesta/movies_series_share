@@ -1,6 +1,7 @@
 package com.bebi.app.ui.screens
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -34,6 +36,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -134,15 +138,21 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
                             .verticalScroll(rememberScrollState())
                     ) {
                         // Image
-                        if (opinion.imageUrl.isNotEmpty()) {
+                        if (!opinion.posterUrl.isNullOrEmpty()) {
                             // If there's an image URL, we would load it here
                             // For now, just show a placeholder
                             AsyncImage(
-                                model = opinion.imageUrl,
+                                model = opinion.posterUrl,
                                 contentDescription = opinion.title,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(200.dp),
+                                    .height(200.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .border(
+                                        width = 1.dp,
+                                        color = Color.Transparent,
+                                        shape = RoundedCornerShape(8.dp)
+                                    ),
                                 contentScale = ContentScale.Crop
                             )
                         } else {
@@ -151,7 +161,13 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
                                 contentDescription = opinion.title,
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .height(200.dp),
+                                    .height(200.dp)
+                                    .clip(RoundedCornerShape(8.dp))
+                                    .border(
+                                        width = 1.dp,
+                                        color = Color.Transparent,
+                                        shape = RoundedCornerShape(8.dp)
+                                    ),
                                 contentScale = ContentScale.Crop
                             )
                         }

@@ -44,6 +44,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -83,6 +84,7 @@ class OpinionFormScreen : Screen {
         val uiState by viewModel.uiState.collectAsState()
         val snackbarHostState = remember { SnackbarHostState() }
         val scope = rememberCoroutineScope()
+        val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
         // Show success message and navigate back when saved
         LaunchedEffect(uiState.saved) {
@@ -112,13 +114,15 @@ class OpinionFormScreen : Screen {
                             )
                         }
                     },
+                    scrollBehavior = scrollBehavior,
                     colors = TopAppBarDefaults.topAppBarColors(
                         containerColor = MaterialTheme.colorScheme.primaryContainer,
                         titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                     )
                 )
             },
-            snackbarHost = { SnackbarHost(snackbarHostState) }
+            snackbarHost = { SnackbarHost(snackbarHostState) },
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
         ) { paddingValues ->
             Column(
                 modifier = Modifier
@@ -225,11 +229,12 @@ class OpinionFormScreen : Screen {
                         contentAlignment = Alignment.Center
                     ) {
                         AsyncImage(
-                            model = viewModel.updatePosterUrl(viewModel.posterUrl),
+                            model = viewModel.posterUrl,
                             contentDescription = "Póster",
-                            contentScale = ContentScale.Fit,
-                            modifier = Modifier.fillMaxSize()
-                        )
+                            modifier = Modifier.fillMaxSize(),
+                            contentScale = ContentScale.Crop
+
+                            )
                     }
 
                     // Image source buttons

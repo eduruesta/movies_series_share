@@ -13,7 +13,7 @@
     <string name="genre_field">Género</string>
     <string name="platform_field">Plataforma</string>
     <string name="save_button">Guardar Crîtica</string>
-    <string name="image_field">Imagen</string>
+    <string name="image_field">Poster</string>
     <string name="select_from_gallery">Seleccionar de la galería</string>
     <string name="search_online">Buscar online</string>
     <string name="new_critic">Nueva Crîtica</string>

@@ -20,11 +20,9 @@ class MediaOpinionViewModel(
     private val _uiState = MutableStateFlow(MediaOpinionUiState())
     val uiState: StateFlow<MediaOpinionUiState> = _uiState.asStateFlow()
     
-    init {
-        loadOpinions()
-    }
+    // Se quita el init para cargar datos bajo demanda
     
-    private fun loadOpinions() {
+    public fun loadOpinions() {
         viewModelScope.launch {
             // Set loading state to true
             _uiState.update { it.copy(isLoading = true) }
@@ -76,7 +74,10 @@ class MediaOpinionViewModel(
                 val totalRatingPoints = opinion.averageRating * opinion.ratingCount + rating
                 val newAverageRating = totalRatingPoints / newRatingCount
                 
+                // Aseguramos que se mantenga el ID original
                 val updatedOpinion = opinion.copy(
+                    // Mantenemos el mismo ID
+                    id = opinion.id,
                     // La calificación original se mantiene (es la del creador)
                     // pero actualizamos los campos de promedio y contador
                     ratingCount = newRatingCount,

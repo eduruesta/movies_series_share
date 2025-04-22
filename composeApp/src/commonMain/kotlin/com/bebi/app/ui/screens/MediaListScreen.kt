@@ -34,6 +34,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -69,7 +70,6 @@ import kotlin.math.round
 
 /**
  * Función de extensión para formatear un Float con un decimal fijo
- * Compatible con Kotlin Multiplatform
  */
 fun Float.formatWithOneDecimal(): String {
     val rounded = round(this * 10) / 10
@@ -95,6 +95,11 @@ class MediaListScreen : Screen {
         // Estado para manejar el BottomSheet de calificación
         var showRatingSheet by remember { mutableStateOf(false) }
         var selectedOpinion by remember { mutableStateOf<MediaOpinion?>(null) }
+        
+        // Cargar las opiniones cada vez que la pantalla sea visible
+        LaunchedEffect(Unit) {
+            viewModel.loadOpinions()
+        }
 
         Scaffold(
             topBar = {

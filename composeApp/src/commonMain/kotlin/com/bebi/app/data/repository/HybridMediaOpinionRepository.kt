@@ -47,8 +47,17 @@ class HybridMediaOpinionRepository(
      * Guarda una opinión, primero intenta en la API y si falla la guarda en Room
      */
     override suspend fun saveOpinion(opinion: MediaOpinion): Long {
+        // Asegurarse de que la opinión tenga un ID válido
+        val opinionToSave = if (opinion.id <= 0) {
+            // Si no tiene ID o es 0, generamos uno
+            val randomId = kotlin.random.Random.nextLong(1_000_000, Long.MAX_VALUE)
+            opinion.copy(id = randomId)
+        } else {
+            opinion
+        }
+
         // Intenta guardar en la API
-        val apiResult = apiService.saveCritic(opinion)
+        val apiResult = apiService.saveCritic(opinionToSave)
         
         return if (apiResult.isSuccess) {
             // Si la API responde correctamente, guarda también localmente
@@ -56,11 +65,11 @@ class HybridMediaOpinionRepository(
             if (savedOpinion != null) {
                 localRepository.saveOpinion(savedOpinion)
             } else {
-                localRepository.saveOpinion(opinion)
+                localRepository.saveOpinion(opinionToSave)
             }
         } else {
             // Si la API falla, guarda solo localmente
-            localRepository.saveOpinion(opinion)
+            localRepository.saveOpinion(opinionToSave)
         }
     }
 

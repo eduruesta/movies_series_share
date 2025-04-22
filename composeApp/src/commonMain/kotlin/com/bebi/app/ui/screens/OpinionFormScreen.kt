@@ -2,6 +2,7 @@ package com.bebi.app.ui.screens
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -109,241 +111,259 @@ class OpinionFormScreen : Screen {
             }
         }
 
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text(stringResource(Res.string.new_critic)) },
-                    navigationIcon = {
-                        IconButton(onClick = { navigator.pop() }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Volver atrás"
-                            )
-                        }
-                    },
-                    scrollBehavior = scrollBehavior,
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    )
-                )
-            },
-            snackbarHost = { SnackbarHost(snackbarHostState) },
-            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
-        ) { paddingValues ->
-            Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-                    .padding(16.dp)
-                    .verticalScroll(rememberScrollState()),
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                // Title field with search button
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    OutlinedTextField(
-                        value = viewModel.title,
-                        onValueChange = { viewModel.updateTitle(it) },
-                        label = { Text(stringResource(Res.string.title_field)) },
-                        modifier = Modifier.weight(1f),
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
-                        keyboardActions = KeyboardActions(
-                            onSearch = {
-                                viewModel.searchMedia(viewModel.title)
+        Box(modifier = Modifier.fillMaxSize()) {
+            Scaffold(
+                topBar = {
+                    TopAppBar(
+                        title = { Text(stringResource(Res.string.new_critic)) },
+                        navigationIcon = {
+                            IconButton(onClick = { navigator.pop() }) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = "Volver atrás"
+                                )
                             }
-                        )
-                    )
-
-                    // Search button
-                    IconButton(
-                        onClick = {
-                            keyboardController?.hide()
-                            viewModel.searchMedia(viewModel.title)
                         },
-                        modifier = Modifier
-                            .background(
-                                color = MaterialTheme.colorScheme.primary,
-                                shape = RoundedCornerShape(4.dp)
-                            )
-                            .padding(4.dp)
+                        scrollBehavior = scrollBehavior,
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    )
+                },
+                snackbarHost = { SnackbarHost(snackbarHostState) },
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+            ) { paddingValues ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                        .padding(16.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
+                ) {
+                    // Title field with search button
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        if (viewModel.isSearching) {
-                            CircularProgressIndicator(
-                                color = MaterialTheme.colorScheme.onPrimary,
-                                modifier = Modifier.width(24.dp)
+                        OutlinedTextField(
+                            value = viewModel.title,
+                            onValueChange = { viewModel.updateTitle(it) },
+                            label = { Text(stringResource(Res.string.title_field)) },
+                            modifier = Modifier.weight(1f),
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
+                            keyboardActions = KeyboardActions(
+                                onSearch = {
+                                    viewModel.searchMedia(viewModel.title)
+                                }
                             )
-                        } else {
-                            Icon(
-                                imageVector = Icons.Default.Search,
-                                contentDescription = "Buscar",
-                                tint = MaterialTheme.colorScheme.onPrimary
+                        )
+
+                        // Search button
+                        IconButton(
+                            onClick = {
+                                keyboardController?.hide()
+                                viewModel.searchMedia(viewModel.title)
+                            },
+                            modifier = Modifier
+                                .background(
+                                    color = MaterialTheme.colorScheme.primary,
+                                    shape = RoundedCornerShape(4.dp)
+                                )
+                                .padding(4.dp)
+                        ) {
+                            if (viewModel.isSearching) {
+                                CircularProgressIndicator(
+                                    color = MaterialTheme.colorScheme.onPrimary,
+                                    modifier = Modifier.width(24.dp)
+                                )
+                            } else {
+                                Icon(
+                                    imageVector = Icons.Default.Search,
+                                    contentDescription = "Buscar",
+                                    tint = MaterialTheme.colorScheme.onPrimary
+                                )
+                            }
+                        }
+                    }
+
+                    // Mostrar resultados de búsqueda en dropdown cuando corresponda
+                    if (viewModel.showSearchResults && viewModel.searchResults.isNotEmpty()) {
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            SearchResultsDropdown(
+                                results = viewModel.searchResults,
+                                onItemSelected = { viewModel.selectMediaItem(it) },
+                                onDismiss = { viewModel.closeSearchResults() },
+                                getFullPosterUrl = { posterPath ->
+                                    if (posterPath != null) {
+                                        "https://image.tmdb.org/t/p/w500$posterPath"
+                                    } else null
+                                }
                             )
                         }
                     }
-                }
 
-                // Mostrar resultados de búsqueda en dropdown cuando corresponda
-                if (viewModel.showSearchResults && viewModel.searchResults.isNotEmpty()) {
-                    Box(modifier = Modifier.fillMaxWidth()) {
-                        SearchResultsDropdown(
-                            results = viewModel.searchResults,
-                            onItemSelected = { viewModel.selectMediaItem(it) },
-                            onDismiss = { viewModel.closeSearchResults() },
-                            getFullPosterUrl = { posterPath ->
-                                if (posterPath != null) {
-                                    "https://image.tmdb.org/t/p/w500$posterPath"
-                                } else null
-                            }
+                    // Error message for search
+                    viewModel.searchError?.let {
+                        Text(
+                            text = stringResource(Res.string.result_error),
+                            color = MaterialTheme.colorScheme.error,
+                            style = MaterialTheme.typography.bodyMedium
                         )
                     }
-                }
 
-                // Error message for search
-                viewModel.searchError?.let {
-                    Text(
-                        text = stringResource(Res.string.result_error),
-                        color = MaterialTheme.colorScheme.error,
-                        style = MaterialTheme.typography.bodyMedium
-                    )
-                }
+                    // Rating field with stars
+                    Column {
+                        Text(
+                            text = "${stringResource(Res.string.rating_field)}: ${viewModel.rating}/10",
+                            style = MaterialTheme.typography.bodyLarge
+                        )
 
-                // Rating field with stars
-                Column {
+                        // Wrap the stars in a horizontally scrollable row for smaller screens
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(vertical = 8.dp)
+                        ) {
+                            StarRating(
+                                rating = viewModel.rating,
+                                maxRating = 10,
+                                onRatingChanged = { viewModel.updateRating(it.toFloat()) }
+                            )
+                        }
+                    }
+
+                    // Image field
                     Text(
-                        text = "${stringResource(Res.string.rating_field)}: ${viewModel.rating}/10",
+                        text = stringResource(Res.string.image_field),
                         style = MaterialTheme.typography.bodyLarge
                     )
-
-                    // Wrap the stars in a horizontally scrollable row for smaller screens
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp)
+                            .height(180.dp)
+                            .padding(vertical = 8.dp),
+                        horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        StarRating(
-                            rating = viewModel.rating,
-                            maxRating = 10,
-                            onRatingChanged = { viewModel.updateRating(it.toFloat()) }
-                        )
-                    }
-                }
-
-                // Image field
-                Text(
-                    text = stringResource(Res.string.image_field),
-                    style = MaterialTheme.typography.bodyLarge
-                )
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(180.dp)
-                        .padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
-                ) {
-                    // Image preview area
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .fillMaxHeight()
-                            .clip(RoundedCornerShape(8.dp))
-                            .border(
-                                width = 1.dp,
-                                color = MaterialTheme.colorScheme.outline,
-                                shape = RoundedCornerShape(8.dp)
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        AsyncImage(
-                            model = viewModel.posterUrl,
-                            contentDescription = "Póster",
-                            modifier = Modifier.fillMaxSize(),
-                            contentScale = ContentScale.Crop
-
-                        )
-                    }
-
-                    // Image source buttons
-                    Column(
-                        modifier = Modifier
-                            .width(150.dp)
-                            .fillMaxHeight(),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        OutlinedButton(
-                            onClick = { /* Will be implemented in the future */ },
-                            modifier = Modifier.fillMaxWidth()
+                        // Image preview area
+                        Box(
+                            modifier = Modifier
+                                .weight(1f)
+                                .fillMaxHeight()
+                                .clip(RoundedCornerShape(8.dp))
+                                .border(
+                                    width = 1.dp,
+                                    color = MaterialTheme.colorScheme.outline,
+                                    shape = RoundedCornerShape(8.dp)
+                                ),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Text(stringResource(Res.string.select_from_gallery))
+                            AsyncImage(
+                                model = viewModel.posterUrl,
+                                contentDescription = "Póster",
+                                modifier = Modifier.fillMaxSize(),
+                                contentScale = ContentScale.Crop
+
+                            )
                         }
 
-                        OutlinedButton(
-                            onClick = { viewModel.searchMedia(viewModel.title) },
-                            modifier = Modifier.fillMaxWidth(),
-                            enabled = viewModel.title.isNotBlank() && !viewModel.isSearching
+                        // Image source buttons
+                        Column(
+                            modifier = Modifier
+                                .width(150.dp)
+                                .fillMaxHeight(),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            Text(stringResource(Res.string.search_online))
+                            OutlinedButton(
+                                onClick = { /* Will be implemented in the future */ },
+                                modifier = Modifier.fillMaxWidth()
+                            ) {
+                                Text(stringResource(Res.string.select_from_gallery))
+                            }
+
+                            OutlinedButton(
+                                onClick = { viewModel.searchMedia(viewModel.title) },
+                                modifier = Modifier.fillMaxWidth(),
+                                enabled = viewModel.title.isNotBlank() && !viewModel.isSearching
+                            ) {
+                                Text(stringResource(Res.string.search_online))
+                            }
                         }
                     }
-                }
 
-                // Genre and Platform fields in a row
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    // Genre field
+                    // Genre and Platform fields in a row
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        // Genre field
+                        OutlinedTextField(
+                            value = viewModel.genre,
+                            onValueChange = { viewModel.updateGenre(it) },
+                            label = { Text(stringResource(Res.string.genre_field)) },
+                            modifier = Modifier.weight(1f),
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
+                        )
+
+                        // Platform field
+                        OutlinedTextField(
+                            value = viewModel.platform,
+                            onValueChange = { viewModel.updatePlatform(it) },
+                            label = { Text(stringResource(Res.string.platform_field)) },
+                            modifier = Modifier.weight(1f),
+                            keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
+                        )
+                    }
+
+                    // Synopsis field
                     OutlinedTextField(
-                        value = viewModel.genre,
-                        onValueChange = { viewModel.updateGenre(it) },
-                        label = { Text(stringResource(Res.string.genre_field)) },
-                        modifier = Modifier.weight(1f),
+                        value = viewModel.synopsis,
+                        onValueChange = { viewModel.updateSynopsis(it) },
+                        label = { Text(stringResource(Res.string.synopsis_field)) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(120.dp),
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
                     )
 
-                    // Platform field
+                    // Comment field
                     OutlinedTextField(
-                        value = viewModel.platform,
-                        onValueChange = { viewModel.updatePlatform(it) },
-                        label = { Text(stringResource(Res.string.platform_field)) },
-                        modifier = Modifier.weight(1f),
+                        value = viewModel.comment,
+                        onValueChange = { viewModel.updateComment(it) },
+                        label = { Text(stringResource(Res.string.comment_field)) },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(120.dp),
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
                     )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    // Save button
+                    Button(
+                        onClick = { viewModel.saveOpinion() },
+                        modifier = Modifier.fillMaxWidth(),
+                        enabled = viewModel.title.isNotBlank()
+                    ) {
+                        Text(stringResource(Res.string.save_button))
+                    }
                 }
-
-                // Synopsis field
-                OutlinedTextField(
-                    value = viewModel.synopsis,
-                    onValueChange = { viewModel.updateSynopsis(it) },
-                    label = { Text(stringResource(Res.string.synopsis_field)) },
+            }
+            
+            // Overlay de carga
+            if (uiState.isSaving) {
+                Box(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .height(120.dp),
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
-                )
-
-                // Comment field
-                OutlinedTextField(
-                    value = viewModel.comment,
-                    onValueChange = { viewModel.updateComment(it) },
-                    label = { Text(stringResource(Res.string.comment_field)) },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(120.dp),
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
-                )
-
-                Spacer(modifier = Modifier.height(16.dp))
-
-                // Save button
-                Button(
-                    onClick = { viewModel.saveOpinion() },
-                    modifier = Modifier.fillMaxWidth(),
-                    enabled = viewModel.title.isNotBlank()
+                        .fillMaxSize()
+                        .background(color = MaterialTheme.colorScheme.background.copy(alpha = 0.5f))
+                        .clickable(enabled = false) { /* Prevenir clics */ },
+                    contentAlignment = Alignment.Center
                 ) {
-                    Text(stringResource(Res.string.save_button))
+                    CircularProgressIndicator(
+                        modifier = Modifier.size(100.dp),
+                        color = MaterialTheme.colorScheme.primary
+                    )
                 }
             }
         }

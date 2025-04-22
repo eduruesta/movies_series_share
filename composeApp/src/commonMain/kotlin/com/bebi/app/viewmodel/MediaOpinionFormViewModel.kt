@@ -14,7 +14,9 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-
+/**
+ * ViewModel para el formulario de opiniones de medios.
+ */
 class MediaOpinionFormViewModel(
     private val mediaOpinionRepository: MediaOpinionRepository,
     private val tmdbRepository: TmdbRepository
@@ -173,7 +175,12 @@ class MediaOpinionFormViewModel(
     // Guarda la opinión
     fun saveOpinion() {
         viewModelScope.launch {
+            _uiState.value = _uiState.value.copy(isSaving = true)
+            // Generar un ID aleatorio para cada crítica
+            val randomId = kotlin.random.Random.nextLong(1_000_000, Long.MAX_VALUE)
+            
             val opinion = MediaOpinion(
+                id = randomId,
                 title = title,
                 platform = platform,
                 genre = genre,
@@ -188,7 +195,8 @@ class MediaOpinionFormViewModel(
 
             mediaOpinionRepository.saveOpinion(opinion)
             _uiState.value = _uiState.value.copy(
-                saved = true
+                saved = true,
+                isSaving = false
             )
         }
     }
@@ -214,5 +222,6 @@ class MediaOpinionFormViewModel(
 
 data class MediaOpinionFormUiState(
     val saved: Boolean = false,
-    val searchMessage: String? = null
+    val searchMessage: String? = null,
+    val isSaving: Boolean = false
 )

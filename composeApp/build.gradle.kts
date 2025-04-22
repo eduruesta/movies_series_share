@@ -12,7 +12,7 @@ plugins {
     alias(libs.plugins.room)
     alias(libs.plugins.ksp)
     alias(libs.plugins.buildConfig)
-
+    alias(libs.plugins.google.services)
 }
 
 kotlin {
@@ -61,6 +61,10 @@ kotlin {
             implementation(libs.voyager.navigator)
             implementation(libs.voyager.screenModel)
             implementation(libs.voyager.transitions)
+
+            // Firebase
+            api(libs.gitlive.firebase.kotlin.analytics)
+            api(libs.gitlive.firebase.kotlin.database)
         }
 
         commonTest.dependencies {
@@ -75,7 +79,7 @@ kotlin {
             implementation(libs.ktor.client.okhttp)
             implementation(libs.koin.android)
             implementation(libs.koin.androidx.compose)
-
+            implementation(project.dependencies.platform(libs.firebase.android.bom))
         }
 
         iosMain.dependencies {
@@ -93,7 +97,7 @@ android {
         minSdk = 21
         targetSdk = 35
 
-        applicationId = "com.bebi.app.androidApp"
+        applicationId = "com.bebi.app"
         versionCode = 1
         versionName = "1.0.0"
 

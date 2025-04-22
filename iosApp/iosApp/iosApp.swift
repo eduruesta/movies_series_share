@@ -1,5 +1,6 @@
 import UIKit
 import ComposeApp
+import FirebaseCore
 
 @main
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -14,6 +15,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             window.rootViewController = MainKt.MainViewController()
             window.makeKeyAndVisible()
         }
+        MainKt.initialise()
         return true
     }
 }

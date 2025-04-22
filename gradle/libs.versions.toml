@@ -16,6 +16,12 @@ androidx-lifeCycle = "2.8.0"
 voyager = "1.1.0-beta03"
 koinComposeMultiplatform = "1.2.0-Beta4"
 androidx-sqliteBundled = "2.5.0-alpha11"
+firebase-gitlive-sdk = "2.1.0"
+gradlePlugins-google-services = "4.4.1"
+firebase-android-bom = "32.8.1"
+
+
+
 
 
 
@@ -56,6 +62,12 @@ voyager-bottomSheetNavigator = { module = "cafe.adriel.voyager:voyager-bottom-sh
 voyager-tabNavigator = { module = "cafe.adriel.voyager:voyager-tab-navigator", version.ref = "voyager" }
 voyager-transitions = { module = "cafe.adriel.voyager:voyager-transitions", version.ref = "voyager" }
 
+firebase-android-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebase-android-bom" }
+firebase-android-crashlytics-ktx = { module = "com.google.firebase:firebase-analytics" }
+#Gitlive
+gitlive-firebase-kotlin-analytics = { module = "dev.gitlive:firebase-analytics", version.ref = "firebase-gitlive-sdk" }
+gitlive-firebase-kotlin-database = { module = "dev.gitlive:firebase-database", version.ref = "firebase-gitlive-sdk" }
+
 [plugins]
 androidLibrary = { id = "com.android.library", version.ref = "agp" }
 multiplatform = { id = "org.jetbrains.kotlin.multiplatform", version.ref = "kotlin" }
@@ -66,3 +78,4 @@ kotlinx-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", vers
 room = { id = "androidx.room", version.ref = "room" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 buildConfig = { id = "com.github.gmazzo.buildconfig", version.ref = "buildConfig" }
+google-services = { id = "com.google.gms.google-services", version.ref = "gradlePlugins-google-services" }

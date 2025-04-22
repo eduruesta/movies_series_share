@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "764447091440",
+    "project_id": "que-queres-ver",
+    "storage_bucket": "que-queres-ver.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:764447091440:android:75264d2f845d0f77c6b035",
+        "android_client_info": {
+          "package_name": "com.bebi.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBFMlxdPkL3n3ePRWWhOy6goc9p3XFYqww"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

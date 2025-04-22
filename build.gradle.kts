@@ -8,4 +8,5 @@ plugins {
     alias(libs.plugins.ksp).apply(false)
     alias(libs.plugins.buildConfig).apply(false)
     alias(libs.plugins.androidLibrary) apply false
+    alias(libs.plugins.google.services) apply false
 }

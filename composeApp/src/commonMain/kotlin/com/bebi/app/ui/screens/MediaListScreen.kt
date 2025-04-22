@@ -187,9 +187,15 @@ class MediaListScreen : Screen {
         if (showRatingSheet && selectedOpinion != null) {
             RatingBottomSheet(
                 opinion = selectedOpinion!!,
-                onDismiss = { showRatingSheet = false },
+                onDismiss = { if (!uiState.isRating) showRatingSheet = false },
+                isLoading = uiState.isRating,
                 onRatingSubmit = { opinion, rating ->
-                    viewModel.submitRating(opinion, rating)
+                    viewModel.submitRating(opinion, rating) { success ->
+                        // Solo cerramos el BottomSheet si la calificación fue exitosa
+                        if (success) {
+                            showRatingSheet = false
+                        }
+                    }
                 }
             )
         }

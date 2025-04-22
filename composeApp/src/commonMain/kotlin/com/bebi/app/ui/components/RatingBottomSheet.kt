@@ -2,11 +2,15 @@ package com.bebi.app.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -28,19 +32,30 @@ import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.rate_action
 import org.jetbrains.compose.resources.stringResource
 
+/**
+ * BottomSheet para calificar una película o serie
+ * 
+ * @param opinion La opinión a calificar
+ * @param onDismiss Callback para cuando se cierra el BottomSheet
+ * @param onRatingSubmit Callback para cuando se envía una calificación
+ * @param isLoading Indica si se está procesando la calificación
+ * @param sheetState Estado del BottomSheet
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RatingBottomSheet(
     opinion: MediaOpinion,
     onDismiss: () -> Unit,
     onRatingSubmit: (MediaOpinion, Int) -> Unit,
+    isLoading: Boolean = false,
     sheetState: SheetState = rememberModalBottomSheetState()
 ) {
     // Iniciar sin calificación seleccionada (0)
     var selectedRating by remember { mutableIntStateOf(0) }
 
     ModalBottomSheet(
-        onDismissRequest = onDismiss,
+        // Solo permitir cerrar si no estamos cargando
+        onDismissRequest = { if (!isLoading) onDismiss() },
         sheetState = sheetState
     ) {
         Column(
@@ -48,7 +63,7 @@ fun RatingBottomSheet(
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp, vertical = 16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(8.dp) // Aumentar el espaciado entre elementos
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             // Título
             Text(
@@ -77,8 +92,9 @@ fun RatingBottomSheet(
                 StarRating(
                     rating = selectedRating.toFloat(),
                     maxRating = 10,
-                    onRatingChanged = { selectedRating = it.toInt() },
-                    modifier = Modifier.fillMaxWidth(0.9f) // Limitar el ancho para mejor centrado
+                    // Deshabilitar la selección de estrellas durante la carga
+                    onRatingChanged = { if (!isLoading) selectedRating = it.toInt() },
+                    modifier = Modifier.fillMaxWidth(0.9f)
                 )
             }
 
@@ -93,15 +109,28 @@ fun RatingBottomSheet(
 
             // Botón para enviar la calificación
             Button(
-                onClick = {
-                    onRatingSubmit(opinion, selectedRating)
-                    onDismiss()
-                },
+                onClick = { onRatingSubmit(opinion, selectedRating) },
                 modifier = Modifier.fillMaxWidth(0.7f),
-                // Deshabilitar el botón si no hay calificación seleccionada
-                enabled = selectedRating > 0
+                // Deshabilitar el botón si no hay calificación seleccionada o si está cargando
+                enabled = selectedRating > 0 && !isLoading
             ) {
-                Text(stringResource(Res.string.rate_action))
+                if (isLoading) {
+                    // Mostrar indicador de carga y texto
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.Center
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(18.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("Calificando...")
+                    }
+                } else {
+                    Text(stringResource(Res.string.rate_action))
+                }
             }
 
             // Espacio al final para mejor apariencia

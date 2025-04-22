@@ -62,10 +62,14 @@ class MediaOpinionViewModel(
      * 
      * @param opinion La opinión a actualizar
      * @param rating La nueva calificación (de 0 a 10)
+     * @return Devuelve true cuando la calificación se ha completado
      */
-    fun submitRating(opinion: MediaOpinion, rating: Int) {
+    fun submitRating(opinion: MediaOpinion, rating: Int, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch {
             try {
+                // Indicar que estamos en proceso de calificación
+                _uiState.update { it.copy(isRating = true) }
+                
                 // Calcular el nuevo promedio y contador de calificaciones
                 val newRatingCount = opinion.ratingCount + 1
                 
@@ -92,10 +96,15 @@ class MediaOpinionViewModel(
                     val updatedOpinions = currentState.opinions.map { 
                         if (it.id == opinion.id) updatedOpinion else it 
                     }
-                    currentState.copy(opinions = updatedOpinions)
+                    currentState.copy(opinions = updatedOpinions, isRating = false)
                 }
+                
+                // Notificar que la calificación se ha completado con éxito
+                onComplete(true)
             } catch (e: Exception) {
-                _uiState.update { it.copy(error = e.message) }
+                _uiState.update { it.copy(error = e.message, isRating = false) }
+                // Notificar que ha habido un error
+                onComplete(false)
             }
         }
     }
@@ -107,5 +116,6 @@ class MediaOpinionViewModel(
 data class MediaOpinionUiState(
     val opinions: List<MediaOpinion> = emptyList(),
     val isLoading: Boolean = false,
+    val isRating: Boolean = false,
     val error: String? = null
 )

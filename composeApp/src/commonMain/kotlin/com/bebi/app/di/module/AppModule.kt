@@ -5,6 +5,9 @@ import com.bebi.app.BuildConfig
 import com.bebi.app.data.database.AppDatabase
 import com.bebi.app.data.database.DatabaseFactory
 import com.bebi.app.data.remote.AppService
+import com.bebi.app.data.remote.CriticsApiService
+import com.bebi.app.data.repository.HybridMediaOpinionRepository
+import com.bebi.app.data.repository.MediaOpinionRepository
 import com.bebi.app.data.repository.RoomMediaOpinionRepository
 import com.bebi.app.data.repository.TmdbRepository
 import com.bebi.app.viewmodel.MediaDetailViewModel
@@ -23,6 +26,7 @@ import org.koin.core.module.dsl.singleOf
 import org.koin.core.module.dsl.viewModelOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.KoinAppDeclaration
+import org.koin.dsl.bind
 import org.koin.dsl.module
 
 /**
@@ -58,7 +62,16 @@ val appModule = module {
 }
 
 val dataModule = module {
+    // Repositories
     factoryOf(::RoomMediaOpinionRepository)
+    factoryOf(::CriticsApiService)
+    factory<MediaOpinionRepository> {
+        HybridMediaOpinionRepository(
+            apiService = get(),
+            localRepository = get()
+        )
+    }
+    
     // TMDB API
     singleOf(::TmdbRepository)
     factoryOf(::AppService)

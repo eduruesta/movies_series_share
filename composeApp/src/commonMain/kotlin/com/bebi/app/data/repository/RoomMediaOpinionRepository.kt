@@ -10,17 +10,21 @@ import kotlinx.coroutines.flow.Flow
  */
 class RoomMediaOpinionRepository(
     private val mediaOpinionDao: MediaOpinionDao
-) {
+) : MediaOpinionRepository {
 
-    fun getAllOpinions(): Flow<List<MediaOpinion>> {
+    override suspend fun getAllOpinions(): Flow<List<MediaOpinion>> {
         return mediaOpinionDao.getAllOpinions()
     }
 
-    suspend fun saveOpinion(opinion: MediaOpinion) {
-        mediaOpinionDao.insertOpinion(opinion)
+    override suspend fun saveOpinion(opinion: MediaOpinion): Long {
+        return mediaOpinionDao.insertOpinion(opinion)
     }
 
-    suspend fun deleteOpinion(opinion: MediaOpinion) {
+    override suspend fun getOpinionById(id: Long): Flow<MediaOpinion?> {
+        return mediaOpinionDao.getOpinionById(id)
+    }
+
+    override suspend fun deleteOpinion(opinion: MediaOpinion) {
         mediaOpinionDao.deleteOpinion(opinion)
     }
 }

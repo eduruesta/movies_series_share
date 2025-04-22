@@ -6,7 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bebi.app.data.remote.model.TmdbMediaItem
-import com.bebi.app.data.repository.RoomMediaOpinionRepository
+import com.bebi.app.data.repository.MediaOpinionRepository
 import com.bebi.app.data.repository.TmdbRepository
 import com.bebi.app.model.MediaOpinion
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 
 
 class MediaOpinionFormViewModel(
-    private val mediaOpinionRepository: RoomMediaOpinionRepository,
+    private val mediaOpinionRepository: MediaOpinionRepository,
     private val tmdbRepository: TmdbRepository
 ) : ViewModel() {
     // Estado UI para el formulario

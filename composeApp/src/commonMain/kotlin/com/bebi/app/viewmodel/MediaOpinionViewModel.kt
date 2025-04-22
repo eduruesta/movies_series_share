@@ -2,7 +2,7 @@ package com.bebi.app.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.bebi.app.data.repository.RoomMediaOpinionRepository
+import com.bebi.app.data.repository.MediaOpinionRepository
 import com.bebi.app.model.MediaOpinion
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
  * ViewModel for managing media opinions
  */
 class MediaOpinionViewModel(
-    private val repository: RoomMediaOpinionRepository
+    private val repository: MediaOpinionRepository
 ) : ViewModel() {
     
     private val _uiState = MutableStateFlow(MediaOpinionUiState())

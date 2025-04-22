@@ -20,5 +20,5 @@ interface MediaOpinionDao {
     suspend fun deleteOpinion(opinion: MediaOpinion)
     
     @Query("SELECT * FROM media_opinions WHERE id = :id")
-    suspend fun getOpinionById(id: Long): MediaOpinion?
+    fun getOpinionById(id: Long): Flow<MediaOpinion?>
 }

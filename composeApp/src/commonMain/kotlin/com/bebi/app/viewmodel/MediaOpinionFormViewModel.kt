@@ -86,12 +86,12 @@ class MediaOpinionFormViewModel(
     private suspend fun fillFormWithMediaItem(mediaItem: TmdbMediaItem) {
         title = mediaItem.displayTitle
         synopsis = mediaItem.overview ?: ""
-        
+
         // Obtener la URL del póster y manejar correctamente valores null
         println("DEBUG: Poster path: ${mediaItem.posterPath}")
         val fullUrl = tmdbRepository.getFullPosterUrl(mediaItem.posterPath)
         println("DEBUG: Full poster URL: $fullUrl")
-        
+
         fullUrl?.let {
             posterUrl = it
             println("DEBUG: posterUrl actualizado a: $posterUrl")
@@ -164,7 +164,7 @@ class MediaOpinionFormViewModel(
     }
 
     // Resetea el formulario
-    fun resetForm() {
+    private fun resetForm() {
         title = ""
         platform = ""
         genre = ""
@@ -172,8 +172,14 @@ class MediaOpinionFormViewModel(
         comment = ""
         synopsis = ""
         posterUrl = ""
+        // Crear una nueva instancia del estado UI para asegurarnos de que saved sea false
         _uiState.value = MediaOpinionFormUiState()
     }
+
+    fun resetSavedState() {
+        resetForm()
+    }
+
 }
 
 data class MediaOpinionFormUiState(

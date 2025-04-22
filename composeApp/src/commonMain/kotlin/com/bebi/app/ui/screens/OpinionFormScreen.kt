@@ -89,6 +89,7 @@ class OpinionFormScreen : Screen {
         // Show success message and navigate back when saved
         LaunchedEffect(uiState.saved) {
             if (uiState.saved) {
+                viewModel.resetSavedState()
                 navigator.pop()
             }
         }

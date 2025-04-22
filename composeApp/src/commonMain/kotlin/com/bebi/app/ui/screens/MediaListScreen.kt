@@ -58,6 +58,7 @@ import com.bebi.app.viewmodel.MediaOpinionViewModel
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.create_critic_button
 import moviesseriesshare.composeapp.generated.resources.empty_list_message
+import moviesseriesshare.composeapp.generated.resources.image_field
 import moviesseriesshare.composeapp.generated.resources.media_list_title
 import moviesseriesshare.composeapp.generated.resources.opinion_count
 import moviesseriesshare.composeapp.generated.resources.rate_action
@@ -231,7 +232,7 @@ private fun MediaOpinionItem(
             } else {
                 AsyncImage(
                     model = opinion.posterUrl,
-                    contentDescription = "Póster",
+                    contentDescription = stringResource(Res.string.image_field),
                     modifier = Modifier
                         .width(80.dp)
                         .height(120.dp)

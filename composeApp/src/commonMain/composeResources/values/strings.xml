@@ -11,7 +11,7 @@
     <string name="rating_field">Puntuación</string>
     <string name="comment_field">Que te pareció?</string>
     <string name="genre_field">Género</string>
-    <string name="platform_field">Plataforma</string>
+    <string name="platform_field">En que plataforma la viste?</string>
     <string name="save_button">Guardar Crítica</string>
     <string name="image_field">Poster</string>
     <string name="select_from_gallery">Seleccionar de la galería</string>
@@ -21,6 +21,9 @@
     <string name="duration_field">Duración</string>
     <string name="content_rating_field">Clasificación</string>
     <string name="synopsis_field">Sinopsis</string>
+    <string name="result_error">Hubo un error en la búsqueda, volvé a internarlo</string>
+    <string name="comment">Comentario:</string>
+    <string name="without_comment">Sin comentarios</string>
     
     <!-- Media List Screen Strings -->
     <string name="media_list_title">Mis Críticas</string>

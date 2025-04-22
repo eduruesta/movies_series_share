@@ -63,6 +63,7 @@ import moviesseriesshare.composeapp.generated.resources.image_field
 import moviesseriesshare.composeapp.generated.resources.new_critic
 import moviesseriesshare.composeapp.generated.resources.platform_field
 import moviesseriesshare.composeapp.generated.resources.rating_field
+import moviesseriesshare.composeapp.generated.resources.result_error
 import moviesseriesshare.composeapp.generated.resources.save_button
 import moviesseriesshare.composeapp.generated.resources.search_online
 import moviesseriesshare.composeapp.generated.resources.select_from_gallery
@@ -175,9 +176,9 @@ class OpinionFormScreen : Screen {
                 }
 
                 // Error message for search
-                viewModel.searchError?.let { error ->
+                viewModel.searchError?.let {
                     Text(
-                        text = error,
+                        text = stringResource(Res.string.result_error),
                         color = MaterialTheme.colorScheme.error,
                         style = MaterialTheme.typography.bodyMedium
                     )

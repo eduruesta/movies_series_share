@@ -45,6 +45,9 @@ class MediaOpinionFormViewModel(
     var posterUrl by mutableStateOf("")
         private set
 
+    var year by mutableStateOf("")
+        private set
+
     // Estado de búsqueda
     var isSearching by mutableStateOf(false)
         private set
@@ -86,15 +89,13 @@ class MediaOpinionFormViewModel(
     private suspend fun fillFormWithMediaItem(mediaItem: TmdbMediaItem) {
         title = mediaItem.displayTitle
         synopsis = mediaItem.overview ?: ""
+        year = mediaItem.displayReleaseDate
 
         // Obtener la URL del póster y manejar correctamente valores null
-        println("DEBUG: Poster path: ${mediaItem.posterPath}")
         val fullUrl = tmdbRepository.getFullPosterUrl(mediaItem.posterPath)
-        println("DEBUG: Full poster URL: $fullUrl")
 
         fullUrl?.let {
             posterUrl = it
-            println("DEBUG: posterUrl actualizado a: $posterUrl")
         }
 
         // Obtener géneros
@@ -112,7 +113,6 @@ class MediaOpinionFormViewModel(
         )
     }
 
-    // Funciones para actualizar cada campo
     fun updateTitle(newTitle: String) {
         title = newTitle
     }
@@ -155,7 +155,8 @@ class MediaOpinionFormViewModel(
                 synopsis = synopsis,
                 posterUrl = posterUrl,
                 ratingCount = 1,
-                averageRating = rating
+                averageRating = rating,
+                year = year
             )
 
             mediaOpinionRepository.saveOpinion(opinion)

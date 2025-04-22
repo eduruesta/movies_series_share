@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -50,12 +49,24 @@ import com.bebi.app.ui.components.StarRating
 import com.bebi.app.viewmodel.MediaDetailViewModel
 import kotlinx.serialization.Serializable
 import moviesseriesshare.composeapp.generated.resources.Res
+import moviesseriesshare.composeapp.generated.resources.comment
 import moviesseriesshare.composeapp.generated.resources.opinion_count
-import org.jetbrains.compose.resources.ExperimentalResourceApi
+import moviesseriesshare.composeapp.generated.resources.synopsis_field
+import moviesseriesshare.composeapp.generated.resources.without_comment
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import org.koin.core.annotation.KoinExperimentalAPI
 import placeholder
+
+/**
+ * Extrae solo el año de una fecha con formato YYYY-MM-DD
+ */
+fun extractYearFromDate(dateString: String): String {
+    return if (dateString.contains("-") && dateString.length >= 4) {
+        dateString.split("-")[0]
+    } else {
+        dateString
+    }
+}
 
 /**
  * Screen that displays the details of a media opinion
@@ -65,8 +76,7 @@ import placeholder
 class MediaDetailScreen(private val opinionId: Long) : Screen {
 
     @OptIn(
-        ExperimentalMaterial3Api::class, ExperimentalResourceApi::class,
-        KoinExperimentalAPI::class
+        ExperimentalMaterial3Api::class
     )
     @Composable
     override fun Content() {
@@ -126,7 +136,7 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            "Error: ${uiState.error}",
+                            "Hubo un error al cargar los detalles",
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.bodyLarge
                         )
@@ -136,7 +146,6 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
                         }
                     }
                 } else if (uiState.opinion != null) {
-                    // Content state - opinion details
                     val opinion = uiState.opinion!!
 
                     Column(
@@ -147,8 +156,6 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
                     ) {
                         // Image
                         if (!opinion.posterUrl.isNullOrEmpty()) {
-                            // If there's an image URL, we would load it here
-                            // For now, just show a placeholder
                             AsyncImage(
                                 model = opinion.posterUrl,
                                 contentDescription = opinion.title,
@@ -197,10 +204,7 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
                                 rating = opinion.rating,
                                 maxRating = 1,
                             )
-                            Spacer(modifier = Modifier.width(8.dp))
-
                             val ratingText = if (opinion.ratingCount > 0) {
-                                // Usando una función de extensión compatible con KMP
                                 val formattedRating = opinion.averageRating.formatWithOneDecimal()
                                 stringResource(
                                     Res.string.opinion_count,
@@ -208,14 +212,26 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
                                     opinion.ratingCount.toString()
                                 )
                             } else {
-                                // Si no hay calificaciones, mostramos la calificación original
-                                "${opinion.rating}/10"
+                                "${opinion.rating}"
                             }
 
                             Text(
                                 text = ratingText,
                                 style = MaterialTheme.typography.bodyMedium
                             )
+
+                            if (opinion.year.isNotEmpty()) {
+                                FilledTonalButton(
+                                    onClick = { },
+                                    modifier = Modifier.height(32.dp).padding(start = 8.dp),
+                                    contentPadding = PaddingValues(horizontal = 8.dp)
+                                ) {
+                                    Text(
+                                        extractYearFromDate(opinion.year),
+                                        style = MaterialTheme.typography.labelMedium
+                                    )
+                                }
+                            }
                         }
 
                         // Sinopsis
@@ -226,7 +242,7 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
                                     .padding(vertical = 8.dp)
                             ) {
                                 Text(
-                                    text = "Sinopsis",
+                                    text = stringResource(Res.string.synopsis_field),
                                     style = MaterialTheme.typography.titleMedium,
                                     fontWeight = FontWeight.Bold
                                 )
@@ -234,58 +250,9 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
                                 Spacer(modifier = Modifier.height(4.dp))
 
                                 Text(
-                                    text = opinion.synopsis ?: "",
+                                    text = opinion.synopsis,
                                     style = MaterialTheme.typography.bodyMedium
                                 )
-                            }
-
-                            Spacer(modifier = Modifier.height(16.dp))
-                        }
-
-                        // Additional metadata
-                        if (opinion.year.isNotEmpty() || opinion.duration.isNotEmpty() || opinion.contentRating.isNotEmpty()) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                if (opinion.year.isNotEmpty()) {
-                                    FilledTonalButton(
-                                        onClick = { },
-                                        modifier = Modifier.height(32.dp),
-                                        contentPadding = PaddingValues(horizontal = 8.dp)
-                                    ) {
-                                        Text(
-                                            opinion.year,
-                                            style = MaterialTheme.typography.labelMedium
-                                        )
-                                    }
-                                }
-
-                                if (opinion.duration.isNotEmpty()) {
-                                    FilledTonalButton(
-                                        onClick = { },
-                                        modifier = Modifier.height(32.dp),
-                                        contentPadding = PaddingValues(horizontal = 8.dp)
-                                    ) {
-                                        Text(
-                                            opinion.duration,
-                                            style = MaterialTheme.typography.labelMedium
-                                        )
-                                    }
-                                }
-
-                                if (opinion.contentRating.isNotEmpty()) {
-                                    FilledTonalButton(
-                                        onClick = { },
-                                        modifier = Modifier.height(32.dp),
-                                        contentPadding = PaddingValues(horizontal = 8.dp)
-                                    ) {
-                                        Text(
-                                            opinion.contentRating,
-                                            style = MaterialTheme.typography.labelMedium
-                                        )
-                                    }
-                                }
                             }
 
                             Spacer(modifier = Modifier.height(16.dp))
@@ -329,7 +296,7 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
 
                         // Comment section
                         Text(
-                            text = "Comentario:",
+                            text = stringResource(Res.string.comment),
                             style = MaterialTheme.typography.titleMedium,
                             fontWeight = FontWeight.Bold
                         )
@@ -337,7 +304,7 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
                         Spacer(modifier = Modifier.height(8.dp))
 
                         Text(
-                            text = opinion.comment.ifEmpty { "Sin comentarios" },
+                            text = opinion.comment.ifEmpty { stringResource(Res.string.without_comment) },
                             style = MaterialTheme.typography.bodyLarge
                         )
                     }

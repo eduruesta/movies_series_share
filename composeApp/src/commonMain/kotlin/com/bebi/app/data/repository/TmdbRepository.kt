@@ -18,16 +18,12 @@ class TmdbRepository(private val appService: AppService) {
     
     /**
      * Busca una película o serie por su nombre
-     * @return El primer resultado encontrado o null si no se encontró nada
+     * @return La lista de resultados encontrados o lista vacía si no se encontró nada
      */
-    suspend fun searchMediaByTitle(title: String): Result<TmdbMediaItem?> = withContext(Dispatchers.IO) {
+    suspend fun searchMediaByTitle(title: String): Result<List<TmdbMediaItem>> = withContext(Dispatchers.IO) {
         try {
             val response = appService.searchMedia(title)
-            if (response.results.isEmpty()) {
-                Result.success(null)
-            } else {
-                Result.success(response.results.first())
-            }
+            Result.success(response.results)
         } catch (e: Exception) {
             Result.failure(e)
         }

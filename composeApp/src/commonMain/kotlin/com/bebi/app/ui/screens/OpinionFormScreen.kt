@@ -44,14 +44,18 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.focus.FocusRequester
+import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
+import com.bebi.app.ui.components.SearchResultsDropdown
 import com.bebi.app.ui.components.StarRating
 import com.bebi.app.viewmodel.MediaOpinionFormViewModel
 import kotlinx.coroutines.launch
@@ -86,6 +90,7 @@ class OpinionFormScreen : Screen {
         val snackbarHostState = remember { SnackbarHostState() }
         val scope = rememberCoroutineScope()
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+        val keyboardController = LocalSoftwareKeyboardController.current
 
         // Show success message and navigate back when saved
         LaunchedEffect(uiState.saved) {
@@ -146,13 +151,18 @@ class OpinionFormScreen : Screen {
                         modifier = Modifier.weight(1f),
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                         keyboardActions = KeyboardActions(
-                            onSearch = { viewModel.searchMedia(viewModel.title) }
+                            onSearch = {
+                                viewModel.searchMedia(viewModel.title)
+                            }
                         )
                     )
 
                     // Search button
                     IconButton(
-                        onClick = { viewModel.searchMedia(viewModel.title) },
+                        onClick = {
+                            keyboardController?.hide()
+                            viewModel.searchMedia(viewModel.title)
+                        },
                         modifier = Modifier
                             .background(
                                 color = MaterialTheme.colorScheme.primary,
@@ -172,6 +182,22 @@ class OpinionFormScreen : Screen {
                                 tint = MaterialTheme.colorScheme.onPrimary
                             )
                         }
+                    }
+                }
+
+                // Mostrar resultados de búsqueda en dropdown cuando corresponda
+                if (viewModel.showSearchResults && viewModel.searchResults.isNotEmpty()) {
+                    Box(modifier = Modifier.fillMaxWidth()) {
+                        SearchResultsDropdown(
+                            results = viewModel.searchResults,
+                            onItemSelected = { viewModel.selectMediaItem(it) },
+                            onDismiss = { viewModel.closeSearchResults() },
+                            getFullPosterUrl = { posterPath ->
+                                if (posterPath != null) {
+                                    "https://image.tmdb.org/t/p/w500$posterPath"
+                                } else null
+                            }
+                        )
                     }
                 }
 
@@ -236,7 +262,7 @@ class OpinionFormScreen : Screen {
                             modifier = Modifier.fillMaxSize(),
                             contentScale = ContentScale.Crop
 
-                            )
+                        )
                     }
 
                     // Image source buttons
@@ -274,7 +300,7 @@ class OpinionFormScreen : Screen {
                         onValueChange = { viewModel.updateGenre(it) },
                         label = { Text(stringResource(Res.string.genre_field)) },
                         modifier = Modifier.weight(1f),
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
                     )
 
                     // Platform field
@@ -283,7 +309,7 @@ class OpinionFormScreen : Screen {
                         onValueChange = { viewModel.updatePlatform(it) },
                         label = { Text(stringResource(Res.string.platform_field)) },
                         modifier = Modifier.weight(1f),
-                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+                        keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
                     )
                 }
 
@@ -295,7 +321,7 @@ class OpinionFormScreen : Screen {
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(120.dp),
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Next)
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
                 )
 
                 // Comment field

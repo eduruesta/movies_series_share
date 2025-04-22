@@ -54,6 +54,14 @@ class MediaOpinionFormViewModel(
 
     var searchError by mutableStateOf<String?>(null)
         private set
+        
+    // Lista de resultados de búsqueda
+    var searchResults by mutableStateOf<List<TmdbMediaItem>>(emptyList())
+        private set
+        
+    // Variable para controlar si se debe mostrar el dropdown
+    var showSearchResults by mutableStateOf(false)
+        private set
 
     // Función para buscar película o serie según título
     fun searchMedia(query: String) {
@@ -61,18 +69,21 @@ class MediaOpinionFormViewModel(
 
         isSearching = true
         searchError = null
+        searchResults = emptyList()
+        showSearchResults = false
 
         viewModelScope.launch {
             tmdbRepository.searchMediaByTitle(query).fold(
-                onSuccess = { mediaItem ->
-                    if (mediaItem == null) {
+                onSuccess = { results ->
+                    if (results.isEmpty()) {
                         _uiState.value = _uiState.value.copy(
                             searchMessage = "No se encontraron resultados para \"$query\""
                         )
                     } else {
-                        fillFormWithMediaItem(mediaItem)
+                        searchResults = results
+                        showSearchResults = true
                         _uiState.value = _uiState.value.copy(
-                            searchMessage = "Se encontró \"${mediaItem.displayTitle}\"",
+                            searchMessage = "Se encontraron ${results.size} resultados para \"$query\""
                         )
                     }
                     isSearching = false
@@ -83,6 +94,22 @@ class MediaOpinionFormViewModel(
                 }
             )
         }
+    }
+    
+    // Selecciona un elemento de la lista de resultados
+    fun selectMediaItem(mediaItem: TmdbMediaItem) {
+        viewModelScope.launch {
+            fillFormWithMediaItem(mediaItem)
+            showSearchResults = false
+            _uiState.value = _uiState.value.copy(
+                searchMessage = "Seleccionado \"${mediaItem.displayTitle}\""
+            )
+        }
+    }
+
+    // Cierra el dropdown de resultados
+    fun closeSearchResults() {
+        showSearchResults = false
     }
 
     // Actualiza el formulario con datos del API

@@ -26,7 +26,7 @@
     <string name="without_comment">Sin comentarios</string>
     
     <!-- Media List Screen Strings -->
-    <string name="media_list_title">Mis Críticas</string>
+    <string name="media_list_title">Recomendaciones</string>
     <string name="empty_list_message">No hay críticas disponibles. Crea tu primera crítica haciendo clic en el botón de abajo.</string>
     <string name="create_critic_button">Crear Crítica</string>
     <string name="opinion_count">%1$s (%2$s)</string>

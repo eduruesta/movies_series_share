@@ -153,7 +153,9 @@ class MediaOpinionFormViewModel(
                 rating = rating,
                 comment = comment,
                 synopsis = synopsis,
-                posterUrl = posterUrl
+                posterUrl = posterUrl,
+                ratingCount = 1,
+                averageRating = rating
             )
 
             mediaOpinionRepository.saveOpinion(opinion)

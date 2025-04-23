@@ -82,6 +82,7 @@ kotlin {
             implementation(libs.koin.android)
             implementation(libs.koin.androidx.compose)
             implementation(project.dependencies.platform(libs.firebase.android.bom))
+            implementation(libs.core.splashscreen)
         }
 
         iosMain.dependencies {

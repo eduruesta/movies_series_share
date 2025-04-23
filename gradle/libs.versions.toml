@@ -20,10 +20,7 @@ firebase-gitlive-sdk = "2.1.0"
 gradlePlugins-google-services = "4.4.1"
 firebase-android-bom = "32.8.1"
 kotlinxDatetime = "0.4.0"
-
-
-
-
+core-splashscreen = "1.0.1"
 
 
 [libraries]
@@ -68,6 +65,9 @@ firebase-android-crashlytics-ktx = { module = "com.google.firebase:firebase-anal
 #Gitlive
 gitlive-firebase-kotlin-analytics = { module = "dev.gitlive:firebase-analytics", version.ref = "firebase-gitlive-sdk" }
 gitlive-firebase-kotlin-database = { module = "dev.gitlive:firebase-database", version.ref = "firebase-gitlive-sdk" }
+
+core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "core-splashscreen" }
+
 
 [plugins]
 androidLibrary = { id = "com.android.library", version.ref = "agp" }

@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bebi.app.data.repository.MediaOpinionRepository
 import com.bebi.app.model.MediaOpinion
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,7 +26,7 @@ class MediaDetailViewModel(
      */
     fun loadOpinionById(id: Long) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true) }
+            _uiState.update { it.copy(isLoading = true, error = null) }
             
             try {
                 val opinion = repository.getOpinionByIdDirect(id)
@@ -37,6 +38,10 @@ class MediaDetailViewModel(
                         error = if (opinion == null) "No se encontró la opinión" else null
                     ) 
                 }
+            } catch (e: CancellationException) {
+                // No hacer nada si es una cancelación del job
+                // Este es un comportamiento normal cuando se navega hacia atrás
+                throw e // Re-lanzar la excepción para que se maneje correctamente
             } catch (e: Exception) {
                 _uiState.update { 
                     it.copy(

@@ -55,6 +55,8 @@ kotlin {
             implementation(libs.coil.compose)
             implementation(libs.room.runtime)
             implementation(libs.androidx.sqlite.bundled)
+            implementation(libs.kotlinx.datetime)
+
 
 
             // Voyager Navigation

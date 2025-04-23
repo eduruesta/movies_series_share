@@ -30,6 +30,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -39,6 +41,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -48,6 +51,7 @@ import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -55,7 +59,10 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
 import com.bebi.app.model.MediaOpinion
 import com.bebi.app.ui.components.RatingBottomSheet
+import com.bebi.app.ui.components.bookmark
+import com.bebi.app.ui.components.bookmarkCheck
 import com.bebi.app.viewmodel.MediaOpinionViewModel
+import com.bebi.app.viewmodel.SavedRecommendationViewModel
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.create_critic_button
 import moviesseriesshare.composeapp.generated.resources.empty_list_message
@@ -66,6 +73,7 @@ import moviesseriesshare.composeapp.generated.resources.rate_action
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import placeholder
+import kotlinx.coroutines.launch
 import kotlin.math.round
 
 /**
@@ -87,18 +95,22 @@ class MediaListScreen : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
-        val viewModel = koinViewModel<MediaOpinionViewModel>()
-        val uiState by viewModel.uiState.collectAsState()
+        val mediaOpinionViewModel = koinViewModel<MediaOpinionViewModel>()
+        val uiState by mediaOpinionViewModel.uiState.collectAsState()
         val navigator = LocalNavigator.currentOrThrow
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+        
+        // Estado para el SnackBar
+        val snackbarHostState = remember { SnackbarHostState() }
+        val coroutineScope = rememberCoroutineScope()
 
         // Estado para manejar el BottomSheet de calificación
         var showRatingSheet by remember { mutableStateOf(false) }
         var selectedOpinion by remember { mutableStateOf<MediaOpinion?>(null) }
-        
+
         // Cargar las opiniones cada vez que la pantalla sea visible
         LaunchedEffect(Unit) {
-            viewModel.loadOpinions()
+            mediaOpinionViewModel.loadOpinions()
         }
 
         Scaffold(
@@ -122,8 +134,8 @@ class MediaListScreen : Screen {
                     scrollBehavior = scrollBehavior
                 )
             },
-            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
-
+            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+            snackbarHost = { SnackbarHost(snackbarHostState) }
         ) { paddingValues ->
             Box(
                 modifier = Modifier
@@ -164,7 +176,6 @@ class MediaListScreen : Screen {
                         ) {
                             itemsIndexed(uiState.opinions) { index, opinion ->
                                 MediaOpinionItem(
-                                    index = index,
                                     opinion = opinion,
                                     onClick = {
                                         // Navegar a la pantalla de detalle usando el ID de la opinión
@@ -173,6 +184,11 @@ class MediaListScreen : Screen {
                                     onRateClick = {
                                         selectedOpinion = opinion
                                         showRatingSheet = true
+                                    },
+                                    onShowMessage = { message ->
+                                        coroutineScope.launch {
+                                            snackbarHostState.showSnackbar(message)
+                                        }
                                     }
                                 )
 
@@ -193,7 +209,7 @@ class MediaListScreen : Screen {
                 onDismiss = { if (!uiState.isRating) showRatingSheet = false },
                 isLoading = uiState.isRating,
                 onRatingSubmit = { opinion, rating ->
-                    viewModel.submitRating(opinion, rating) { success ->
+                    mediaOpinionViewModel.submitRating(opinion, rating) { success ->
                         // Solo cerramos el BottomSheet si la calificación fue exitosa
                         if (success) {
                             showRatingSheet = false
@@ -207,15 +223,28 @@ class MediaListScreen : Screen {
 
 @Composable
 private fun MediaOpinionItem(
-    index: Int,
     opinion: MediaOpinion,
     onClick: () -> Unit,
-    onRateClick: () -> Unit
+    onRateClick: () -> Unit,
+    onShowMessage: (String) -> Unit
 ) {
+    val savedViewModel = koinViewModel<SavedRecommendationViewModel>()
+    val coroutineScope = rememberCoroutineScope()
+    
+    // Estado para controlar si la opinión está guardada
+    var isSaved by remember { mutableStateOf(false) }
+    
+    // Verificar si la opinión ya está guardada
+    LaunchedEffect(opinion.id) {
+        savedViewModel.isRecommendationSaved(opinion.id) { saved ->
+            isSaved = saved
+        }
+    }
+
     Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .fillMaxSize()
+            .padding(horizontal = 8.dp, vertical = 8.dp),
         onClick = onClick,
         colors = CardDefaults.cardColors(
             containerColor = MaterialTheme.colorScheme.surface
@@ -224,7 +253,7 @@ private fun MediaOpinionItem(
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp),
+                .padding(vertical = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
 
@@ -267,12 +296,14 @@ private fun MediaOpinionItem(
             ) {
                 // Title
                 Text(
-                    text = "${index}. ${opinion.title}",
+                    text = opinion.title,
                     style = MaterialTheme.typography.titleMedium,
-                    fontWeight = FontWeight.Bold
+                    fontWeight = FontWeight.Bold,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
 
-                Spacer(modifier = Modifier.height(4.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Genre and Platform
                 Text(
@@ -280,16 +311,20 @@ private fun MediaOpinionItem(
                         .filter { it.isNotEmpty() }
                         .joinToString(" • "),
                     style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
                 )
 
-                Spacer(modifier = Modifier.height(8.dp))
+                Spacer(modifier = Modifier.height(16.dp))
 
                 // Rating row
                 Row(
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Start,
+                    modifier = Modifier.fillMaxWidth()
                 ) {
-                    // Star icon
+                    // Estrella de rating
                     Icon(
                         imageVector = Icons.Default.Star,
                         contentDescription = null,
@@ -297,13 +332,18 @@ private fun MediaOpinionItem(
                         modifier = Modifier.size(16.dp)
                     )
 
-                    // Rating text - Mostramos el promedio de calificación y la cantidad de usuarios
+                    // Espacio después de la estrella
+                    Spacer(modifier = Modifier.width(4.dp))
+
+                    // Texto de calificación
                     val ratingText = if (opinion.ratingCount > 1) {
-                        // Usando una función de extensión compatible con KMP
                         val formattedRating = opinion.averageRating.formatWithOneDecimal()
-                        stringResource(Res.string.opinion_count, formattedRating, opinion.ratingCount.toString())
+                        stringResource(
+                            Res.string.opinion_count,
+                            formattedRating,
+                            opinion.ratingCount.toString()
+                        )
                     } else {
-                        // Si no hay calificaciones, mostramos la calificación original
                         "${opinion.rating}"
                     }
 
@@ -312,15 +352,17 @@ private fun MediaOpinionItem(
                         style = MaterialTheme.typography.bodyMedium
                     )
 
+                    // Espacio entre rating y botón calificar
                     Spacer(modifier = Modifier.width(16.dp))
 
-                    // "Calificar" button
+                    // Botón Calificar
                     Row(
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
                             .clickable { onRateClick() },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
+                        // Icono calificar
                         Icon(
                             imageVector = Icons.Default.Star,
                             contentDescription = stringResource(Res.string.rate_action),
@@ -330,6 +372,7 @@ private fun MediaOpinionItem(
 
                         Spacer(modifier = Modifier.width(4.dp))
 
+                        // Texto calificar
                         Text(
                             text = stringResource(Res.string.rate_action),
                             style = MaterialTheme.typography.bodyMedium.copy(
@@ -337,6 +380,44 @@ private fun MediaOpinionItem(
                             )
                         )
                     }
+
+                    // Espacio entre calificar y guardar
+                    Spacer(modifier = Modifier.width(16.dp))
+
+                    // Icono de guardado
+                    Icon(
+                        // Mostrar bookmarkCheck si ya está guardado, o bookmark si no
+                        imageVector = if (isSaved) bookmarkCheck else bookmark,
+                        contentDescription = if (isSaved) 
+                            "Eliminar de recomendaciones" else 
+                            "Guardar recomendación",
+                        tint = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier
+                            .size(20.dp)
+                            .clickable {
+                                if (isSaved) {
+                                    // Si ya está guardado, lo eliminamos
+                                    savedViewModel.removeRecommendation(opinion.id) { success, message ->
+                                        if (success) {
+                                            // Actualizar estado local
+                                            isSaved = false
+                                        }
+                                        // Mostrar mensaje de resultado
+                                        onShowMessage(message)
+                                    }
+                                } else {
+                                    // Si no está guardado, lo guardamos
+                                    savedViewModel.saveRecommendation(opinion) { success, message ->
+                                        if (success) {
+                                            // Actualizar estado local
+                                            isSaved = true
+                                        }
+                                        // Mostrar mensaje de resultado
+                                        onShowMessage(message)
+                                    }
+                                }
+                            }
+                    )
                 }
             }
         }

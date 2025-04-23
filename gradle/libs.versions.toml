@@ -19,6 +19,7 @@ androidx-sqliteBundled = "2.5.0-alpha11"
 firebase-gitlive-sdk = "2.1.0"
 gradlePlugins-google-services = "4.4.1"
 firebase-android-bom = "32.8.1"
+kotlinxDatetime = "0.4.0"
 
 
 
@@ -26,7 +27,7 @@ firebase-android-bom = "32.8.1"
 
 
 [libraries]
-
+kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 androidx-activityCompose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
 androidx-lifeCycle-viewmodel-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "androidx-lifeCycle" }
 androidx-uitest-testManifest = { module = "androidx.compose.ui:ui-test-manifest", version.ref = "androidx-uiTest" }

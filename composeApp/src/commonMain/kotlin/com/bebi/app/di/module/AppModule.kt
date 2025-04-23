@@ -9,10 +9,12 @@ import com.bebi.app.data.remote.CriticsApiService
 import com.bebi.app.data.repository.HybridMediaOpinionRepository
 import com.bebi.app.data.repository.MediaOpinionRepository
 import com.bebi.app.data.repository.RoomMediaOpinionRepository
+import com.bebi.app.data.repository.SavedRecommendationRepository
 import com.bebi.app.data.repository.TmdbRepository
 import com.bebi.app.viewmodel.MediaDetailViewModel
 import com.bebi.app.viewmodel.MediaOpinionFormViewModel
 import com.bebi.app.viewmodel.MediaOpinionViewModel
+import com.bebi.app.viewmodel.SavedRecommendationViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -43,6 +45,8 @@ val appModule = module {
             .build()
     }
     single { get<AppDatabase>().mediaOpinionDao }
+    // Agregar DAO para recomendaciones guardadas
+    single { get<AppDatabase>().savedRecommendationDao }
 
     single<HttpClient> {
         HttpClient {
@@ -71,6 +75,9 @@ val dataModule = module {
         )
     }
     
+    // Repositorio para recomendaciones guardadas
+    factoryOf(::SavedRecommendationRepository)
+    
     // TMDB API
     singleOf(::TmdbRepository)
     factoryOf(::AppService)
@@ -94,10 +101,10 @@ val viewModelModule = module {
     viewModelOf(::MediaOpinionViewModel)
     viewModelOf(::MediaDetailViewModel)
     viewModelOf(::MediaOpinionFormViewModel)
+    viewModelOf(::SavedRecommendationViewModel)
 }
 
 expect val nativeModule: Module
-
 
 fun initKoin(config: KoinAppDeclaration? = null) {
     startKoin {

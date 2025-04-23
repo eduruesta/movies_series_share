@@ -103,7 +103,6 @@ class MediaOpinionViewModel(
                     averageRating = newAverageRating
                 )
                 
-                // Usar el nuevo método de actualización por ID
                 val success = repository.updateOpinionById(opinion.id, updatedOpinion)
                 
                 if (success) {

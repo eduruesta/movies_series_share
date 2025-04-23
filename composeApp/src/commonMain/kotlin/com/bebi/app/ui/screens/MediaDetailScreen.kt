@@ -265,7 +265,7 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
                                 horizontalArrangement = Arrangement.spacedBy(8.dp)
                             ) {
                                 if (opinion.genre.isNotEmpty()) {
-                                    OutlinedButton(
+                                    FilledTonalButton(
                                         onClick = { },
                                         modifier = Modifier.height(32.dp),
                                         contentPadding = PaddingValues(horizontal = 8.dp)
@@ -278,7 +278,7 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
                                 }
 
                                 if (opinion.platform.isNotEmpty()) {
-                                    OutlinedButton(
+                                    FilledTonalButton(
                                         onClick = { },
                                         modifier = Modifier.height(32.dp),
                                         contentPadding = PaddingValues(horizontal = 8.dp)

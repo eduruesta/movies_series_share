@@ -3,6 +3,7 @@ package com.bebi.app.data.repository
 import com.bebi.app.data.dao.MediaOpinionDao
 import com.bebi.app.model.MediaOpinion
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 
 /**
  * Room implementation of MediaOpinionRepository
@@ -22,6 +23,16 @@ class RoomMediaOpinionRepository(
 
     override suspend fun getOpinionById(id: Long): Flow<MediaOpinion?> {
         return mediaOpinionDao.getOpinionById(id)
+    }
+    
+    override suspend fun getOpinionByIdDirect(id: Long): MediaOpinion? {
+        return mediaOpinionDao.getOpinionById(id).firstOrNull()
+    }
+    
+    override suspend fun updateOpinionById(id: Long, opinion: MediaOpinion): Boolean {
+        val opinionToUpdate = opinion.copy(id = id)
+        val result = mediaOpinionDao.insertOpinion(opinionToUpdate)
+        return result > 0
     }
 
     override suspend fun deleteOpinion(opinion: MediaOpinion) {

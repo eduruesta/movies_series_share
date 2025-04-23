@@ -164,9 +164,12 @@ class MediaListScreen : Screen {
                         ) {
                             itemsIndexed(uiState.opinions) { index, opinion ->
                                 MediaOpinionItem(
-                                    index = index + 1,
+                                    index = index,
                                     opinion = opinion,
-                                    onClick = { navigator.push(MediaDetailScreen(opinion.id)) },
+                                    onClick = {
+                                        // Navegar a la pantalla de detalle usando el ID de la opinión
+                                        navigator.push(MediaDetailScreen(opinion.id))
+                                    },
                                     onRateClick = {
                                         selectedOpinion = opinion
                                         showRatingSheet = true

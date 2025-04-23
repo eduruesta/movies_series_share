@@ -5,6 +5,7 @@ import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.post
+import io.ktor.client.request.put
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
@@ -37,6 +38,34 @@ class CriticsApiService(private val httpClient: HttpClient) {
     suspend fun saveCritic(opinion: MediaOpinion): Result<MediaOpinion> = withContext(Dispatchers.IO) {
         try {
             val response: MediaOpinion = httpClient.post(baseUrl) {
+                contentType(ContentType.Application.Json)
+                setBody(opinion)
+            }.body()
+            
+            Result.success(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    /**
+     * Obtiene una crítica por su ID
+     */
+    suspend fun getCriticById(id: Long): Result<MediaOpinion> = withContext(Dispatchers.IO) {
+        try {
+            val response: MediaOpinion = httpClient.get("$baseUrl/$id").body()
+            Result.success(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    /**
+     * Actualiza una crítica existente por su ID
+     */
+    suspend fun updateCritic(id: Long, opinion: MediaOpinion): Result<MediaOpinion> = withContext(Dispatchers.IO) {
+        try {
+            val response: MediaOpinion = httpClient.put("$baseUrl/$id") {
                 contentType(ContentType.Application.Json)
                 setBody(opinion)
             }.body()

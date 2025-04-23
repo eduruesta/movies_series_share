@@ -22,7 +22,7 @@ class MediaOpinionViewModel(
     
     // Se quita el init para cargar datos bajo demanda
     
-    public fun loadOpinions() {
+    fun loadOpinions() {
         viewModelScope.launch {
             // Set loading state to true
             _uiState.update { it.copy(isLoading = true) }
@@ -33,6 +33,23 @@ class MediaOpinionViewModel(
                 }
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message, isLoading = false) }
+            }
+        }
+    }
+    
+    /**
+     * Obtiene una crítica específica por su ID
+     * @param id ID de la crítica a obtener
+     * @param onResult Callback con el resultado (opinión o null si no se encuentra)
+     */
+    fun getOpinionById(id: Long, onResult: (MediaOpinion?) -> Unit) {
+        viewModelScope.launch {
+            try {
+                val opinion = repository.getOpinionByIdDirect(id)
+                onResult(opinion)
+            } catch (e: Exception) {
+                _uiState.update { it.copy(error = e.message) }
+                onResult(null)
             }
         }
     }
@@ -80,27 +97,31 @@ class MediaOpinionViewModel(
                 
                 // Aseguramos que se mantenga el ID original
                 val updatedOpinion = opinion.copy(
-                    // Mantenemos el mismo ID
-                    id = opinion.id,
                     // La calificación original se mantiene (es la del creador)
                     // pero actualizamos los campos de promedio y contador
                     ratingCount = newRatingCount,
                     averageRating = newAverageRating
                 )
                 
-                repository.saveOpinion(updatedOpinion)
+                // Usar el nuevo método de actualización por ID
+                val success = repository.updateOpinionById(opinion.id, updatedOpinion)
                 
-                // También podríamos actualizar el UI state directamente si queremos
-                // que la UI reaccione inmediatamente sin esperar a que el flow se actualice
-                _uiState.update { currentState ->
-                    val updatedOpinions = currentState.opinions.map { 
-                        if (it.id == opinion.id) updatedOpinion else it 
+                if (success) {
+                    // También podríamos actualizar el UI state directamente si queremos
+                    // que la UI reaccione inmediatamente sin esperar a que el flow se actualice
+                    _uiState.update { currentState ->
+                        val updatedOpinions = currentState.opinions.map { 
+                            if (it.id == opinion.id) updatedOpinion else it 
+                        }
+                        currentState.copy(opinions = updatedOpinions, isRating = false)
                     }
-                    currentState.copy(opinions = updatedOpinions, isRating = false)
+                    
+                    // Notificar que la calificación se ha completado con éxito
+                    onComplete(true)
+                } else {
+                    _uiState.update { it.copy(error = "No se pudo actualizar la calificación", isRating = false) }
+                    onComplete(false)
                 }
-                
-                // Notificar que la calificación se ha completado con éxito
-                onComplete(true)
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message, isRating = false) }
                 // Notificar que ha habido un error

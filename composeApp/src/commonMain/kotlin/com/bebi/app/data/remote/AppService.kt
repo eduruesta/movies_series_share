@@ -18,7 +18,9 @@ class AppService(
     private val baseUrl = "api.themoviedb.org"
     private val apiVersion = "3"
     private val language = "es-ES"
-    private val imageBaseUrl = "https://image.tmdb.org/t/p/w500"
+    private val imageBaseUrl = "https://image.tmdb.org/t/p/w185"
+    private val backdropUrl = "https://image.tmdb.org/t/p/w780"
+
 
     /**
      * Search for movies and TV shows by query
@@ -73,5 +75,9 @@ class AppService(
      */
     fun getImageUrl(posterPath: String?): String? {
         return posterPath?.let { "$imageBaseUrl$it" }
+    }
+
+    fun getBackdropUrl(backdropPath: String?): String? {
+        return backdropPath?.let { "$backdropUrl$it" }
     }
 }

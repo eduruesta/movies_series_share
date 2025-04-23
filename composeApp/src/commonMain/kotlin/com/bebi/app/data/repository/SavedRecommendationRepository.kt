@@ -37,7 +37,8 @@ class SavedRecommendationRepository(
             title = opinion.title,
             posterUrl = opinion.posterUrl,
             rating = opinion.rating, // Usamos la calificación original, no el promedio
-            genre = opinion.genre
+            genre = opinion.genre,
+            backdropUrl = opinion.backdropUrl
         )
         
         // Guardamos la recomendación

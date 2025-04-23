@@ -1,19 +1,17 @@
 package com.bebi.app.ui.screens
 
-import androidx.compose.foundation.Image
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -24,7 +22,6 @@ import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -35,8 +32,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
@@ -151,162 +146,143 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
                     Column(
                         modifier = Modifier
                             .fillMaxSize()
-                            .padding(16.dp)
                             .verticalScroll(rememberScrollState())
                     ) {
                         // Image
-                        if (!opinion.posterUrl.isNullOrEmpty()) {
-                            AsyncImage(
-                                model = opinion.posterUrl,
-                                contentDescription = opinion.title,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(200.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .border(
-                                        width = 1.dp,
-                                        color = Color.Transparent,
-                                        shape = RoundedCornerShape(8.dp)
-                                    ),
-                                contentScale = ContentScale.Crop
-                            )
-                        } else {
-                            Image(
-                                imageVector = placeholder,
-                                contentDescription = opinion.title,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(200.dp)
-                                    .clip(RoundedCornerShape(8.dp))
-                                    .border(
-                                        width = 1.dp,
-                                        color = Color.Transparent,
-                                        shape = RoundedCornerShape(8.dp)
-                                    ),
-                                contentScale = ContentScale.Crop
-                            )
-                        }
+
+                        AsyncImage(
+                            model = opinion.backdropUrl ?: opinion.posterUrl ?: placeholder,
+                            contentDescription = opinion.title,
+                            contentScale = ContentScale.Crop,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .aspectRatio(16f / 9f)
+                        )
+
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // Title
-                        Text(
-                            text = opinion.title,
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        // Rating display
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            StarRating(
-                                rating = opinion.rating,
-                                maxRating = 1,
-                            )
-                            val ratingText = if (opinion.ratingCount > 0) {
-                                val formattedRating = opinion.averageRating.formatWithOneDecimal()
-                                stringResource(
-                                    Res.string.opinion_count,
-                                    formattedRating,
-                                    opinion.ratingCount.toString()
-                                )
-                            } else {
-                                "${opinion.rating}"
-                            }
-
+                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
+                            // Title
                             Text(
-                                text = ratingText,
-                                style = MaterialTheme.typography.bodyMedium
+                                text = opinion.title,
+                                style = MaterialTheme.typography.headlineMedium,
+                                fontWeight = FontWeight.Bold
                             )
 
-                            if (opinion.year.isNotEmpty()) {
-                                FilledTonalButton(
-                                    onClick = { },
-                                    modifier = Modifier.height(32.dp).padding(start = 8.dp),
-                                    contentPadding = PaddingValues(horizontal = 8.dp)
-                                ) {
-                                    Text(
-                                        extractYearFromDate(opinion.year),
-                                        style = MaterialTheme.typography.labelMedium
-                                    )
-                                }
-                            }
-                        }
+                            Spacer(modifier = Modifier.height(8.dp))
 
-                        // Sinopsis
-                        if (opinion.synopsis.isNotEmpty()) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(vertical = 8.dp)
-                            ) {
-                                Text(
-                                    text = stringResource(Res.string.synopsis_field),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold
+                            // Rating display
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                StarRating(
+                                    rating = opinion.rating,
+                                    maxRating = 1,
                                 )
-
-                                Spacer(modifier = Modifier.height(4.dp))
+                                val ratingText = if (opinion.ratingCount > 0) {
+                                    val formattedRating =
+                                        opinion.averageRating.formatWithOneDecimal()
+                                    stringResource(
+                                        Res.string.opinion_count,
+                                        formattedRating,
+                                        opinion.ratingCount.toString()
+                                    )
+                                } else {
+                                    "${opinion.rating}"
+                                }
 
                                 Text(
-                                    text = opinion.synopsis,
+                                    text = ratingText,
                                     style = MaterialTheme.typography.bodyMedium
                                 )
-                            }
 
-                            Spacer(modifier = Modifier.height(16.dp))
-                        }
-
-                        // Genre and Platform
-                        if (opinion.genre.isNotEmpty() || opinion.platform.isNotEmpty()) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                if (opinion.genre.isNotEmpty()) {
+                                if (opinion.year.isNotEmpty()) {
                                     FilledTonalButton(
                                         onClick = { },
-                                        modifier = Modifier.height(32.dp),
+                                        modifier = Modifier.height(32.dp).padding(start = 8.dp),
                                         contentPadding = PaddingValues(horizontal = 8.dp)
                                     ) {
                                         Text(
-                                            opinion.genre,
-                                            style = MaterialTheme.typography.labelMedium
-                                        )
-                                    }
-                                }
-
-                                if (opinion.platform.isNotEmpty()) {
-                                    FilledTonalButton(
-                                        onClick = { },
-                                        modifier = Modifier.height(32.dp),
-                                        contentPadding = PaddingValues(horizontal = 8.dp)
-                                    ) {
-                                        Text(
-                                            opinion.platform,
+                                            extractYearFromDate(opinion.year),
                                             style = MaterialTheme.typography.labelMedium
                                         )
                                     }
                                 }
                             }
 
-                            Spacer(modifier = Modifier.height(16.dp))
+                            // Sinopsis
+                            if (opinion.synopsis.isNotEmpty()) {
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxWidth()
+                                        .padding(vertical = 8.dp)
+                                ) {
+                                    Text(
+                                        text = stringResource(Res.string.synopsis_field),
+                                        style = MaterialTheme.typography.titleMedium,
+                                        fontWeight = FontWeight.Bold
+                                    )
+
+                                    Spacer(modifier = Modifier.height(4.dp))
+
+                                    Text(
+                                        text = opinion.synopsis,
+                                        style = MaterialTheme.typography.bodyMedium
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.height(16.dp))
+                            }
+
+                            // Genre and Platform
+                            if (opinion.genre.isNotEmpty() || opinion.platform.isNotEmpty()) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    if (opinion.genre.isNotEmpty()) {
+                                        FilledTonalButton(
+                                            onClick = { },
+                                            modifier = Modifier.height(32.dp),
+                                            contentPadding = PaddingValues(horizontal = 8.dp)
+                                        ) {
+                                            Text(
+                                                opinion.genre,
+                                                style = MaterialTheme.typography.labelMedium
+                                            )
+                                        }
+                                    }
+
+                                    if (opinion.platform.isNotEmpty()) {
+                                        FilledTonalButton(
+                                            onClick = { },
+                                            modifier = Modifier.height(32.dp),
+                                            contentPadding = PaddingValues(horizontal = 8.dp)
+                                        ) {
+                                            Text(
+                                                opinion.platform,
+                                                style = MaterialTheme.typography.labelMedium
+                                            )
+                                        }
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(16.dp))
+                            }
+
+                            // Comment section
+                            Text(
+                                text = stringResource(Res.string.comment),
+                                style = MaterialTheme.typography.titleMedium,
+                                fontWeight = FontWeight.Bold
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            Text(
+                                text = opinion.comment.ifEmpty { stringResource(Res.string.without_comment) },
+                                style = MaterialTheme.typography.bodyLarge
+                            )
                         }
-
-                        // Comment section
-                        Text(
-                            text = stringResource(Res.string.comment),
-                            style = MaterialTheme.typography.titleMedium,
-                            fontWeight = FontWeight.Bold
-                        )
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Text(
-                            text = opinion.comment.ifEmpty { stringResource(Res.string.without_comment) },
-                            style = MaterialTheme.typography.bodyLarge
-                        )
                     }
                 }
             }

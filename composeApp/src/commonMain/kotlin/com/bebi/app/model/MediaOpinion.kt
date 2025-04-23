@@ -1,17 +1,19 @@
 package com.bebi.app.model
 
-import androidx.room.Entity
-import androidx.room.PrimaryKey
 import androidx.room.ColumnInfo
+import androidx.room.Entity
 import androidx.room.Index
+import androidx.room.PrimaryKey
 import kotlinx.serialization.Serializable
 
 /**
  * Model class for storing movie or series opinions
  */
 @Serializable
-@Entity(tableName = "media_opinions",
-    indices = [Index(value = ["title"], unique = true)])
+@Entity(
+    tableName = "media_opinions",
+    indices = [Index(value = ["title"], unique = true)]
+)
 data class MediaOpinion(
     @PrimaryKey(autoGenerate = true)
     @ColumnInfo(name = "id")
@@ -38,6 +40,9 @@ data class MediaOpinion(
     val synopsis: String = "",
     @ColumnInfo(name = "poster_url")
     val posterUrl: String? = null,
+
+    @ColumnInfo(name = "backdrop_url")
+    val backdropUrl: String? = null,
     /**
      * Número total de usuarios que han calificado esta película/serie
      */

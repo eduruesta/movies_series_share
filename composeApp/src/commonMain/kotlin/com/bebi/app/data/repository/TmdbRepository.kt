@@ -82,4 +82,8 @@ class TmdbRepository(private val appService: AppService) {
     fun getFullPosterUrl(posterPath: String?): String? {
         return appService.getImageUrl(posterPath)
     }
+
+    fun getFullBackdropUrl(posterPath: String?): String? {
+        return appService.getBackdropUrl(posterPath)
+    }
 }

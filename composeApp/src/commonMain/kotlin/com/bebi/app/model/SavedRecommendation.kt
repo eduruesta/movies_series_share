@@ -1,10 +1,9 @@
 package com.bebi.app.model
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import androidx.room.ColumnInfo
 import kotlinx.datetime.Clock
-import kotlinx.datetime.LocalDateTime
 import kotlinx.serialization.Serializable
 
 /**
@@ -22,6 +21,9 @@ data class SavedRecommendation(
 
     @ColumnInfo(name = "poster_url")
     val posterUrl: String?,
+
+    @ColumnInfo(name = "backdrop_url")
+    val backdropUrl: String?,
 
     @ColumnInfo(name = "saved_timestamp")
     val savedTimestamp: Long = Clock.System.now().toEpochMilliseconds(),

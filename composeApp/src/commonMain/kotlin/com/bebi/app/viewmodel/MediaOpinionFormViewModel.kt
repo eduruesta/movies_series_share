@@ -47,6 +47,9 @@ class MediaOpinionFormViewModel(
     var posterUrl by mutableStateOf("")
         private set
 
+    var backdropUrl by mutableStateOf("")
+        private set
+
     var year by mutableStateOf("")
         private set
 
@@ -56,11 +59,11 @@ class MediaOpinionFormViewModel(
 
     var searchError by mutableStateOf<String?>(null)
         private set
-        
+
     // Lista de resultados de búsqueda
     var searchResults by mutableStateOf<List<TmdbMediaItem>>(emptyList())
         private set
-        
+
     // Variable para controlar si se debe mostrar el dropdown
     var showSearchResults by mutableStateOf(false)
         private set
@@ -97,7 +100,7 @@ class MediaOpinionFormViewModel(
             )
         }
     }
-    
+
     // Selecciona un elemento de la lista de resultados
     fun selectMediaItem(mediaItem: TmdbMediaItem) {
         viewModelScope.launch {
@@ -122,9 +125,14 @@ class MediaOpinionFormViewModel(
 
         // Obtener la URL del póster y manejar correctamente valores null
         val fullUrl = tmdbRepository.getFullPosterUrl(mediaItem.posterPath)
+        val fullBackdropUrl = tmdbRepository.getFullBackdropUrl(mediaItem.backdropPath)
 
         fullUrl?.let {
             posterUrl = it
+        }
+
+        fullBackdropUrl?.let {
+            backdropUrl = it
         }
 
         // Obtener géneros
@@ -178,7 +186,7 @@ class MediaOpinionFormViewModel(
             _uiState.value = _uiState.value.copy(isSaving = true)
             // Generar un ID aleatorio para cada crítica
             val randomId = kotlin.random.Random.nextLong(1_000_000, Long.MAX_VALUE)
-            
+
             val opinion = MediaOpinion(
                 id = randomId,
                 title = title,
@@ -190,7 +198,8 @@ class MediaOpinionFormViewModel(
                 posterUrl = posterUrl,
                 ratingCount = 1,
                 averageRating = rating,
-                year = year
+                year = year,
+                backdropUrl = backdropUrl
             )
 
             mediaOpinionRepository.saveOpinion(opinion)

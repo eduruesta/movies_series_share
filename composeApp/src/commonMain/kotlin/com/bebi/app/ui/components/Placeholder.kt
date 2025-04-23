@@ -20,7 +20,7 @@ public val placeholder: ImageVector
             viewportHeight = 960f
         ).apply {
             path(
-                fill = SolidColor(Color.Black),
+                fill = SolidColor(Color.LightGray),
                 fillAlpha = 1.0f,
                 stroke = null,
                 strokeAlpha = 1.0f,

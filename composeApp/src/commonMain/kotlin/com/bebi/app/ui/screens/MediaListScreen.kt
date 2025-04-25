@@ -43,8 +43,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -66,25 +64,25 @@ import com.bebi.app.ui.components.bookmarkCheck
 import com.bebi.app.viewmodel.MediaOpinionViewModel
 import com.bebi.app.viewmodel.RecommendationMessage
 import com.bebi.app.viewmodel.SavedRecommendationViewModel
+import kotlinx.coroutines.launch
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.create_critic_button
+import moviesseriesshare.composeapp.generated.resources.delete_from_recommendations
 import moviesseriesshare.composeapp.generated.resources.empty_list_message
 import moviesseriesshare.composeapp.generated.resources.image_field
 import moviesseriesshare.composeapp.generated.resources.media_list_title
 import moviesseriesshare.composeapp.generated.resources.opinion_count
 import moviesseriesshare.composeapp.generated.resources.rate_action
-import moviesseriesshare.composeapp.generated.resources.delete_from_recommendations
-import moviesseriesshare.composeapp.generated.resources.save_as_recommendation
-import moviesseriesshare.composeapp.generated.resources.recommendation_removed
+import moviesseriesshare.composeapp.generated.resources.recommendation_already_saved
 import moviesseriesshare.composeapp.generated.resources.recommendation_not_saved
 import moviesseriesshare.composeapp.generated.resources.recommendation_remove_error
-import moviesseriesshare.composeapp.generated.resources.recommendation_saved
-import moviesseriesshare.composeapp.generated.resources.recommendation_already_saved
+import moviesseriesshare.composeapp.generated.resources.recommendation_removed
 import moviesseriesshare.composeapp.generated.resources.recommendation_save_error
+import moviesseriesshare.composeapp.generated.resources.recommendation_saved
+import moviesseriesshare.composeapp.generated.resources.save_as_recommendation
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import placeholder
-import kotlinx.coroutines.launch
 import kotlin.math.round
 
 /**

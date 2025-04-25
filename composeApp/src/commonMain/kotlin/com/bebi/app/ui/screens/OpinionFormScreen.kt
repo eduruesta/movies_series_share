@@ -22,14 +22,12 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -48,8 +46,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.focus.FocusRequester
-import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -73,12 +69,11 @@ import moviesseriesshare.composeapp.generated.resources.image_field
 import moviesseriesshare.composeapp.generated.resources.new_critic
 import moviesseriesshare.composeapp.generated.resources.platform_field
 import moviesseriesshare.composeapp.generated.resources.rating_field
-import moviesseriesshare.composeapp.generated.resources.result_error
 import moviesseriesshare.composeapp.generated.resources.save_button
+import moviesseriesshare.composeapp.generated.resources.search_error
 import moviesseriesshare.composeapp.generated.resources.search_no_results
 import moviesseriesshare.composeapp.generated.resources.search_online
 import moviesseriesshare.composeapp.generated.resources.search_results_count
-import moviesseriesshare.composeapp.generated.resources.search_error
 import moviesseriesshare.composeapp.generated.resources.search_selected
 import moviesseriesshare.composeapp.generated.resources.select_from_gallery
 import moviesseriesshare.composeapp.generated.resources.synopsis_field

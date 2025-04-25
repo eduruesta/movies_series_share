@@ -15,12 +15,13 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 /**
- * ViewModel para el formulario de opiniones de medios.
+ * ViewModel para el formulario de creación/edición de opiniones
  */
 class MediaOpinionFormViewModel(
-    private val mediaOpinionRepository: MediaOpinionRepository,
+    private val repository: MediaOpinionRepository,
     private val tmdbRepository: TmdbRepository
 ) : ViewModel() {
+
     // Estado UI para el formulario
     private val _uiState = MutableStateFlow(MediaOpinionFormUiState())
     val uiState: StateFlow<MediaOpinionFormUiState> = _uiState.asStateFlow()
@@ -57,8 +58,19 @@ class MediaOpinionFormViewModel(
     var isSearching by mutableStateOf(false)
         private set
 
-    var searchError by mutableStateOf<String?>(null)
-        private set
+    // Tipos de mensajes que pueden mostrarse en la UI
+    sealed class SearchUiMessage {
+        data class NoResults(val query: String): SearchUiMessage()
+        data class ResultsCount(val count: Int, val query: String): SearchUiMessage()
+        data class Error(val error: String): SearchUiMessage()
+        data class Selected(val title: String): SearchUiMessage()
+        data class Generic(val text: String): SearchUiMessage()
+        object None: SearchUiMessage()
+    }
+    
+    // Estado de mensaje de búsqueda
+    private val _searchUiMessage = MutableStateFlow<SearchUiMessage>(SearchUiMessage.None)
+    val searchUiMessage: StateFlow<SearchUiMessage> = _searchUiMessage
 
     // Lista de resultados de búsqueda
     var searchResults by mutableStateOf<List<TmdbMediaItem>>(emptyList())
@@ -68,12 +80,14 @@ class MediaOpinionFormViewModel(
     var showSearchResults by mutableStateOf(false)
         private set
 
-    // Función para buscar película o serie según título
+    /**
+     * Realiza una búsqueda de películas/series por título
+     */
     fun searchMedia(query: String) {
         if (query.isBlank()) return
 
         isSearching = true
-        searchError = null
+        _searchUiMessage.value = SearchUiMessage.None
         searchResults = emptyList()
         showSearchResults = false
 
@@ -81,43 +95,44 @@ class MediaOpinionFormViewModel(
             tmdbRepository.searchMediaByTitle(query).fold(
                 onSuccess = { results ->
                     if (results.isEmpty()) {
-                        _uiState.value = _uiState.value.copy(
-                            searchMessage = "No se encontraron resultados para \"$query\""
-                        )
+                        _searchUiMessage.value = SearchUiMessage.NoResults(query)
                     } else {
                         searchResults = results
                         showSearchResults = true
-                        _uiState.value = _uiState.value.copy(
-                            searchMessage = "Se encontraron ${results.size} resultados para \"$query\""
-                        )
+                        _searchUiMessage.value = SearchUiMessage.ResultsCount(results.size, query)
                     }
                     isSearching = false
                 },
                 onFailure = { error ->
-                    searchError = "Error al buscar: ${error.message}"
+                    searchResults = emptyList()
+                    _searchUiMessage.value = SearchUiMessage.Error(error.message ?: "")
                     isSearching = false
                 }
             )
         }
     }
 
-    // Selecciona un elemento de la lista de resultados
+    /**
+     * Selecciona un item de los resultados de búsqueda
+     */
     fun selectMediaItem(mediaItem: TmdbMediaItem) {
         viewModelScope.launch {
             fillFormWithMediaItem(mediaItem)
             showSearchResults = false
-            _uiState.value = _uiState.value.copy(
-                searchMessage = "Seleccionado \"${mediaItem.displayTitle}\""
-            )
+            _searchUiMessage.value = SearchUiMessage.Selected(mediaItem.displayTitle)
         }
     }
 
-    // Cierra el dropdown de resultados
+    /**
+     * Cierra el dropdown de resultados
+     */
     fun closeSearchResults() {
         showSearchResults = false
     }
 
-    // Actualiza el formulario con datos del API
+    /**
+     * Actualiza el formulario con datos del API
+     */
     private suspend fun fillFormWithMediaItem(mediaItem: TmdbMediaItem) {
         title = mediaItem.displayTitle
         synopsis = mediaItem.overview ?: ""
@@ -180,7 +195,9 @@ class MediaOpinionFormViewModel(
         }
     }
 
-    // Guarda la opinión
+    /**
+     * Guarda la opinión
+     */
     fun saveOpinion() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isSaving = true)
@@ -202,7 +219,7 @@ class MediaOpinionFormViewModel(
                 backdropUrl = backdropUrl
             )
 
-            mediaOpinionRepository.saveOpinion(opinion)
+            repository.saveOpinion(opinion)
             _uiState.value = _uiState.value.copy(
                 saved = true,
                 isSaving = false
@@ -210,7 +227,9 @@ class MediaOpinionFormViewModel(
         }
     }
 
-    // Resetea el formulario
+    /**
+     * Resetea el formulario
+     */
     private fun resetForm() {
         title = ""
         platform = ""
@@ -231,6 +250,5 @@ class MediaOpinionFormViewModel(
 
 data class MediaOpinionFormUiState(
     val saved: Boolean = false,
-    val searchMessage: String? = null,
     val isSaving: Boolean = false
 )

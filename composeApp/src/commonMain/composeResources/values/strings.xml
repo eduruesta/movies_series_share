@@ -1,39 +1,64 @@
 <resources>
     <string name="cyclone">Cyclone</string>
-    <string name="open_github">Open github</string>
+    <string name="open_github">Open GitHub</string>
     <string name="run">Run</string>
     <string name="stop">Stop</string>
     <string name="theme">Theme</string>
-    
+
     <!-- Opinion Form Strings -->
-    <string name="new_opinion">Nueva Crítica</string>
-    <string name="title_field">Nombre de Serie o Película</string>
-    <string name="rating_field">Puntuación</string>
-    <string name="comment_field">Que te pareció?</string>
-    <string name="genre_field">Género</string>
-    <string name="platform_field">En que plataforma la viste?</string>
-    <string name="save_button">Guardar Crítica</string>
+    <string name="new_opinion">New Review</string>
+    <string name="title_field">Movie or Series Name</string>
+    <string name="rating_field">Rating</string>
+    <string name="comment_field">What did you think?</string>
+    <string name="genre_field">Genre</string>
+    <string name="platform_field">On which platform did you watch it?</string>
+    <string name="save_button">Save Review</string>
     <string name="image_field">Poster</string>
-    <string name="select_from_gallery">Seleccionar de la galería</string>
-    <string name="search_online">Buscar online</string>
-    <string name="new_critic">Nueva Crítica</string>
-    <string name="year_field">Año</string>
-    <string name="duration_field">Duración</string>
-    <string name="content_rating_field">Clasificación</string>
-    <string name="synopsis_field">Sinopsis</string>
-    <string name="result_error">Hubo un error en la búsqueda, volvé a internarlo</string>
-    <string name="comment">Comentario:</string>
-    <string name="without_comment">Sin comentarios</string>
-    
+    <string name="select_from_gallery">Select from gallery</string>
+    <string name="search_online">Search online</string>
+    <string name="new_critic">New Review</string>
+    <string name="year_field">Year</string>
+    <string name="duration_field">Duration</string>
+    <string name="content_rating_field">Content Rating</string>
+    <string name="synopsis_field">Synopsis</string>
+    <string name="result_error">There was an error in the search, please try again</string>
+    <string name="comment">Comment:</string>
+    <string name="without_comment">No comments</string>
+
     <!-- Media List Screen Strings -->
-    <string name="media_list_title">Recomendaciones</string>
-    <string name="empty_list_message">No hay críticas disponibles. Crea tu primera crítica haciendo clic en el botón de abajo.</string>
-    <string name="create_critic_button">Crear Crítica</string>
+    <string name="media_list_title">Recommendations</string>
+    <string name="empty_list_message">There are no reviews available. Create your first review by clicking the button below.</string>
+    <string name="create_critic_button">Create Review</string>
     <string name="opinion_count">%1$s (%2$s)</string>
-    
+
     <!-- Rating Strings -->
-    <string name="rate_action">Calificar</string>
+    <string name="rate_action">Rate</string>
     <string name="rating_format">%s/10</string>
-    <string name="star_description">Estrella</string>
-    <string name="poster_description">Póster</string>
+    <string name="star_description">Star</string>
+    <string name="poster_description">Poster</string>
+
+    <!-- Extracted UI Strings -->
+    <string name="back_button">Go back</string>
+    <string name="search_button">Search</string>
+    <string name="loading_details">Loading details...</string>
+    <string name="loading_title">Loading...</string>
+    <string name="error_loading_details">An error occurred while loading details</string>
+    <string name="back">Back</string>
+    <string name="rating_with_value">%1$s/10</string>
+    <string name="separator_dot"> • </string>
+    <string name="delete_from_recommendations">Remove from recommendations</string>
+    <string name="save_as_recommendation">Save recommendation</string>
+
+    <!-- Error Messages -->
+    <string name="error_opinion_not_found">Review not found</string>
+    <string name="search_no_results">No results found for %1$s</string>
+    <string name="search_results_count">%1$s results found for %2$s</string>
+    <string name="search_error">Error searching: %1$s</string>
+    <string name="search_selected">Selected %1$s</string>
+    <string name="recommendation_saved">%1$s was saved to your Recommendations</string>
+    <string name="recommendation_already_saved">%1$s was already in your Recommendations</string>
+    <string name="recommendation_not_saved">It was not in your Recommendations</string>
+    <string name="recommendation_removed">%1$s was removed from your Recommendations</string>
+    <string name="recommendation_remove_error">Error removing: %1$s</string>
+    <string name="recommendation_save_error">Error saving: %1$s</string>
 </resources>

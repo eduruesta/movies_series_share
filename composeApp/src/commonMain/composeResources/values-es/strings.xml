@@ -1,0 +1,64 @@
+<resources>
+    <string name="cyclone">Cyclone</string>
+    <string name="open_github">Open github</string>
+    <string name="run">Run</string>
+    <string name="stop">Stop</string>
+    <string name="theme">Theme</string>
+    
+    <!-- Opinion Form Strings -->
+    <string name="new_opinion">Nueva Crítica</string>
+    <string name="title_field">Nombre de Serie o Película</string>
+    <string name="rating_field">Puntuación</string>
+    <string name="comment_field">Que te pareció?</string>
+    <string name="genre_field">Género</string>
+    <string name="platform_field">En que plataforma la viste?</string>
+    <string name="save_button">Guardar Crítica</string>
+    <string name="image_field">Poster</string>
+    <string name="select_from_gallery">Seleccionar de la galería</string>
+    <string name="search_online">Buscar online</string>
+    <string name="new_critic">Nueva Crítica</string>
+    <string name="year_field">Año</string>
+    <string name="duration_field">Duración</string>
+    <string name="content_rating_field">Clasificación</string>
+    <string name="synopsis_field">Sinopsis</string>
+    <string name="result_error">Hubo un error en la búsqueda, volvé a internarlo</string>
+    <string name="comment">Comentario:</string>
+    <string name="without_comment">Sin comentarios</string>
+    
+    <!-- Media List Screen Strings -->
+    <string name="media_list_title">Recomendaciones</string>
+    <string name="empty_list_message">No hay críticas disponibles. Crea tu primera crítica haciendo clic en el botón de abajo.</string>
+    <string name="create_critic_button">Crear Crítica</string>
+    <string name="opinion_count">%1$s (%2$s)</string>
+    
+    <!-- Rating Strings -->
+    <string name="rate_action">Calificar</string>
+    <string name="rating_format">%s/10</string>
+    <string name="star_description">Estrella</string>
+    <string name="poster_description">Póster</string>
+
+    <!-- Extracted UI Strings -->
+    <string name="back_button">Volver atrás</string>
+    <string name="search_button">Buscar</string>
+    <string name="loading_details">Cargando detalles...</string>
+    <string name="loading_title">Cargando...</string>
+    <string name="error_loading_details">Hubo un error al cargar los detalles</string>
+    <string name="back">Volver</string>
+    <string name="rating_with_value">%1$s/10</string>
+    <string name="separator_dot"> • </string>
+    <string name="delete_from_recommendations">Eliminar de recomendaciones</string>
+    <string name="save_as_recommendation">Guardar recomendación</string>
+
+    <!-- Error Messages -->
+    <string name="error_opinion_not_found">No se encontró la opinión</string>
+    <string name="search_no_results">No se encontraron resultados para %1$s</string>
+    <string name="search_results_count">Se encontraron %1$s resultados para %2$s</string>
+    <string name="search_error">Error al buscar: %1$s</string>
+    <string name="search_selected">Seleccionado %1$s</string>
+    <string name="recommendation_saved">%1$s fue guardada en tus Recomendaciones</string>
+    <string name="recommendation_already_saved">%1$s ya estaba en tus Recomendaciones</string>
+    <string name="recommendation_not_saved">No estaba en tus Recomendaciones</string>
+    <string name="recommendation_removed">%1$s fue eliminado de tus Recomendaciones</string>
+    <string name="recommendation_remove_error">Error al eliminar: %1$s</string>
+    <string name="recommendation_save_error">Error al guardar: %1$s</string>
+</resources>

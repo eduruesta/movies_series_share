@@ -25,9 +25,8 @@ class MediaDetailViewModel(
      * Loads a specific opinion by ID
      */
     fun loadOpinionById(id: Long) {
+        _uiState.update { it.copy(isLoading = true, error = null) }
         viewModelScope.launch {
-            _uiState.update { it.copy(isLoading = true, error = null) }
-            
             try {
                 val opinion = repository.getOpinionByIdDirect(id)
                 
@@ -35,7 +34,7 @@ class MediaDetailViewModel(
                     it.copy(
                         opinion = opinion,
                         isLoading = false,
-                        error = if (opinion == null) "No se encontró la opinión" else null
+                        error = if (opinion == null) MediaDetailError.NOT_FOUND else null
                     ) 
                 }
             } catch (e: CancellationException) {
@@ -46,7 +45,7 @@ class MediaDetailViewModel(
                 _uiState.update { 
                     it.copy(
                         isLoading = false,
-                        error = e.message
+                        error = MediaDetailError.GENERIC
                     ) 
                 }
             }
@@ -60,5 +59,14 @@ class MediaDetailViewModel(
 data class MediaDetailUiState(
     val opinion: MediaOpinion? = null,
     val isLoading: Boolean = false,
-    val error: String? = null
+    val error: MediaDetailError? = null
 )
+
+/**
+ * Tipos de errores para la pantalla de detalle
+ * Estos se traducirán a strings en la UI
+ */
+enum class MediaDetailError {
+    NOT_FOUND,
+    GENERIC
+}

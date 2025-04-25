@@ -43,6 +43,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -62,6 +64,7 @@ import com.bebi.app.ui.components.RatingBottomSheet
 import com.bebi.app.ui.components.bookmark
 import com.bebi.app.ui.components.bookmarkCheck
 import com.bebi.app.viewmodel.MediaOpinionViewModel
+import com.bebi.app.viewmodel.RecommendationMessage
 import com.bebi.app.viewmodel.SavedRecommendationViewModel
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.create_critic_button
@@ -70,6 +73,14 @@ import moviesseriesshare.composeapp.generated.resources.image_field
 import moviesseriesshare.composeapp.generated.resources.media_list_title
 import moviesseriesshare.composeapp.generated.resources.opinion_count
 import moviesseriesshare.composeapp.generated.resources.rate_action
+import moviesseriesshare.composeapp.generated.resources.delete_from_recommendations
+import moviesseriesshare.composeapp.generated.resources.save_as_recommendation
+import moviesseriesshare.composeapp.generated.resources.recommendation_removed
+import moviesseriesshare.composeapp.generated.resources.recommendation_not_saved
+import moviesseriesshare.composeapp.generated.resources.recommendation_remove_error
+import moviesseriesshare.composeapp.generated.resources.recommendation_saved
+import moviesseriesshare.composeapp.generated.resources.recommendation_already_saved
+import moviesseriesshare.composeapp.generated.resources.recommendation_save_error
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import placeholder
@@ -234,10 +245,45 @@ private fun MediaOpinionItem(
     // Estado para controlar si la opinión está guardada
     var isSaved by remember { mutableStateOf(false) }
     
+    // Guardamos el último mensaje recibido para traducirlo en contexto @Composable
+    var lastRecommendationMessage by remember { mutableStateOf<RecommendationMessage?>(null) }
+    
     // Verificar si la opinión ya está guardada
     LaunchedEffect(opinion.id) {
         savedViewModel.isRecommendationSaved(opinion.id) { saved ->
             isSaved = saved
+        }
+    }
+    
+    // Traducir el mensaje cuando cambie (en contexto @Composable)
+    lastRecommendationMessage?.let { message ->
+        // Traducir el mensaje a un string usando stringResource
+        val messageText = when (message) {
+            is RecommendationMessage.REMOVED -> stringResource(Res.string.recommendation_removed, message.title)
+            RecommendationMessage.NOT_SAVED -> stringResource(Res.string.recommendation_not_saved)
+            is RecommendationMessage.ERROR_REMOVING -> stringResource(
+                Res.string.recommendation_remove_error, 
+                message.error
+            )
+            is RecommendationMessage.SAVED -> stringResource(
+                Res.string.recommendation_saved, 
+                message.title
+            )
+            is RecommendationMessage.ALREADY_SAVED -> stringResource(
+                Res.string.recommendation_already_saved, 
+                message.title
+            )
+            is RecommendationMessage.ERROR_SAVING -> stringResource(
+                Res.string.recommendation_save_error, 
+                message.error
+            )
+        }
+        
+        // Mostrar el mensaje una sola vez
+        LaunchedEffect(messageText) {
+            onShowMessage(messageText)
+            // Resetear el mensaje para que no se muestre de nuevo
+            lastRecommendationMessage = null
         }
     }
 
@@ -389,31 +435,36 @@ private fun MediaOpinionItem(
                         // Mostrar bookmarkCheck si ya está guardado, o bookmark si no
                         imageVector = if (isSaved) bookmarkCheck else bookmark,
                         contentDescription = if (isSaved) 
-                            "Eliminar de recomendaciones" else 
-                            "Guardar recomendación",
+                            stringResource(Res.string.delete_from_recommendations) else 
+                            stringResource(Res.string.save_as_recommendation),
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier
                             .size(20.dp)
                             .clickable {
                                 if (isSaved) {
                                     // Si ya está guardado, lo eliminamos
-                                    savedViewModel.removeRecommendation(opinion.id) { success, message ->
-                                        if (success) {
+                                    savedViewModel.removeRecommendation(opinion.title, opinion.id) { message ->
+                                        if (message is RecommendationMessage.REMOVED) {
                                             // Actualizar estado local
                                             isSaved = false
                                         }
-                                        // Mostrar mensaje de resultado
-                                        onShowMessage(message)
+                                        // Guardar el mensaje para traducirlo en contexto @Composable
+                                        lastRecommendationMessage = message
                                     }
                                 } else {
                                     // Si no está guardado, lo guardamos
-                                    savedViewModel.saveRecommendation(opinion) { success, message ->
-                                        if (success) {
+                                    savedViewModel.saveRecommendation(
+                                        title = opinion.title,
+                                        mediaId = opinion.id.toString(),
+                                        opinionId = opinion.id
+                                    ) { message ->
+                                        if (message is RecommendationMessage.SAVED || 
+                                            message is RecommendationMessage.ALREADY_SAVED) {
                                             // Actualizar estado local
                                             isSaved = true
                                         }
-                                        // Mostrar mensaje de resultado
-                                        onShowMessage(message)
+                                        // Guardar el mensaje para traducirlo en contexto @Composable
+                                        lastRecommendationMessage = message
                                     }
                                 }
                             }

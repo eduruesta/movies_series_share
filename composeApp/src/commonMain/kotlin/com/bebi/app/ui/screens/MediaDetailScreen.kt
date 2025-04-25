@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -30,6 +30,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -40,11 +41,19 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
+import com.bebi.app.model.MediaOpinion
 import com.bebi.app.ui.components.StarRating
+import com.bebi.app.viewmodel.MediaDetailError
 import com.bebi.app.viewmodel.MediaDetailViewModel
 import kotlinx.serialization.Serializable
 import moviesseriesshare.composeapp.generated.resources.Res
+import moviesseriesshare.composeapp.generated.resources.back
+import moviesseriesshare.composeapp.generated.resources.back_button
 import moviesseriesshare.composeapp.generated.resources.comment
+import moviesseriesshare.composeapp.generated.resources.error_loading_details
+import moviesseriesshare.composeapp.generated.resources.error_opinion_not_found
+import moviesseriesshare.composeapp.generated.resources.loading_details
+import moviesseriesshare.composeapp.generated.resources.loading_title
 import moviesseriesshare.composeapp.generated.resources.opinion_count
 import moviesseriesshare.composeapp.generated.resources.synopsis_field
 import moviesseriesshare.composeapp.generated.resources.without_comment
@@ -88,12 +97,12 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(uiState.opinion?.title ?: "Cargando...") },
+                    title = { Text(uiState.opinion?.title ?: stringResource(Res.string.loading_title)) },
                     navigationIcon = {
                         IconButton(onClick = { navigator.pop() }) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Volver atrás"
+                                imageVector = Icons.Filled.ArrowBack,
+                                contentDescription = stringResource(Res.string.back_button)
                             )
                         }
                     },
@@ -121,23 +130,30 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
                     ) {
                         CircularProgressIndicator()
                         Spacer(modifier = Modifier.height(16.dp))
-                        Text("Cargando detalles...")
+                        Text(stringResource(Res.string.loading_details))
                     }
                 } else if (uiState.error != null) {
                     // Error state
                     Column(
-                        modifier = Modifier.fillMaxSize(),
+                        modifier = Modifier.fillMaxSize().padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
+                        // Traducir el error a un string
+                        val errorMessage = when (uiState.error) {
+                            MediaDetailError.NOT_FOUND -> stringResource(Res.string.error_opinion_not_found)
+                            MediaDetailError.GENERIC -> stringResource(Res.string.error_loading_details)
+                            else -> stringResource(Res.string.error_loading_details)
+                        }
+                        
                         Text(
-                            "Hubo un error al cargar los detalles",
+                            errorMessage,
                             color = MaterialTheme.colorScheme.error,
                             style = MaterialTheme.typography.bodyLarge
                         )
                         Spacer(modifier = Modifier.height(16.dp))
                         Button(onClick = { navigator.pop() }) {
-                            Text("Volver")
+                            Text(stringResource(Res.string.back))
                         }
                     }
                 } else if (uiState.opinion != null) {

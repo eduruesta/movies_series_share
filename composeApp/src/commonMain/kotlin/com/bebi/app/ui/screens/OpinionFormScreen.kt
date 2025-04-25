@@ -22,12 +22,14 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
@@ -60,9 +62,11 @@ import coil3.compose.AsyncImage
 import com.bebi.app.ui.components.SearchResultsDropdown
 import com.bebi.app.ui.components.StarRating
 import com.bebi.app.viewmodel.MediaOpinionFormViewModel
+import com.bebi.app.viewmodel.MediaOpinionFormViewModel.SearchUiMessage
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import moviesseriesshare.composeapp.generated.resources.Res
+import moviesseriesshare.composeapp.generated.resources.back_button
 import moviesseriesshare.composeapp.generated.resources.comment_field
 import moviesseriesshare.composeapp.generated.resources.genre_field
 import moviesseriesshare.composeapp.generated.resources.image_field
@@ -71,7 +75,11 @@ import moviesseriesshare.composeapp.generated.resources.platform_field
 import moviesseriesshare.composeapp.generated.resources.rating_field
 import moviesseriesshare.composeapp.generated.resources.result_error
 import moviesseriesshare.composeapp.generated.resources.save_button
+import moviesseriesshare.composeapp.generated.resources.search_no_results
 import moviesseriesshare.composeapp.generated.resources.search_online
+import moviesseriesshare.composeapp.generated.resources.search_results_count
+import moviesseriesshare.composeapp.generated.resources.search_error
+import moviesseriesshare.composeapp.generated.resources.search_selected
 import moviesseriesshare.composeapp.generated.resources.select_from_gallery
 import moviesseriesshare.composeapp.generated.resources.synopsis_field
 import moviesseriesshare.composeapp.generated.resources.title_field
@@ -86,11 +94,12 @@ class OpinionFormScreen : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
+        val viewModel = koinViewModel<MediaOpinionFormViewModel>()
         val navigator = LocalNavigator.currentOrThrow
-        val viewModel: MediaOpinionFormViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsState()
-        val snackbarHostState = remember { SnackbarHostState() }
         val scope = rememberCoroutineScope()
+
+        val snackbarHostState = remember { SnackbarHostState() }
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         val keyboardController = LocalSoftwareKeyboardController.current
 
@@ -102,15 +111,12 @@ class OpinionFormScreen : Screen {
             }
         }
 
-        // Show search message if available
-        LaunchedEffect(uiState.searchMessage) {
-            uiState.searchMessage?.let {
-                scope.launch {
-                    snackbarHostState.showSnackbar(it)
-                }
-            }
-        }
-
+        // Observar mensajes de búsqueda
+        val searchMessage by viewModel.searchUiMessage.collectAsState()
+        
+        // Componente que maneja los mensajes
+        SearchMessageHandler(searchMessage, snackbarHostState)
+        
         Box(modifier = Modifier.fillMaxSize()) {
             Scaffold(
                 topBar = {
@@ -120,7 +126,7 @@ class OpinionFormScreen : Screen {
                             IconButton(onClick = { navigator.pop() }) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                    contentDescription = "Volver atrás"
+                                    contentDescription = stringResource(Res.string.back_button)
                                 )
                             }
                         },
@@ -204,7 +210,8 @@ class OpinionFormScreen : Screen {
                         }
                     }
 
-                    // Error message for search
+                    // No necesitamos verificar searchError porque ya manejamos los mensajes a través de searchUiMessage
+                    /*
                     viewModel.searchError?.let {
                         Text(
                             text = stringResource(Res.string.result_error),
@@ -212,6 +219,7 @@ class OpinionFormScreen : Screen {
                             style = MaterialTheme.typography.bodyMedium
                         )
                     }
+                    */
 
                     // Rating field with stars
                     Column {
@@ -364,6 +372,43 @@ class OpinionFormScreen : Screen {
                         modifier = Modifier.size(100.dp),
                         color = MaterialTheme.colorScheme.primary
                     )
+                }
+            }
+        }
+    }
+
+    /**
+     * Componente Composable para manejar mensajes de búsqueda
+     */
+    @Composable
+    private fun SearchMessageHandler(
+        message: SearchUiMessage,
+        snackbarHostState: SnackbarHostState
+    ) {
+        val scope = rememberCoroutineScope()
+        
+        // Aquí recopilamos todos los mensajes completamente formateados para cada posible caso
+        // usando stringResource en el contexto composable
+        val displayText = when (message) {
+            is SearchUiMessage.NoResults -> 
+                stringResource(Res.string.search_no_results, message.query)
+            is SearchUiMessage.ResultsCount -> 
+                stringResource(Res.string.search_results_count, message.count.toString(), message.query)
+            is SearchUiMessage.Error -> 
+                stringResource(Res.string.search_error, message.error)
+            is SearchUiMessage.Selected -> 
+                stringResource(Res.string.search_selected, message.title)
+            is SearchUiMessage.Generic -> 
+                message.text
+            SearchUiMessage.None -> 
+                null // No mostrar nada si es None
+        }
+        
+        // Solo lanzamos el efecto si hay un mensaje para mostrar
+        if (displayText != null) {
+            LaunchedEffect(displayText) {
+                scope.launch {
+                    snackbarHostState.showSnackbar(displayText)
                 }
             }
         }

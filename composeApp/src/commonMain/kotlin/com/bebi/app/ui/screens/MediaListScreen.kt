@@ -20,21 +20,27 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalNavigationDrawer
+import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberDrawerState
+import androidx.compose.material3.DrawerValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -58,6 +64,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
 import com.bebi.app.model.MediaOpinion
+import com.bebi.app.ui.components.AppDrawerContent
 import com.bebi.app.ui.components.RatingBottomSheet
 import com.bebi.app.ui.components.bookmark
 import com.bebi.app.ui.components.bookmarkCheck
@@ -98,134 +105,164 @@ fun Float.formatWithOneDecimal(): String {
 }
 
 /**
- * Screen that displays a list of media opinions
+ * Pantalla principal para listar críticas de películas y series
  */
 class MediaListScreen : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
-        val mediaOpinionViewModel = koinViewModel<MediaOpinionViewModel>()
-        val uiState by mediaOpinionViewModel.uiState.collectAsState()
+        val viewModel = koinViewModel<MediaOpinionViewModel>()
         val navigator = LocalNavigator.currentOrThrow
-        val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-        
-        // Estado para el SnackBar
+        val uiState = viewModel.uiState.collectAsState().value
+        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         val snackbarHostState = remember { SnackbarHostState() }
-        val coroutineScope = rememberCoroutineScope()
-
-        // Estado para manejar el BottomSheet de calificación
-        var showRatingSheet by remember { mutableStateOf(false) }
-        var selectedOpinion by remember { mutableStateOf<MediaOpinion?>(null) }
-
-        // Cargar las opiniones cada vez que la pantalla sea visible
+        val scope = rememberCoroutineScope()
+        
+        // Estado para el drawer (menú lateral)
+        val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+        
+        // Cargar las opiniones al entrar a la pantalla
         LaunchedEffect(Unit) {
-            mediaOpinionViewModel.loadOpinions()
+            viewModel.loadOpinions()
         }
-
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = { Text(stringResource(Res.string.media_list_title)) },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    ),
-                    actions = {
-                        // Añadir botón para crear nueva crítica en la barra superior
-                        IconButton(onClick = { navigator.push(OpinionFormScreen()) }) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = stringResource(Res.string.create_critic_button),
-                                tint = MaterialTheme.colorScheme.primary
-                            )
+        
+        // Implementamos el ModalNavigationDrawer como contenedor principal
+        ModalNavigationDrawer(
+            drawerState = drawerState,
+            drawerContent = {
+                AppDrawerContent(
+                    onNavigateToMediaList = {
+                        scope.launch {
+                            drawerState.close()
                         }
                     },
-                    scrollBehavior = scrollBehavior
+                    onNavigateToProfile = {
+                        scope.launch {
+                            drawerState.close()
+                            // Aquí puedes navegar a una pantalla de perfil cuando la tengas
+                        }
+                    },
+                    onNavigateToRecommendations = {
+                        scope.launch {
+                            drawerState.close()
+                            // Aquí puedes navegar a una pantalla de recomendaciones cuando la tengas
+                        }
+                    },
+                    onNavigateToSettings = {
+                        scope.launch {
+                            drawerState.close()
+                            // Aquí puedes navegar a configuración cuando la tengas
+                        }
+                    },
+                    drawerState = drawerState
                 )
             },
-            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-            snackbarHost = { SnackbarHost(snackbarHostState) }
-        ) { paddingValues ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
-            ) {
-                when {
-                    uiState.isLoading -> {
-                        // Show loading state
-                        CircularProgressIndicator(
-                            modifier = Modifier.align(Alignment.Center)
-                        )
-                    }
-
-                    uiState.opinions.isEmpty() -> {
-                        // Show empty state
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Text(
-                                text = stringResource(Res.string.empty_list_message),
-                                style = MaterialTheme.typography.bodyLarge,
-                                textAlign = TextAlign.Center
-                            )
-                        }
-                    }
-
-                    else -> {
-                        // Show list of opinions
-                        LazyColumn(
-                            modifier = Modifier.fillMaxSize(),
-                            contentPadding = PaddingValues(16.dp),
-                            verticalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            itemsIndexed(uiState.opinions) { index, opinion ->
-                                MediaOpinionItem(
-                                    opinion = opinion,
-                                    onClick = {
-                                        // Navegar a la pantalla de detalle usando el ID de la opinión
-                                        navigator.push(MediaDetailScreen(opinion.id))
-                                    },
-                                    onRateClick = {
-                                        selectedOpinion = opinion
-                                        showRatingSheet = true
-                                    },
-                                    onShowMessage = { message ->
-                                        coroutineScope.launch {
-                                            snackbarHostState.showSnackbar(message)
+            gesturesEnabled = true
+        ) {
+            Box(modifier = Modifier.fillMaxSize()) {
+                Scaffold(
+                    topBar = {
+                        TopAppBar(
+                            title = { Text(stringResource(Res.string.media_list_title)) },
+                            navigationIcon = {
+                                IconButton(onClick = {
+                                    scope.launch {
+                                        if (drawerState.isClosed) {
+                                            drawerState.open()
+                                        } else {
+                                            drawerState.close()
                                         }
                                     }
+                                }) {
+                                    Icon(
+                                        imageVector = Icons.Default.Menu,
+                                        contentDescription = "Menu"
+                                    )
+                                }
+                            },
+                            scrollBehavior = scrollBehavior,
+                            colors = TopAppBarDefaults.topAppBarColors(
+                                containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                            )
+                        )
+                    },
+                    snackbarHost = { SnackbarHost(snackbarHostState) },
+                    floatingActionButton = {
+                        FloatingActionButton(
+                            onClick = { navigator.push(OpinionFormScreen()) },
+                            containerColor = MaterialTheme.colorScheme.primary,
+                            contentColor = MaterialTheme.colorScheme.onPrimary
+                        ) {
+                            Icon(Icons.Default.Add, contentDescription = stringResource(Res.string.create_critic_button))
+                        }
+                    },
+                    modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+                ) { paddingValues ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(paddingValues)
+                    ) {
+                        when {
+                            uiState.isLoading -> {
+                                // Show loading state
+                                CircularProgressIndicator(
+                                    modifier = Modifier.align(Alignment.Center)
                                 )
+                            }
 
-                                if (index < uiState.opinions.lastIndex) {
-                                    HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                            uiState.opinions.isEmpty() -> {
+                                // Show empty state
+                                Column(
+                                    modifier = Modifier
+                                        .fillMaxSize()
+                                        .padding(16.dp),
+                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                    verticalArrangement = Arrangement.Center
+                                ) {
+                                    Text(
+                                        text = stringResource(Res.string.empty_list_message),
+                                        style = MaterialTheme.typography.bodyLarge,
+                                        textAlign = TextAlign.Center
+                                    )
+                                }
+                            }
+
+                            else -> {
+                                // Show list of opinions
+                                LazyColumn(
+                                    modifier = Modifier.fillMaxSize(),
+                                    contentPadding = PaddingValues(16.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    itemsIndexed(uiState.opinions) { index, opinion ->
+                                        MediaOpinionItem(
+                                            opinion = opinion,
+                                            onClick = {
+                                                // Navegar a la pantalla de detalle usando el ID de la opinión
+                                                navigator.push(MediaDetailScreen(opinion.id))
+                                            },
+                                            onRateClick = {
+                                                // Aquí puedes implementar la lógica para calificar una opinión
+                                            },
+                                            onShowMessage = { message ->
+                                                scope.launch {
+                                                    snackbarHostState.showSnackbar(message)
+                                                }
+                                            }
+                                        )
+
+                                        if (index < uiState.opinions.lastIndex) {
+                                            HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
-        }
-
-        // Mostrar BottomSheet para calificar si es necesario
-        if (showRatingSheet && selectedOpinion != null) {
-            RatingBottomSheet(
-                opinion = selectedOpinion!!,
-                onDismiss = { if (!uiState.isRating) showRatingSheet = false },
-                isLoading = uiState.isRating,
-                onRatingSubmit = { opinion, rating ->
-                    mediaOpinionViewModel.submitRating(opinion, rating) { success ->
-                        // Solo cerramos el BottomSheet si la calificación fue exitosa
-                        if (success) {
-                            showRatingSheet = false
-                        }
-                    }
-                }
-            )
         }
     }
 }

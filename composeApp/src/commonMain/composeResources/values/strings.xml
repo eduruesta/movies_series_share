@@ -61,4 +61,9 @@
     <string name="recommendation_removed">%1$s was removed from your Recommendations</string>
     <string name="recommendation_remove_error">Error removing: %1$s</string>
     <string name="recommendation_save_error">Error saving: %1$s</string>
+
+    <!-- Menu -->
+    <string name="your_recommendations">Saved Recommendations</string>
+    <string name="app_name">Critiqo</string>
+
 </resources>

@@ -61,4 +61,8 @@
     <string name="recommendation_removed">%1$s fue eliminado de tus Recomendaciones</string>
     <string name="recommendation_remove_error">Error al eliminar: %1$s</string>
     <string name="recommendation_save_error">Error al guardar: %1$s</string>
+
+    <!-- Menu -->
+    <string name="your_recommendations">Recomendaciones Guardadas</string>
+    <string name="app_name">Critiqo</string>
 </resources>

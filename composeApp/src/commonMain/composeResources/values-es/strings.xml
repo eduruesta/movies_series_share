@@ -36,6 +36,7 @@
     <string name="rating_format">%s/10</string>
     <string name="star_description">Estrella</string>
     <string name="poster_description">Póster</string>
+    <string name="qualifying">Calificando...</string>
 
     <!-- Extracted UI Strings -->
     <string name="back_button">Volver atrás</string>
@@ -65,4 +66,7 @@
     <!-- Menu -->
     <string name="your_recommendations">Recomendaciones Guardadas</string>
     <string name="app_name">Critiqo</string>
+
+    <string name="empty_recommendations_message">Todavía no tienes recomendaciones guardadas. Agrega recomendaciones desde la pantalla principal para verlas aquí.</string>
+
 </resources>

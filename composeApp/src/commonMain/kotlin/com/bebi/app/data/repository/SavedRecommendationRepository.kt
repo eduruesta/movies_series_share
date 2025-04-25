@@ -36,7 +36,7 @@ class SavedRecommendationRepository(
             opinionId = opinion.id,
             title = opinion.title,
             posterUrl = opinion.posterUrl,
-            rating = opinion.rating, // Usamos la calificación original, no el promedio
+            rating = opinion.averageRating,
             genre = opinion.genre,
             backdropUrl = opinion.backdropUrl
         )
@@ -45,34 +45,7 @@ class SavedRecommendationRepository(
         val insertId = savedRecommendationDao.insertSavedRecommendation(savedRecommendation)
         return insertId > 0
     }
-    
-    /**
-     * Guarda una recomendación basada en IDs
-     * @return true si se guardó correctamente, false si ya estaba guardada
-     */
-    suspend fun saveRecommendation(title: String, mediaId: String, opinionId: Long): Boolean {
-        // Primero verificamos si ya está guardada
-        val isAlreadySaved = savedRecommendationDao.isRecommendationSaved(opinionId)
-        
-        // Si ya está guardada, no hacemos nada
-        if (isAlreadySaved) {
-            return false
-        }
-        
-        // Creamos una recomendación guardada con los datos mínimos
-        val savedRecommendation = SavedRecommendation(
-            opinionId = opinionId,
-            title = title,
-            posterUrl = null,
-            rating = 0.0f,  // Usar Float, no Double
-            genre = "",     // Usar string vacío, no null
-            backdropUrl = null
-        )
-        
-        // Guardamos la recomendación
-        val insertId = savedRecommendationDao.insertSavedRecommendation(savedRecommendation)
-        return insertId > 0
-    }
+
     
     /**
      * Elimina una recomendación guardada

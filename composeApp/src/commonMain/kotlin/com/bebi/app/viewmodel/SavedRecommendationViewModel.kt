@@ -8,6 +8,7 @@ import com.bebi.app.model.SavedRecommendation
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -26,26 +27,27 @@ class SavedRecommendationViewModel(
     }
     
     /**
-     * Carga todas las recomendaciones guardadas
+     * Carga las recomendaciones guardadas
      */
     fun loadSavedRecommendations() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true) }
             
             try {
-                repository.getAllSavedRecommendations().collect { recommendations ->
-                    _uiState.update { 
-                        it.copy(
-                            recommendations = recommendations,
-                            isLoading = false
-                        )
-                    }
+                // Usamos una colección finita en lugar de una continua
+                val savedRecommendations = repository.getAllSavedRecommendations().first()
+                
+                _uiState.update { 
+                    it.copy(
+                        savedRecommendations = savedRecommendations,
+                        isLoading = false
+                    )
                 }
             } catch (e: Exception) {
                 _uiState.update { 
                     it.copy(
-                        isLoading = false,
-                        error = e.message
+                        error = e.message,
+                        isLoading = false
                     )
                 }
             }
@@ -53,136 +55,62 @@ class SavedRecommendationViewModel(
     }
     
     /**
-     * Verifica si una opinión está guardada
+     * Verifica si una recomendación está guardada
      */
-    fun isRecommendationSaved(opinionId: Long, onResult: (Boolean) -> Unit) {
+    fun isRecommendationSaved(opinionId: Long, callback: (Boolean) -> Unit) {
         viewModelScope.launch {
             try {
                 val isSaved = repository.isRecommendationSaved(opinionId)
-                onResult(isSaved)
+                callback(isSaved)
             } catch (e: Exception) {
-                _uiState.update { it.copy(error = e.message) }
-                onResult(false)
-            }
-        }
-    }
-    
-    /**
-     * Guarda una opinión como recomendación
-     */
-    fun saveRecommendation(opinion: MediaOpinion, onComplete: (Boolean, RecommendationMessage) -> Unit) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isSaving = true) }
-            
-            try {
-                val result = repository.saveRecommendation(opinion)
-                if (result) {
-                    // Si se guardó correctamente
-                    _uiState.update { it.copy(isSaving = false) }
-                    onComplete(true, RecommendationMessage.SAVED(opinion.title))
-                } else {
-                    // Si ya estaba guardada
-                    _uiState.update { it.copy(isSaving = false) }
-                    onComplete(false, RecommendationMessage.ALREADY_SAVED(opinion.title))
-                }
-            } catch (e: Exception) {
-                _uiState.update { 
-                    it.copy(
-                        isSaving = false,
-                        error = e.message
-                    )
-                }
-                onComplete(false, RecommendationMessage.ERROR_SAVING(e.message ?: "Error desconocido"))
+                callback(false)
             }
         }
     }
 
     /**
-     * Guarda una recomendación basada en IDs
+     * Guarda una recomendación
      */
-    fun saveRecommendation(title: String, mediaId: String, opinionId: Long, onComplete: (RecommendationMessage) -> Unit) {
+    fun saveRecommendation(opinion: MediaOpinion, callback: (RecommendationMessage) -> Unit) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isSaving = true) }
-            
             try {
-                val result = repository.saveRecommendation(title, mediaId, opinionId)
+                // Verificar si ya está guardada
+                if (repository.isRecommendationSaved(opinion.id)) {
+                    callback(RecommendationMessage.AlreadySaved(opinion.title))
+                    return@launch
+                }
+
+                // Guardar la recomendación
+                val result = repository.saveRecommendation(opinion)
                 if (result) {
-                    // Si se guardó correctamente
-                    _uiState.update { it.copy(isSaving = false) }
-                    onComplete(RecommendationMessage.SAVED(title))
+                    callback(RecommendationMessage.Saved(opinion.title))
                 } else {
-                    // Si ya estaba guardada
-                    _uiState.update { it.copy(isSaving = false) }
-                    onComplete(RecommendationMessage.ALREADY_SAVED(title))
+                    callback(RecommendationMessage.ErrorSaving("Unknown error"))
                 }
             } catch (e: Exception) {
-                _uiState.update { 
-                    it.copy(
-                        isSaving = false,
-                        error = e.message
-                    )
-                }
-                onComplete(RecommendationMessage.ERROR_SAVING(e.message ?: "Error desconocido"))
+                callback(RecommendationMessage.ErrorSaving(e.message ?: "Unknown error"))
             }
         }
     }
-    
+
     /**
      * Elimina una recomendación guardada
      */
-    fun removeRecommendation(title: String, opinionId: Long, onComplete: (Boolean, RecommendationMessage) -> Unit) {
+    fun removeRecommendation(recommendation: SavedRecommendation, callback: (RecommendationMessage) -> Unit) {
         viewModelScope.launch {
-            _uiState.update { it.copy(isRemoving = true) }
-            
             try {
-                val result = repository.removeSavedRecommendation(opinionId)
+                val result = repository.removeSavedRecommendation(recommendation.opinionId)
                 if (result) {
-                    // Si se eliminó correctamente
-                    _uiState.update { it.copy(isRemoving = false) }
-                    onComplete(true, RecommendationMessage.REMOVED(title))
+                    // Recargar las recomendaciones usando una colección finita
+                    val updatedRecommendations = repository.getAllSavedRecommendations().first()
+                    
+                    _uiState.update { it.copy(savedRecommendations = updatedRecommendations) }
+                    callback(RecommendationMessage.Removed(recommendation.title))
                 } else {
-                    // Si no estaba guardada
-                    _uiState.update { it.copy(isRemoving = false) }
-                    onComplete(false, RecommendationMessage.NOT_SAVED)
+                    callback(RecommendationMessage.ErrorRemoving("Unknown error"))
                 }
             } catch (e: Exception) {
-                _uiState.update { 
-                    it.copy(
-                        isRemoving = false,
-                        error = e.message
-                    )
-                }
-                onComplete(false, RecommendationMessage.ERROR_REMOVING(e.message ?: "Error desconocido"))
-            }
-        }
-    }
-
-    /**
-     * Elimina una recomendación guardada, sobrecarga para trabajar sin boolean
-     */
-    fun removeRecommendation(title: String, opinionId: Long, onComplete: (RecommendationMessage) -> Unit) {
-        viewModelScope.launch {
-            _uiState.update { it.copy(isRemoving = true) }
-            
-            try {
-                val result = repository.removeSavedRecommendation(opinionId)
-                if (result) {
-                    // Si se eliminó correctamente
-                    _uiState.update { it.copy(isRemoving = false) }
-                    onComplete(RecommendationMessage.REMOVED(title))
-                } else {
-                    // Si no estaba guardada
-                    _uiState.update { it.copy(isRemoving = false) }
-                    onComplete(RecommendationMessage.NOT_SAVED)
-                }
-            } catch (e: Exception) {
-                _uiState.update { 
-                    it.copy(
-                        isRemoving = false,
-                        error = e.message
-                    )
-                }
-                onComplete(RecommendationMessage.ERROR_REMOVING(e.message ?: "Error desconocido"))
+                callback(RecommendationMessage.ErrorRemoving(e.message ?: "Unknown error"))
             }
         }
     }
@@ -192,10 +120,8 @@ class SavedRecommendationViewModel(
  * Estado de la UI para recomendaciones
  */
 data class RecommendationUiState(
-    val recommendations: List<SavedRecommendation> = emptyList(),
+    val savedRecommendations: List<SavedRecommendation> = emptyList(),
     val isLoading: Boolean = false,
-    val isSaving: Boolean = false,
-    val isRemoving: Boolean = false,
     val error: String? = null
 )
 
@@ -203,10 +129,10 @@ data class RecommendationUiState(
  * Tipos de mensajes para las recomendaciones
  */
 sealed class RecommendationMessage {
-    data class REMOVED(val title: String) : RecommendationMessage()
-    object NOT_SAVED : RecommendationMessage()
-    data class ERROR_REMOVING(val error: String) : RecommendationMessage()
-    data class SAVED(val title: String) : RecommendationMessage()
-    data class ALREADY_SAVED(val title: String) : RecommendationMessage()
-    data class ERROR_SAVING(val error: String) : RecommendationMessage()
+    data class Removed(val title: String) : RecommendationMessage()
+    data object NotSaved : RecommendationMessage()
+    data class ErrorRemoving(val error: String) : RecommendationMessage()
+    data class Saved(val title: String) : RecommendationMessage()
+    data class AlreadySaved(val title: String) : RecommendationMessage()
+    data class ErrorSaving(val error: String) : RecommendationMessage()
 }

@@ -25,6 +25,7 @@ import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -32,7 +33,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalNavigationDrawer
-import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -40,7 +40,6 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
-import androidx.compose.material3.DrawerValue
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -64,6 +63,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
 import com.bebi.app.model.MediaOpinion
+import com.bebi.app.model.SavedRecommendation
 import com.bebi.app.ui.components.AppDrawerContent
 import com.bebi.app.ui.components.RatingBottomSheet
 import com.bebi.app.ui.components.bookmark
@@ -117,15 +117,17 @@ class MediaListScreen : Screen {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         val snackbarHostState = remember { SnackbarHostState() }
         val scope = rememberCoroutineScope()
-        
+        var showRatingSheet by remember { mutableStateOf(false) }
+        var selectedOpinion by remember { mutableStateOf<MediaOpinion?>(null) }
+
         // Estado para el drawer (menú lateral)
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-        
+
         // Cargar las opiniones al entrar a la pantalla
         LaunchedEffect(Unit) {
             viewModel.loadOpinions()
         }
-        
+
         // Implementamos el ModalNavigationDrawer como contenedor principal
         ModalNavigationDrawer(
             drawerState = drawerState,
@@ -145,7 +147,8 @@ class MediaListScreen : Screen {
                     onNavigateToRecommendations = {
                         scope.launch {
                             drawerState.close()
-                            // Aquí puedes navegar a una pantalla de recomendaciones cuando la tengas
+                            // Navegar a la pantalla de recomendaciones guardadas
+                            navigator.push(SavedRecommendationScreen())
                         }
                     },
                     onNavigateToSettings = {
@@ -194,7 +197,10 @@ class MediaListScreen : Screen {
                             containerColor = MaterialTheme.colorScheme.primary,
                             contentColor = MaterialTheme.colorScheme.onPrimary
                         ) {
-                            Icon(Icons.Default.Add, contentDescription = stringResource(Res.string.create_critic_button))
+                            Icon(
+                                Icons.Default.Add,
+                                contentDescription = stringResource(Res.string.create_critic_button)
+                            )
                         }
                     },
                     modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
@@ -244,7 +250,8 @@ class MediaListScreen : Screen {
                                                 navigator.push(MediaDetailScreen(opinion.id))
                                             },
                                             onRateClick = {
-                                                // Aquí puedes implementar la lógica para calificar una opinión
+                                                selectedOpinion = opinion
+                                                showRatingSheet = true
                                             },
                                             onShowMessage = { message ->
                                                 scope.launch {
@@ -263,6 +270,21 @@ class MediaListScreen : Screen {
                     }
                 }
             }
+            if (showRatingSheet && selectedOpinion != null) {
+                RatingBottomSheet(
+                    opinion = selectedOpinion!!,
+                    onDismiss = { if (!uiState.isRating) showRatingSheet = false },
+                    isLoading = uiState.isRating,
+                    onRatingSubmit = { opinion, rating ->
+                        viewModel.submitRating(opinion, rating) { success ->
+                            // Solo cerramos el BottomSheet si la calificación fue exitosa
+                            if (success) {
+                                showRatingSheet = false
+                            }
+                        }
+                    }
+                )
+            }
         }
     }
 }
@@ -276,44 +298,51 @@ private fun MediaOpinionItem(
 ) {
     val savedViewModel = koinViewModel<SavedRecommendationViewModel>()
     val coroutineScope = rememberCoroutineScope()
-    
+
     // Estado para controlar si la opinión está guardada
     var isSaved by remember { mutableStateOf(false) }
-    
+
     // Guardamos el último mensaje recibido para traducirlo en contexto @Composable
     var lastRecommendationMessage by remember { mutableStateOf<RecommendationMessage?>(null) }
-    
+
     // Verificar si la opinión ya está guardada
     LaunchedEffect(opinion.id) {
         savedViewModel.isRecommendationSaved(opinion.id) { saved ->
             isSaved = saved
         }
     }
-    
+
     // Traducir el mensaje cuando cambie (en contexto @Composable)
     lastRecommendationMessage?.let { message ->
         // Traducir el mensaje a un string usando stringResource
         val messageText = when (message) {
-            is RecommendationMessage.REMOVED -> stringResource(Res.string.recommendation_removed, message.title)
-            RecommendationMessage.NOT_SAVED -> stringResource(Res.string.recommendation_not_saved)
-            is RecommendationMessage.ERROR_REMOVING -> stringResource(
-                Res.string.recommendation_remove_error, 
+            is RecommendationMessage.Removed -> stringResource(
+                Res.string.recommendation_removed,
+                message.title
+            )
+
+            RecommendationMessage.NotSaved -> stringResource(Res.string.recommendation_not_saved)
+            is RecommendationMessage.ErrorRemoving -> stringResource(
+                Res.string.recommendation_remove_error,
                 message.error
             )
-            is RecommendationMessage.SAVED -> stringResource(
-                Res.string.recommendation_saved, 
+
+            is RecommendationMessage.Saved -> stringResource(
+                Res.string.recommendation_saved,
                 message.title
             )
-            is RecommendationMessage.ALREADY_SAVED -> stringResource(
-                Res.string.recommendation_already_saved, 
+
+            is RecommendationMessage.AlreadySaved -> stringResource(
+                Res.string.recommendation_already_saved,
                 message.title
             )
-            is RecommendationMessage.ERROR_SAVING -> stringResource(
-                Res.string.recommendation_save_error, 
+
+            is RecommendationMessage.ErrorSaving -> stringResource(
+                Res.string.recommendation_save_error,
                 message.error
             )
         }
-        
+
         // Mostrar el mensaje una sola vez
         LaunchedEffect(messageText) {
             onShowMessage(messageText)
@@ -469,8 +498,8 @@ private fun MediaOpinionItem(
                     Icon(
                         // Mostrar bookmarkCheck si ya está guardado, o bookmark si no
                         imageVector = if (isSaved) bookmarkCheck else bookmark,
-                        contentDescription = if (isSaved) 
-                            stringResource(Res.string.delete_from_recommendations) else 
+                        contentDescription = if (isSaved)
+                            stringResource(Res.string.delete_from_recommendations) else
                             stringResource(Res.string.save_as_recommendation),
                         tint = MaterialTheme.colorScheme.primary,
                         modifier = Modifier
@@ -478,27 +507,37 @@ private fun MediaOpinionItem(
                             .clickable {
                                 if (isSaved) {
                                     // Si ya está guardado, lo eliminamos
-                                    savedViewModel.removeRecommendation(opinion.title, opinion.id) { message ->
-                                        if (message is RecommendationMessage.REMOVED) {
+                                    // Crear un objeto SavedRecommendation con la información necesaria
+                                    val recommendation = SavedRecommendation(
+                                        opinionId = opinion.id,
+                                        title = opinion.title,
+                                        posterUrl = opinion.posterUrl,
+                                        rating = opinion.averageRating,
+                                        genre = opinion.genre,
+                                        backdropUrl = opinion.backdropUrl
+                                    )
+                                    savedViewModel.removeRecommendation(
+                                        recommendation = recommendation
+                                    ) { message ->
+                                        if (message is RecommendationMessage.Removed) {
                                             // Actualizar estado local
                                             isSaved = false
                                         }
-                                        // Guardar el mensaje para traducirlo en contexto @Composable
+                                        // Almacenar el mensaje para procesarlo en un contexto @Composable
                                         lastRecommendationMessage = message
                                     }
                                 } else {
                                     // Si no está guardado, lo guardamos
                                     savedViewModel.saveRecommendation(
-                                        title = opinion.title,
-                                        mediaId = opinion.id.toString(),
-                                        opinionId = opinion.id
+                                        opinion = opinion
                                     ) { message ->
-                                        if (message is RecommendationMessage.SAVED || 
-                                            message is RecommendationMessage.ALREADY_SAVED) {
+                                        if (message is RecommendationMessage.Saved ||
+                                            message is RecommendationMessage.AlreadySaved
+                                        ) {
                                             // Actualizar estado local
                                             isSaved = true
                                         }
-                                        // Guardar el mensaje para traducirlo en contexto @Composable
+                                        // Almacenar el mensaje para procesarlo en un contexto @Composable
                                         lastRecommendationMessage = message
                                     }
                                 }

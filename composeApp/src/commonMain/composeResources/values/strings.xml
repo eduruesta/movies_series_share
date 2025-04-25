@@ -24,6 +24,8 @@
     <string name="result_error">There was an error in the search, please try again</string>
     <string name="comment">Comment:</string>
     <string name="without_comment">No comments</string>
+    <string name="qualifying">Qualifying...</string>
+
 
     <!-- Media List Screen Strings -->
     <string name="media_list_title">Recommendations</string>
@@ -65,5 +67,8 @@
     <!-- Menu -->
     <string name="your_recommendations">Saved Recommendations</string>
     <string name="app_name">Critiqo</string>
+
+    <string name="empty_recommendations_message">You don't have any saved recommendations yet. Add recommendations from the main screen to see them here.</string>
+
 
 </resources>

@@ -30,6 +30,8 @@ import androidx.compose.ui.unit.dp
 import com.bebi.app.model.MediaOpinion
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.rate_action
+import moviesseriesshare.composeapp.generated.resources.qualifying
+
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -126,7 +128,7 @@ fun RatingBottomSheet(
                             color = MaterialTheme.colorScheme.onPrimary
                         )
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Calificando...")
+                        Text(stringResource(Res.string.qualifying))
                     }
                 } else {
                     Text(stringResource(Res.string.rate_action))

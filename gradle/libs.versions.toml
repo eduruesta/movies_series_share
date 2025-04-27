@@ -21,6 +21,7 @@ gradlePlugins-google-services = "4.4.1"
 firebase-android-bom = "32.8.1"
 kotlinxDatetime = "0.4.0"
 core-splashscreen = "1.0.1"
+settings = "1.0.2"
 
 
 [libraries]
@@ -67,6 +68,7 @@ gitlive-firebase-kotlin-analytics = { module = "dev.gitlive:firebase-analytics",
 gitlive-firebase-kotlin-database = { module = "dev.gitlive:firebase-database", version.ref = "firebase-gitlive-sdk" }
 
 core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "core-splashscreen" }
+remember-settings = { module = "dev.burnoo:compose-remember-setting", version.ref = "settings" }
 
 
 [plugins]

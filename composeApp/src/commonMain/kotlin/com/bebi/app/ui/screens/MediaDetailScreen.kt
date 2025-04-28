@@ -30,6 +30,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -81,10 +84,8 @@ data class MediaDetailScreen(
     private val tmdbMediaOpinion: MediaOpinion? = null
 ) : Screen {
 
-    // Constructor para elementos guardados en la base de datos
     constructor(opinionId: Long) : this(opinionId = opinionId, tmdbMediaOpinion = null)
 
-    // Constructor para elementos TMDB que no están en la base de datos
     constructor(tmdbMediaOpinion: MediaOpinion) : this(
         opinionId = null,
         tmdbMediaOpinion = tmdbMediaOpinion
@@ -99,14 +100,16 @@ data class MediaDetailScreen(
         val viewModel: MediaDetailViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsState()
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+        var isTmbdMediaOpinion by remember { mutableStateOf(false) }
 
-        // Si tenemos un ID, cargamos desde la base de datos
-        // Si tenemos un elemento TMDB, establecemos directamente en el ViewModel
+
         LaunchedEffect(opinionId, tmdbMediaOpinion) {
             if (opinionId != null) {
                 viewModel.loadOpinionById(opinionId)
+                isTmbdMediaOpinion = false
             } else if (tmdbMediaOpinion != null) {
                 viewModel.setTmdbMediaOpinion(tmdbMediaOpinion)
+                isTmbdMediaOpinion = true
             }
         }
 
@@ -296,19 +299,22 @@ data class MediaDetailScreen(
 
                                 Spacer(modifier = Modifier.height(16.dp))
                             }
+                            if (!isTmbdMediaOpinion) {
 
-                            Text(
-                                text = stringResource(Res.string.comment),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
+                                Text(
+                                    text = stringResource(Res.string.comment),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
+                                )
 
-                            Spacer(modifier = Modifier.height(8.dp))
+                                Spacer(modifier = Modifier.height(8.dp))
 
-                            Text(
-                                text = opinion.comment.ifEmpty { stringResource(Res.string.without_comment) },
-                                style = MaterialTheme.typography.bodyLarge
-                            )
+
+                                Text(
+                                    text = opinion.comment.ifEmpty { stringResource(Res.string.without_comment) },
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
                         }
                     }
                 }

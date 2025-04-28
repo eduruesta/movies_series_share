@@ -92,7 +92,6 @@ class OpinionFormScreen : Screen {
         val viewModel = koinViewModel<MediaOpinionFormViewModel>()
         val navigator = LocalNavigator.currentOrThrow
         val uiState by viewModel.uiState.collectAsState()
-        val scope = rememberCoroutineScope()
 
         val snackbarHostState = remember { SnackbarHostState() }
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()

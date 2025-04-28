@@ -90,4 +90,82 @@ class AppService(
             "en-US"
         }
     }
+    
+    /**
+     * Get trending TV shows for the week
+     */
+    suspend fun getTrendingTvShows(): TmdbSearchResponse {
+        val url = URLBuilder().apply {
+            protocol = URLProtocol.HTTPS
+            host = baseUrl
+            appendPathSegments(apiVersion, "trending", "tv", "week")
+            parameters.append("language", language)
+            parameters.append("api_key", BuildConfig.api_key)
+        }.build()
+
+        return client.get(url).body()
+    }
+
+    /**
+     * Get trending movies for the week
+     */
+    suspend fun getTrendingMovies(): TmdbSearchResponse {
+        val url = URLBuilder().apply {
+            protocol = URLProtocol.HTTPS
+            host = baseUrl
+            appendPathSegments(apiVersion, "trending", "movie", "week")
+            parameters.append("language", language)
+            parameters.append("api_key", BuildConfig.api_key)
+        }.build()
+
+        return client.get(url).body()
+    }
+
+    /**
+     * Get top rated movies
+     */
+    suspend fun getTopRatedMovies(): TmdbSearchResponse {
+        val url = URLBuilder().apply {
+            protocol = URLProtocol.HTTPS
+            host = baseUrl
+            appendPathSegments(apiVersion, "movie", "top_rated")
+            parameters.append("language", language)
+            parameters.append("page", "1")
+            parameters.append("api_key", BuildConfig.api_key)
+        }.build()
+
+        return client.get(url).body()
+    }
+
+    /**
+     * Get upcoming movies
+     */
+    suspend fun getUpcomingMovies(): TmdbSearchResponse {
+        val url = URLBuilder().apply {
+            protocol = URLProtocol.HTTPS
+            host = baseUrl
+            appendPathSegments(apiVersion, "movie", "upcoming")
+            parameters.append("language", language)
+            parameters.append("page", "1")
+            parameters.append("api_key", BuildConfig.api_key)
+        }.build()
+
+        return client.get(url).body()
+    }
+
+    /**
+     * Get top rated TV shows
+     */
+    suspend fun getTopRatedTvShows(): TmdbSearchResponse {
+        val url = URLBuilder().apply {
+            protocol = URLProtocol.HTTPS
+            host = baseUrl
+            appendPathSegments(apiVersion, "tv", "top_rated")
+            parameters.append("language", language)
+            parameters.append("page", "1")
+            parameters.append("api_key", BuildConfig.api_key)
+        }.build()
+
+        return client.get(url).body()
+    }
 }

@@ -6,3 +6,5 @@ import platform.Foundation.languageCode
 
 actual val myLang: String?
     get() = NSLocale.currentLocale.languageCode
+
+actual interface JavaSerializable

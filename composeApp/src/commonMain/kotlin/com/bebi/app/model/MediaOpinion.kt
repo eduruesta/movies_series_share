@@ -4,6 +4,7 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
+import com.bebi.app.data.JavaSerializable
 import kotlinx.serialization.Serializable
 
 /**
@@ -53,4 +54,4 @@ data class MediaOpinion(
      */
     @ColumnInfo(name = "average_rating")
     val averageRating: Float = 0f
-)
+): JavaSerializable

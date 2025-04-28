@@ -1,5 +1,6 @@
 package com.bebi.app.data.remote
 
+import com.bebi.app.BuildConfig
 import com.bebi.app.data.myLang
 import com.bebi.app.data.remote.model.TmdbGenresResponse
 import com.bebi.app.data.remote.model.TmdbSearchResponse
@@ -35,7 +36,7 @@ class AppService(
             parameters.append("include_adult", "false")
             parameters.append("language", language)
             parameters.append("page", "1")
-            parameters.append("api_key", "ce2eb742633db1119130842dff34c3eb")
+            parameters.append("api_key", BuildConfig.api_key)
         }.build()
 
         return client.get(url).body()
@@ -50,7 +51,7 @@ class AppService(
             host = baseUrl
             appendPathSegments(apiVersion, "genre", "movie", "list")
             parameters.append("language", language)
-            parameters.append("api_key", "ce2eb742633db1119130842dff34c3eb")
+            parameters.append("api_key", BuildConfig.api_key)
         }.build()
 
         return client.get(url).body()
@@ -65,7 +66,7 @@ class AppService(
             host = baseUrl
             appendPathSegments(apiVersion, "genre", "tv", "list")
             parameters.append("language", language)
-            parameters.append("api_key", "ce2eb742633db1119130842dff34c3eb")
+            parameters.append("api_key", BuildConfig.api_key)
         }.build()
 
         return client.get(url).body()

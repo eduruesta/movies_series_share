@@ -23,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
+import com.bebi.app.ui.components.bookmarkCheck
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.app_name
 import moviesseriesshare.composeapp.generated.resources.media_list_title
@@ -53,12 +54,12 @@ fun AppDrawerContent(
     ModalDrawerSheet(
         modifier = modifier
             .fillMaxHeight()
-            .fillMaxWidth(0.8f),
+            .fillMaxWidth(0.85f),
     ) {
         Text(
             text = stringResource(Res.string.app_name),
             style = MaterialTheme.typography.headlineMedium,
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(12.dp)
         )
 
         HorizontalDivider(color = Color(0xFF38444D))
@@ -66,11 +67,11 @@ fun AppDrawerContent(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+                .padding(horizontal = 4.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(4.dp))
 
             NavigationDrawerItem(
                 icon = {
@@ -84,7 +85,7 @@ fun AppDrawerContent(
                 onClick = {
                     onNavigateToMediaList()
                 },
-                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
             )
 
             NavigationDrawerItem(
@@ -100,7 +101,7 @@ fun AppDrawerContent(
                 onClick = {
                     onNavigateToRecommendations()
                 },
-                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
             )
 
             // Series
@@ -109,7 +110,7 @@ fun AppDrawerContent(
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 28.dp, top = 16.dp, bottom = 8.dp)
+                    .padding(start = 20.dp, top = 12.dp, bottom = 4.dp)
             )
 
             NavigationDrawerItem(
@@ -125,7 +126,7 @@ fun AppDrawerContent(
                 onClick = {
                     onNavigateToTopSeries()
                 },
-                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
             )
 
             NavigationDrawerItem(
@@ -141,7 +142,7 @@ fun AppDrawerContent(
                 onClick = {
                     onNavigateToTrendingSeries()
                 },
-                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
             )
 
             // Movies
@@ -150,7 +151,7 @@ fun AppDrawerContent(
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(start = 28.dp, top = 16.dp, bottom = 8.dp)
+                    .padding(start = 20.dp, top = 12.dp, bottom = 4.dp)
             )
 
             NavigationDrawerItem(
@@ -166,7 +167,7 @@ fun AppDrawerContent(
                 onClick = {
                     onNavigateToTopMovies()
                 },
-                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
             )
 
             NavigationDrawerItem(
@@ -182,7 +183,7 @@ fun AppDrawerContent(
                 onClick = {
                     onNavigateToTrendingMovies()
                 },
-                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
             )
 
             NavigationDrawerItem(
@@ -198,33 +199,8 @@ fun AppDrawerContent(
                 onClick = {
                     onNavigateToUpcomingMovies()
                 },
-                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
             )
-            /*            // Profile
-                        NavigationDrawerItem(
-                            icon = { Icon(Icons.Default.Person, contentDescription = null) },
-                            label = { Text(stringResource(Res.string.profile)) },
-                            selected = false,
-                            onClick = {
-                                onNavigateToProfile()
-                            },
-                            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-                        )
-
-                        Divider(
-                            modifier = Modifier.padding(vertical = 12.dp)
-                        )
-
-                        // Settings
-                        NavigationDrawerItem(
-                            icon = { Icon(Icons.Default.Settings, contentDescription = null) },
-                            label = { Text(stringResource(Res.string.theme)) },
-                            selected = false,
-                            onClick = {
-                                onNavigateToSettings()
-                            },
-                            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
-                        )*/
         }
     }
 }

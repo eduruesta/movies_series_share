@@ -1,5 +1,6 @@
 package com.bebi.app.data.remote
 
+import com.bebi.app.data.myLang
 import com.bebi.app.data.remote.model.TmdbGenresResponse
 import com.bebi.app.data.remote.model.TmdbSearchResponse
 import io.ktor.client.HttpClient
@@ -17,7 +18,7 @@ class AppService(
 ) {
     private val baseUrl = "api.themoviedb.org"
     private val apiVersion = "3"
-    private val language = "es-ES"
+    private val language = getLanguage()
     private val imageBaseUrl = "https://image.tmdb.org/t/p/w185"
     private val backdropUrl = "https://image.tmdb.org/t/p/w780"
 
@@ -79,5 +80,13 @@ class AppService(
 
     fun getBackdropUrl(backdropPath: String?): String? {
         return backdropPath?.let { "$backdropUrl$it" }
+    }
+
+    private fun getLanguage(): String {
+        return if (myLang == "es") {
+            "es-ES"
+        } else {
+            "en-US"
+        }
     }
 }

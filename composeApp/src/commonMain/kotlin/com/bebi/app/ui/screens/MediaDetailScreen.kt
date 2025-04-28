@@ -94,7 +94,11 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(uiState.opinion?.title ?: stringResource(Res.string.loading_title)) },
+                    title = {
+                        Text(
+                            uiState.opinion?.title ?: stringResource(Res.string.loading_title)
+                        )
+                    },
                     navigationIcon = {
                         IconButton(onClick = { navigator.pop() }) {
                             Icon(
@@ -139,7 +143,7 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
                             MediaDetailError.GENERIC -> stringResource(Res.string.error_loading_details)
                             else -> stringResource(Res.string.error_loading_details)
                         }
-                        
+
                         Text(
                             errorMessage,
                             color = MaterialTheme.colorScheme.error,

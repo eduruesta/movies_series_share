@@ -15,6 +15,12 @@ import com.bebi.app.viewmodel.MediaDetailViewModel
 import com.bebi.app.viewmodel.MediaOpinionFormViewModel
 import com.bebi.app.viewmodel.MediaOpinionViewModel
 import com.bebi.app.viewmodel.SavedRecommendationViewModel
+import com.bebi.app.viewmodel.TmdbMediaListViewModel
+import com.bebi.app.viewmodel.TopSeriesViewModel
+import com.bebi.app.viewmodel.TrendingSeriesViewModel
+import com.bebi.app.viewmodel.UpcomingMoviesViewModel
+import com.bebi.app.viewmodel.TopMoviesViewModel
+import com.bebi.app.viewmodel.TrendingMoviesViewModel
 import io.ktor.client.HttpClient
 import io.ktor.client.plugins.HttpTimeout
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
@@ -73,7 +79,7 @@ val dataModule = module {
     }
     
     factoryOf(::SavedRecommendationRepository)
-    
+
     singleOf(::TmdbRepository)
     factoryOf(::AppService)
     single<HttpClient> {
@@ -97,6 +103,11 @@ val viewModelModule = module {
     viewModelOf(::MediaDetailViewModel)
     viewModelOf(::MediaOpinionFormViewModel)
     viewModelOf(::SavedRecommendationViewModel)
+    viewModelOf(::TopSeriesViewModel)
+    viewModelOf(::TrendingSeriesViewModel)
+    viewModelOf(::UpcomingMoviesViewModel)
+    viewModelOf(::TopMoviesViewModel)
+    viewModelOf(::TrendingMoviesViewModel)
 }
 
 expect val nativeModule: Module

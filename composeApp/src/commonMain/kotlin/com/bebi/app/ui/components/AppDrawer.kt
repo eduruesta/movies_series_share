@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -39,6 +40,11 @@ fun AppDrawerContent(
     onNavigateToProfile: () -> Unit,
     onNavigateToRecommendations: () -> Unit,
     onNavigateToSettings: () -> Unit,
+    onNavigateToTopSeries: () -> Unit,
+    onNavigateToTrendingSeries: () -> Unit,
+    onNavigateToUpcomingMovies: () -> Unit,
+    onNavigateToTopMovies: () -> Unit,
+    onNavigateToTrendingMovies: () -> Unit,
     drawerState: DrawerState,
     modifier: Modifier = Modifier
 ) {
@@ -95,6 +101,103 @@ fun AppDrawerContent(
                 modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
             )
 
+            // Series
+            Text(
+                text = "Series",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 28.dp, top = 16.dp, bottom = 8.dp)
+            )
+
+            NavigationDrawerItem(
+                icon = {
+                    Icon(
+                        Icons.Default.Star,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                label = { Text("Top Series") },
+                selected = false,
+                onClick = {
+                    onNavigateToTopSeries()
+                },
+                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+            )
+
+            NavigationDrawerItem(
+                icon = {
+                    Icon(
+                        Icons.Default.Star,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                label = { Text("Trending Series") },
+                selected = false,
+                onClick = {
+                    onNavigateToTrendingSeries()
+                },
+                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+            )
+
+            // Movies
+            Text(
+                text = "Películas",
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(start = 28.dp, top = 16.dp, bottom = 8.dp)
+            )
+
+            NavigationDrawerItem(
+                icon = {
+                    Icon(
+                        Icons.Default.Star,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                label = { Text("Top Películas") },
+                selected = false,
+                onClick = {
+                    onNavigateToTopMovies()
+                },
+                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+            )
+
+            NavigationDrawerItem(
+                icon = {
+                    Icon(
+                        Icons.Default.Star,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                label = { Text("Trending Películas") },
+                selected = false,
+                onClick = {
+                    onNavigateToTrendingMovies()
+                },
+                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+            )
+
+            NavigationDrawerItem(
+                icon = {
+                    Icon(
+                        Icons.Default.Star,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                label = { Text("Próximos Estrenos") },
+                selected = false,
+                onClick = {
+                    onNavigateToUpcomingMovies()
+                },
+                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
+            )
             /*            // Profile
                         NavigationDrawerItem(
                             icon = { Icon(Icons.Default.Person, contentDescription = null) },

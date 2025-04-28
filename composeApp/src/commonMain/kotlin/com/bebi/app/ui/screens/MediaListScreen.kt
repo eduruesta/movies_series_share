@@ -157,6 +157,36 @@ class MediaListScreen : Screen {
                             drawerState.close()
                         }
                     },
+                    onNavigateToTopSeries = {
+                        scope.launch {
+                            drawerState.close()
+                            navigator.push(TopSeriesScreen())
+                        }
+                    },
+                    onNavigateToTrendingSeries = {
+                        scope.launch {
+                            drawerState.close()
+                            navigator.push(TrendingSeriesScreen())
+                        }
+                    },
+                    onNavigateToUpcomingMovies = {
+                        scope.launch {
+                            drawerState.close()
+                            navigator.push(UpcomingMoviesScreen())
+                        }
+                    },
+                    onNavigateToTopMovies = {
+                        scope.launch {
+                            drawerState.close()
+                            navigator.push(TopMoviesScreen())
+                        }
+                    },
+                    onNavigateToTrendingMovies = {
+                        scope.launch {
+                            drawerState.close()
+                            navigator.push(TrendingMoviesScreen())
+                        }
+                    },
                     drawerState = drawerState
                 )
             },

@@ -30,6 +30,69 @@ class TmdbRepository(private val appService: AppService) {
     }
     
     /**
+     * Obtiene las series mejor valoradas
+     */
+    suspend fun getTopRatedTvShows(): Result<List<TmdbMediaItem>> = withContext(Dispatchers.IO) {
+        try {
+            val response = appService.getTopRatedTvShows()
+            val results = response.results.map { it.copy(mediaType = "tv") }
+            Result.success(results)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    /**
+     * Obtiene las series en tendencia
+     */
+    suspend fun getTrendingTvShows(): Result<List<TmdbMediaItem>> = withContext(Dispatchers.IO) {
+        try {
+            val response = appService.getTrendingTvShows()
+            Result.success(response.results)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    /**
+     * Obtiene las películas en tendencia
+     */
+    suspend fun getTrendingMovies(): Result<List<TmdbMediaItem>> = withContext(Dispatchers.IO) {
+        try {
+            val response = appService.getTrendingMovies()
+            Result.success(response.results)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    /**
+     * Obtiene las películas mejor valoradas
+     */
+    suspend fun getTopRatedMovies(): Result<List<TmdbMediaItem>> = withContext(Dispatchers.IO) {
+        try {
+            val response = appService.getTopRatedMovies()
+            val results = response.results.map { it.copy(mediaType = "movie") }
+            Result.success(results)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    /**
+     * Obtiene las próximas películas
+     */
+    suspend fun getUpcomingMovies(): Result<List<TmdbMediaItem>> = withContext(Dispatchers.IO) {
+        try {
+            val response = appService.getUpcomingMovies()
+            val results = response.results.map { it.copy(mediaType = "movie") }
+            Result.success(results)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    /**
      * Obtiene los géneros de películas
      */
     private suspend fun getMovieGenres(): Result<List<TmdbGenre>> = withContext(Dispatchers.IO) {

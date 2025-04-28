@@ -3,6 +3,8 @@ package com.bebi.app.ui.screens
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -11,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -38,6 +41,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
@@ -54,6 +58,7 @@ import moviesseriesshare.composeapp.generated.resources.back_button
 import moviesseriesshare.composeapp.generated.resources.comment
 import moviesseriesshare.composeapp.generated.resources.error_loading_details
 import moviesseriesshare.composeapp.generated.resources.error_opinion_not_found
+import moviesseriesshare.composeapp.generated.resources.genre_field
 import moviesseriesshare.composeapp.generated.resources.loading_details
 import moviesseriesshare.composeapp.generated.resources.loading_title
 import moviesseriesshare.composeapp.generated.resources.opinion_count
@@ -266,27 +271,33 @@ data class MediaDetailScreen(
                             }
 
                             if (opinion.genre.isNotEmpty() || opinion.platform.isNotEmpty()) {
-                                Row(
+                                @OptIn(ExperimentalLayoutApi::class)
+                                FlowRow(
                                     modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
+                                    // Género
                                     if (opinion.genre.isNotEmpty()) {
                                         FilledTonalButton(
                                             onClick = { },
-                                            modifier = Modifier.height(32.dp),
+                                            modifier = Modifier.wrapContentWidth(),
                                             contentPadding = PaddingValues(horizontal = 8.dp)
                                         ) {
                                             Text(
                                                 opinion.genre,
-                                                style = MaterialTheme.typography.labelMedium
+                                                style = MaterialTheme.typography.labelMedium,
+                                                maxLines = 1,
+                                                overflow = TextOverflow.Ellipsis
                                             )
                                         }
                                     }
 
+                                    // Plataforma
                                     if (opinion.platform.isNotEmpty()) {
                                         FilledTonalButton(
                                             onClick = { },
-                                            modifier = Modifier.height(32.dp),
+                                            modifier = Modifier.wrapContentWidth(),
                                             contentPadding = PaddingValues(horizontal = 8.dp)
                                         ) {
                                             Text(
@@ -296,7 +307,7 @@ data class MediaDetailScreen(
                                         }
                                     }
                                 }
-
+                                
                                 Spacer(modifier = Modifier.height(16.dp))
                             }
                             if (!isTmbdMediaOpinion) {

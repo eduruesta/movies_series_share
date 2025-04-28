@@ -38,7 +38,6 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.bebi.app.data.remote.model.TmdbMediaItem
 import com.bebi.app.data.repository.TmdbRepository
 import com.bebi.app.ui.components.MediaOpinionItem
-import com.bebi.app.ui.screens.MediaDetailScreen
 import com.bebi.app.viewmodel.TmdbMediaListViewModel
 import com.bebi.app.viewmodel.TopMoviesViewModel
 import com.bebi.app.viewmodel.TopSeriesViewModel
@@ -48,18 +47,24 @@ import com.bebi.app.viewmodel.UpcomingMoviesViewModel
 import kotlinx.coroutines.launch
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.back_button
+import moviesseriesshare.composeapp.generated.resources.top_movies
+import moviesseriesshare.composeapp.generated.resources.top_series
+import moviesseriesshare.composeapp.generated.resources.trending
+import moviesseriesshare.composeapp.generated.resources.upcoming
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 
 /**
  * Pantalla base para mostrar listas de medios de TMDB
+ * (películas o series) usando diferentes criterios (top, trending, etc.)
  */
 abstract class TmdbMediaListScreen : Screen {
+    @get:Composable
     abstract val title: String
-    
+
 
     abstract suspend fun loadMedia(repository: TmdbRepository): Result<List<TmdbMediaItem>>
-    
+
     @Composable
     protected abstract fun getViewModel(): TmdbMediaListViewModel
 
@@ -72,7 +77,7 @@ abstract class TmdbMediaListScreen : Screen {
         val scope = rememberCoroutineScope()
 
         val viewModel = getViewModel()
-        
+
         val uiState by viewModel.uiState.collectAsState()
 
         Scaffold(
@@ -177,81 +182,84 @@ abstract class TmdbMediaListScreen : Screen {
 }
 
 /**
- * Pantalla para mostrar las series mejor valoradas
+ * Pantalla de Series mejor valoradas
  */
 class TopSeriesScreen : TmdbMediaListScreen() {
-    override val title: String = "Top Series"
+    @Composable
+    override fun getViewModel(): TmdbMediaListViewModel = koinViewModel<TopSeriesViewModel>()
+
+    override val title: String
+        @Composable
+        get() = stringResource(Res.string.top_series)
 
     override suspend fun loadMedia(repository: TmdbRepository): Result<List<TmdbMediaItem>> {
         return repository.getTopRatedTvShows()
     }
-    
-    @Composable
-    override fun getViewModel(): TmdbMediaListViewModel {
-        return koinViewModel<TopSeriesViewModel>()
-    }
 }
 
 /**
- * Pantalla para mostrar las series en tendencia
+ * Pantalla de Series en tendencia
  */
 class TrendingSeriesScreen : TmdbMediaListScreen() {
-    override val title: String = "Series en Tendencia"
+    @Composable
+    override fun getViewModel(): TmdbMediaListViewModel = koinViewModel<TrendingSeriesViewModel>()
+
+
+    override val title: String
+        @Composable
+        get() = stringResource(Res.string.trending)
 
     override suspend fun loadMedia(repository: TmdbRepository): Result<List<TmdbMediaItem>> {
         return repository.getTrendingTvShows()
     }
-    
-    @Composable
-    override fun getViewModel(): TmdbMediaListViewModel {
-        return koinViewModel<TrendingSeriesViewModel>()
-    }
 }
 
 /**
- * Pantalla para mostrar las películas próximas a estrenarse
+ * Pantalla de Películas próximas a estrenarse
  */
 class UpcomingMoviesScreen : TmdbMediaListScreen() {
-    override val title: String = "Próximos Estrenos"
+    @Composable
+    override fun getViewModel(): TmdbMediaListViewModel = koinViewModel<UpcomingMoviesViewModel>()
+
+    override val title: String
+        @Composable
+        get() = stringResource(Res.string.upcoming)
 
     override suspend fun loadMedia(repository: TmdbRepository): Result<List<TmdbMediaItem>> {
         return repository.getUpcomingMovies()
     }
-    
-    @Composable
-    override fun getViewModel(): TmdbMediaListViewModel {
-        return koinViewModel<UpcomingMoviesViewModel>()
-    }
 }
 
 /**
- * Pantalla para mostrar las películas mejor valoradas
+ * Pantalla de Películas mejor valoradas
  */
 class TopMoviesScreen : TmdbMediaListScreen() {
-    override val title: String = "Top Películas"
+    @Composable
+    override fun getViewModel(): TmdbMediaListViewModel = koinViewModel<TopMoviesViewModel>()
+
+
+    override val title: String
+        @Composable
+        get() = stringResource(Res.string.top_movies)
 
     override suspend fun loadMedia(repository: TmdbRepository): Result<List<TmdbMediaItem>> {
         return repository.getTopRatedMovies()
     }
-    
-    @Composable
-    override fun getViewModel(): TmdbMediaListViewModel {
-        return koinViewModel<TopMoviesViewModel>()
-    }
 }
 
 /**
- * Pantalla para mostrar las películas en tendencia
+ * Pantalla de Películas en tendencia
  */
 class TrendingMoviesScreen : TmdbMediaListScreen() {
-    override val title: String = "Películas en Tendencia"
+    @Composable
+    override fun getViewModel(): TmdbMediaListViewModel = koinViewModel<TrendingMoviesViewModel>()
+
+
+    override val title: String
+        @Composable
+        get() = stringResource(Res.string.trending)
 
     override suspend fun loadMedia(repository: TmdbRepository): Result<List<TmdbMediaItem>> {
         return repository.getTrendingMovies()
-    }
-    
-    @Composable
-    override fun getViewModel(): TmdbMediaListViewModel {
-        return koinViewModel<TrendingMoviesViewModel>()
     }
 }

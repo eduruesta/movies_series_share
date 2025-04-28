@@ -22,6 +22,7 @@ firebase-android-bom = "32.8.1"
 kotlinxDatetime = "0.4.0"
 core-splashscreen = "1.0.1"
 settings = "1.0.2"
+uiAndroid = "1.8.0"
 
 
 [libraries]
@@ -69,6 +70,7 @@ gitlive-firebase-kotlin-database = { module = "dev.gitlive:firebase-database", v
 
 core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "core-splashscreen" }
 remember-settings = { module = "dev.burnoo:compose-remember-setting", version.ref = "settings" }
+androidx-ui-android = { group = "androidx.compose.ui", name = "ui-android", version.ref = "uiAndroid" }
 
 
 [plugins]

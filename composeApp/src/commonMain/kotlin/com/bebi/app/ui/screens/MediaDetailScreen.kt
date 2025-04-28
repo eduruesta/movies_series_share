@@ -88,7 +88,6 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
         val uiState by viewModel.uiState.collectAsState()
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
-        // Load the opinion when the screen is first composed
         LaunchedEffect(opinionId) {
             viewModel.loadOpinionById(opinionId)
         }
@@ -121,7 +120,6 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
                     .padding(paddingValues)
             ) {
                 if (uiState.isLoading) {
-                    // Loading state
                     Column(
                         modifier = Modifier.fillMaxSize(),
                         horizontalAlignment = Alignment.CenterHorizontally,
@@ -132,13 +130,11 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
                         Text(stringResource(Res.string.loading_details))
                     }
                 } else if (uiState.error != null) {
-                    // Error state
                     Column(
                         modifier = Modifier.fillMaxSize().padding(16.dp),
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
-                        // Traducir el error a un string
                         val errorMessage = when (uiState.error) {
                             MediaDetailError.NOT_FOUND -> stringResource(Res.string.error_opinion_not_found)
                             MediaDetailError.GENERIC -> stringResource(Res.string.error_loading_details)
@@ -163,8 +159,6 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
                             .fillMaxSize()
                             .verticalScroll(rememberScrollState())
                     ) {
-                        // Image
-
                         AsyncImage(
                             model = opinion.backdropUrl ?: opinion.posterUrl ?: placeholder,
                             contentDescription = opinion.title,
@@ -178,7 +172,7 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-                            // Title
+
                             Text(
                                 text = opinion.title,
                                 style = MaterialTheme.typography.headlineMedium,
@@ -187,7 +181,6 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
 
                             Spacer(modifier = Modifier.height(8.dp))
 
-                            // Rating display
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 StarRating(
                                     rating = opinion.rating,
@@ -224,7 +217,6 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
                                 }
                             }
 
-                            // Sinopsis
                             if (opinion.synopsis.isNotEmpty()) {
                                 Column(
                                     modifier = Modifier
@@ -248,7 +240,6 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
                                 Spacer(modifier = Modifier.height(16.dp))
                             }
 
-                            // Genre and Platform
                             if (opinion.genre.isNotEmpty() || opinion.platform.isNotEmpty()) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
@@ -284,7 +275,6 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
                                 Spacer(modifier = Modifier.height(16.dp))
                             }
 
-                            // Comment section
                             Text(
                                 text = stringResource(Res.string.comment),
                                 style = MaterialTheme.typography.titleMedium,

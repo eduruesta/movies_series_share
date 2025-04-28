@@ -27,7 +27,7 @@ fun StarRating(
 ) {
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.Center // Centrar las estrellas horizontalmente
+        horizontalArrangement = Arrangement.Center
     ) {
         for (i in 1..maxRating) {
             val isFilled = i <= rating
@@ -35,20 +35,20 @@ fun StarRating(
             val starModifier = if (onRatingChanged != null) {
                 Modifier
                     .size(24.dp)
-                    .padding(horizontal = 2.dp) // Padding equilibrado a ambos lados
+                    .padding(horizontal = 2.dp)
                     .clickable {
                         onRatingChanged(i.toFloat())
                     }
             } else {
                 Modifier
                     .size(24.dp)
-                    .padding(horizontal = 2.dp) // Padding equilibrado a ambos lados
+                    .padding(horizontal = 2.dp)
             }
             
             Icon(
                 imageVector = if (isFilled) Icons.Filled.Star else Icons.Outlined.Star,
                 contentDescription = "Star $i",
-                tint = if (isFilled) Color(0xFFFFD700) else Color.Gray, // Gold color for filled stars
+                tint = if (isFilled) Color(0xFFFFD700) else Color.Gray,
                 modifier = starModifier
             )
         }

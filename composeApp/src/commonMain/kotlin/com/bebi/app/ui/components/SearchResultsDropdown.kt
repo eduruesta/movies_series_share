@@ -23,7 +23,6 @@ import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -66,7 +65,6 @@ fun SearchResultsDropdown(
                 modifier = Modifier
                     .fillMaxWidth()
             ) {
-                // Título y botón de cerrar
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -90,12 +88,11 @@ fun SearchResultsDropdown(
                     }
                 }
                 
-                // Lista de resultados
                 LazyColumn(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(vertical = 8.dp)
-                        .height(300.dp) // Altura máxima
+                        .height(300.dp)
                 ) {
                     items(results) { mediaItem ->
                         SearchResultItem(
@@ -128,7 +125,6 @@ private fun SearchResultItem(
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // Poster
         Box(
             modifier = Modifier
                 .size(width = 50.dp, height = 75.dp)
@@ -154,11 +150,9 @@ private fun SearchResultItem(
         
         Spacer(modifier = Modifier.width(16.dp))
         
-        // Información
         Column(
             modifier = Modifier.weight(1f)
         ) {
-            // Título
             Text(
                 text = mediaItem.displayTitle,
                 style = MaterialTheme.typography.bodyLarge,
@@ -167,7 +161,6 @@ private fun SearchResultItem(
                 overflow = TextOverflow.Ellipsis
             )
             
-            // Fecha de lanzamiento
             if (mediaItem.displayReleaseDate.isNotEmpty()) {
                 Text(
                     text = mediaItem.displayReleaseDate,
@@ -176,8 +169,7 @@ private fun SearchResultItem(
                 )
             }
             
-            // Vista previa de la sinopsis
-            if (mediaItem.overview != null && mediaItem.overview.isNotEmpty()) {
+            if (!mediaItem.overview.isNullOrEmpty()) {
                 Text(
                     text = mediaItem.overview,
                     style = MaterialTheme.typography.bodySmall,

@@ -129,6 +129,7 @@ room {
 }
 
 dependencies {
+    implementation(libs.androidx.ui.android)
     with(libs.room.compiler) {
         add("kspAndroid", this)
         add("kspIosX64", this)

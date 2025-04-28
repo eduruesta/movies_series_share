@@ -61,13 +61,11 @@ fun SavedRecommendationItem(
                 .padding(8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // Imagen de póster
             Box(
                 modifier = Modifier
                     .size(width = 80.dp, height = 120.dp)
                     .clip(RoundedCornerShape(4.dp))
             ) {
-                // Usamos AsyncImage solo para URLs reales
                 if (recommendation.posterUrl != null) {
                     AsyncImage(
                         model = recommendation.posterUrl,
@@ -76,7 +74,6 @@ fun SavedRecommendationItem(
                         modifier = Modifier.fillMaxWidth()
                     )
                 } else {
-                    // Fondo genérico cuando no hay imagen
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -94,7 +91,6 @@ fun SavedRecommendationItem(
                 }
             }
             
-            // Información
             Column(
                 modifier = Modifier
                     .weight(1f)
@@ -110,7 +106,6 @@ fun SavedRecommendationItem(
                 
                 Spacer(modifier = Modifier.height(4.dp))
                 
-                // Rating
                 Row(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
@@ -131,20 +126,16 @@ fun SavedRecommendationItem(
                 }
                 
                 Spacer(modifier = Modifier.height(4.dp))
-                
-                // Género si está disponible
-                recommendation.genre?.let {
-                    Text(
-                        text = it,
-                        style = MaterialTheme.typography.bodySmall,
-                        color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
+
+                Text(
+                    text = recommendation.genre,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f),
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
             
-            // Botón para eliminar
             IconButton(
                 onClick = onRemoveClick,
             ) {

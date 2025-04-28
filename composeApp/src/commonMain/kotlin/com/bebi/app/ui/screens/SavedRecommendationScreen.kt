@@ -59,12 +59,9 @@ class SavedRecommendationScreen : Screen {
         val uiState by viewModel.uiState.collectAsState()
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         val snackbarHostState = remember { SnackbarHostState() }
-        val scope = rememberCoroutineScope()
-        
-        // Variable para almacenar el último mensaje de recomendación
+
         var lastRecommendationMessage by remember { mutableStateOf<com.bebi.app.viewmodel.RecommendationMessage?>(null) }
         
-        // Formatear los mensajes de recomendación cuando existan
         lastRecommendationMessage?.let { message ->
             val messageText = when (message) {
                 is com.bebi.app.viewmodel.RecommendationMessage.Removed ->

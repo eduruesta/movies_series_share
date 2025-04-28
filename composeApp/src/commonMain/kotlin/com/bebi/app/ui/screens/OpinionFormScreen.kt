@@ -98,7 +98,6 @@ class OpinionFormScreen : Screen {
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         val keyboardController = LocalSoftwareKeyboardController.current
 
-        // Show success message and navigate back when saved
         LaunchedEffect(uiState.saved) {
             if (uiState.saved) {
                 viewModel.resetSavedState()
@@ -106,10 +105,8 @@ class OpinionFormScreen : Screen {
             }
         }
 
-        // Observar mensajes de búsqueda
         val searchMessage by viewModel.searchUiMessage.collectAsState()
         
-        // Componente que maneja los mensajes
         SearchMessageHandler(searchMessage, snackbarHostState)
         
         Box(modifier = Modifier.fillMaxSize()) {
@@ -143,7 +140,6 @@ class OpinionFormScreen : Screen {
                         .verticalScroll(rememberScrollState()),
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
-                    // Title field with search button
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -161,7 +157,6 @@ class OpinionFormScreen : Screen {
                             )
                         )
 
-                        // Search button
                         IconButton(
                             onClick = {
                                 keyboardController?.hide()
@@ -189,7 +184,6 @@ class OpinionFormScreen : Screen {
                         }
                     }
 
-                    // Mostrar resultados de búsqueda en dropdown cuando corresponda
                     if (viewModel.showSearchResults && viewModel.searchResults.isNotEmpty()) {
                         Box(modifier = Modifier.fillMaxWidth()) {
                             SearchResultsDropdown(
@@ -205,25 +199,12 @@ class OpinionFormScreen : Screen {
                         }
                     }
 
-                    // No necesitamos verificar searchError porque ya manejamos los mensajes a través de searchUiMessage
-                    /*
-                    viewModel.searchError?.let {
-                        Text(
-                            text = stringResource(Res.string.result_error),
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodyMedium
-                        )
-                    }
-                    */
-
-                    // Rating field with stars
                     Column {
                         Text(
                             text = "${stringResource(Res.string.rating_field)}: ${viewModel.rating}/10",
                             style = MaterialTheme.typography.bodyLarge
                         )
 
-                        // Wrap the stars in a horizontally scrollable row for smaller screens
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -232,12 +213,11 @@ class OpinionFormScreen : Screen {
                             StarRating(
                                 rating = viewModel.rating,
                                 maxRating = 10,
-                                onRatingChanged = { viewModel.updateRating(it.toFloat()) }
+                                onRatingChanged = { viewModel.updateRating(it) }
                             )
                         }
                     }
 
-                    // Image field
                     Text(
                         text = stringResource(Res.string.image_field),
                         style = MaterialTheme.typography.bodyLarge
@@ -249,7 +229,6 @@ class OpinionFormScreen : Screen {
                             .padding(vertical = 8.dp),
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
-                        // Image preview area
                         Box(
                             modifier = Modifier
                                 .weight(1f)
@@ -271,7 +250,6 @@ class OpinionFormScreen : Screen {
                             )
                         }
 
-                        // Image source buttons
                         Column(
                             modifier = Modifier
                                 .width(150.dp)
@@ -295,12 +273,10 @@ class OpinionFormScreen : Screen {
                         }
                     }
 
-                    // Genre and Platform fields in a row
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        // Genre field
                         OutlinedTextField(
                             value = viewModel.genre,
                             onValueChange = { viewModel.updateGenre(it) },
@@ -309,7 +285,6 @@ class OpinionFormScreen : Screen {
                             keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
                         )
 
-                        // Platform field
                         OutlinedTextField(
                             value = viewModel.platform,
                             onValueChange = { viewModel.updatePlatform(it) },
@@ -319,7 +294,6 @@ class OpinionFormScreen : Screen {
                         )
                     }
 
-                    // Synopsis field
                     OutlinedTextField(
                         value = viewModel.synopsis,
                         onValueChange = { viewModel.updateSynopsis(it) },
@@ -330,7 +304,6 @@ class OpinionFormScreen : Screen {
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done)
                     )
 
-                    // Comment field
                     OutlinedTextField(
                         value = viewModel.comment,
                         onValueChange = { viewModel.updateComment(it) },
@@ -343,7 +316,6 @@ class OpinionFormScreen : Screen {
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    // Save button
                     Button(
                         onClick = { viewModel.saveOpinion() },
                         modifier = Modifier.fillMaxWidth(),
@@ -354,7 +326,6 @@ class OpinionFormScreen : Screen {
                 }
             }
             
-            // Overlay de carga
             if (uiState.isSaving) {
                 Box(
                     modifier = Modifier
@@ -382,8 +353,6 @@ class OpinionFormScreen : Screen {
     ) {
         val scope = rememberCoroutineScope()
         
-        // Aquí recopilamos todos los mensajes completamente formateados para cada posible caso
-        // usando stringResource en el contexto composable
         val displayText = when (message) {
             is SearchUiMessage.NoResults -> 
                 stringResource(Res.string.search_no_results, message.query)
@@ -396,10 +365,9 @@ class OpinionFormScreen : Screen {
             is SearchUiMessage.Generic -> 
                 message.text
             SearchUiMessage.None -> 
-                null // No mostrar nada si es None
+                null
         }
         
-        // Solo lanzamos el efecto si hay un mensaje para mostrar
         if (displayText != null) {
             LaunchedEffect(displayText) {
                 scope.launch {

@@ -52,11 +52,9 @@ fun RatingBottomSheet(
     isLoading: Boolean = false,
     sheetState: SheetState = rememberModalBottomSheetState()
 ) {
-    // Iniciar sin calificación seleccionada (0)
     var selectedRating by remember { mutableIntStateOf(0) }
 
     ModalBottomSheet(
-        // Solo permitir cerrar si no estamos cargando
         onDismissRequest = { if (!isLoading) onDismiss() },
         sheetState = sheetState
     ) {
@@ -67,7 +65,6 @@ fun RatingBottomSheet(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            // Título
             Text(
                 text = stringResource(Res.string.rate_action),
                 style = MaterialTheme.typography.headlineLarge,
@@ -75,7 +72,6 @@ fun RatingBottomSheet(
                 textAlign = TextAlign.Center
             )
 
-            // Nombre de la película/serie
             Text(
                 text = opinion.title,
                 style = MaterialTheme.typography.headlineMedium,
@@ -84,7 +80,6 @@ fun RatingBottomSheet(
 
             Spacer(modifier = Modifier.height(4.dp))
 
-            // Estrellas para calificar - Usar un contenedor con padding para dar más espacio
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -94,13 +89,11 @@ fun RatingBottomSheet(
                 StarRating(
                     rating = selectedRating.toFloat(),
                     maxRating = 10,
-                    // Deshabilitar la selección de estrellas durante la carga
                     onRatingChanged = { if (!isLoading) selectedRating = it.toInt() },
                     modifier = Modifier.fillMaxWidth(0.9f)
                 )
             }
 
-            // Valor numérico de la calificación
             Text(
                 text = "$selectedRating/10",
                 style = MaterialTheme.typography.headlineSmall,
@@ -109,15 +102,12 @@ fun RatingBottomSheet(
 
             Spacer(modifier = Modifier.height(8.dp))
 
-            // Botón para enviar la calificación
             Button(
                 onClick = { onRatingSubmit(opinion, selectedRating) },
                 modifier = Modifier.fillMaxWidth(0.7f),
-                // Deshabilitar el botón si no hay calificación seleccionada o si está cargando
                 enabled = selectedRating > 0 && !isLoading
             ) {
                 if (isLoading) {
-                    // Mostrar indicador de carga y texto
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
@@ -135,7 +125,6 @@ fun RatingBottomSheet(
                 }
             }
 
-            // Espacio al final para mejor apariencia
             Spacer(modifier = Modifier.height(24.dp))
         }
     }

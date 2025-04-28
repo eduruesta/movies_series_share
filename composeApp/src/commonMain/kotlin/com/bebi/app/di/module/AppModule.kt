@@ -37,7 +37,6 @@ import org.koin.dsl.module
 val appModule = module {
     single(named("apiKey")) { BuildConfig.api_key }
 
-    // Database
     single {
         get<DatabaseFactory>()
             .createAppDatabase()
@@ -45,7 +44,6 @@ val appModule = module {
             .build()
     }
     single { get<AppDatabase>().mediaOpinionDao }
-    // Agregar DAO para recomendaciones guardadas
     single { get<AppDatabase>().savedRecommendationDao }
 
     single<HttpClient> {
@@ -65,7 +63,6 @@ val appModule = module {
 }
 
 val dataModule = module {
-    // Repositories
     factoryOf(::RoomMediaOpinionRepository)
     factoryOf(::CriticsApiService)
     factory<MediaOpinionRepository> {
@@ -75,10 +72,8 @@ val dataModule = module {
         )
     }
     
-    // Repositorio para recomendaciones guardadas
     factoryOf(::SavedRecommendationRepository)
     
-    // TMDB API
     singleOf(::TmdbRepository)
     factoryOf(::AppService)
     single<HttpClient> {

@@ -21,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.app_name
@@ -44,18 +45,16 @@ fun AppDrawerContent(
     ModalDrawerSheet(
         modifier = modifier
             .fillMaxHeight()
-            .fillMaxWidth(0.8f)
+            .fillMaxWidth(0.8f),
     ) {
-        // App title
         Text(
             text = stringResource(Res.string.app_name),
             style = MaterialTheme.typography.headlineMedium,
             modifier = Modifier.padding(16.dp)
         )
 
-        HorizontalDivider()
+        HorizontalDivider(color = Color(0xFF38444D))
 
-        // Navigation items
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -65,7 +64,6 @@ fun AppDrawerContent(
         ) {
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Home
             NavigationDrawerItem(
                 icon = {
                     Icon(
@@ -81,7 +79,6 @@ fun AppDrawerContent(
                 modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding)
             )
 
-            // Recommendations
             NavigationDrawerItem(
                 icon = {
                     Icon(

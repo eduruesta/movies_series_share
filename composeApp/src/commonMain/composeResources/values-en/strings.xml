@@ -67,6 +67,12 @@
     <!-- Menu -->
     <string name="your_recommendations">Saved Recommendations</string>
     <string name="app_name">Critiqo</string>
+    <string name="movies">Movies</string>
+    <string name="series">Series</string>
+    <string name="top_series">Top Series</string>
+    <string name="top_movies">Top Movies</string>
+    <string name="trending">Trending</string>
+    <string name="upcoming">Upcoming</string>
 
     <string name="empty_recommendations_message">You don't have any saved recommendations yet. Add recommendations from the main screen to see them here.</string>
 

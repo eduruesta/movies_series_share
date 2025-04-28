@@ -51,6 +51,20 @@ class MediaDetailViewModel(
             }
         }
     }
+    
+    /**
+     * Establece directamente un MediaOpinion para elementos TMDB
+     * que no están guardados en la base de datos
+     */
+    fun setTmdbMediaOpinion(opinion: MediaOpinion) {
+        _uiState.update { 
+            it.copy(
+                opinion = opinion,
+                isLoading = false,
+                error = null
+            ) 
+        }
+    }
 }
 
 /**

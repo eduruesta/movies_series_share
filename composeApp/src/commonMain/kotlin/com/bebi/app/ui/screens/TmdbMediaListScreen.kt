@@ -38,6 +38,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.bebi.app.data.remote.model.TmdbMediaItem
 import com.bebi.app.data.repository.TmdbRepository
 import com.bebi.app.ui.components.MediaOpinionItem
+import com.bebi.app.ui.screens.MediaDetailScreen
 import com.bebi.app.viewmodel.TmdbMediaListViewModel
 import com.bebi.app.viewmodel.TopMoviesViewModel
 import com.bebi.app.viewmodel.TopSeriesViewModel
@@ -56,11 +57,9 @@ import org.koin.compose.viewmodel.koinViewModel
 abstract class TmdbMediaListScreen : Screen {
     abstract val title: String
     
-    // Este método ya no lo usamos directamente en la UI, 
-    // pero lo mantenemos para compatibilidad con el código actual
+
     abstract suspend fun loadMedia(repository: TmdbRepository): Result<List<TmdbMediaItem>>
     
-    // Método para obtener el ViewModel específico de cada pantalla
     @Composable
     protected abstract fun getViewModel(): TmdbMediaListViewModel
 
@@ -72,10 +71,8 @@ abstract class TmdbMediaListScreen : Screen {
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         val scope = rememberCoroutineScope()
 
-        // Obtener el ViewModel específico para esta pantalla
         val viewModel = getViewModel()
         
-        // Observar el estado del ViewModel
         val uiState by viewModel.uiState.collectAsState()
 
         Scaffold(
@@ -155,7 +152,7 @@ abstract class TmdbMediaListScreen : Screen {
                                     onClick = {
                                         navigator.push(
                                             MediaDetailScreen(
-                                                opinionId = mediaOpinion.id,
+                                                tmdbMediaOpinion = mediaOpinion
                                             )
                                         )
                                     },

@@ -40,6 +40,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
+import com.bebi.app.model.MediaOpinion
 import com.bebi.app.ui.components.StarRating
 import com.bebi.app.viewmodel.MediaDetailError
 import com.bebi.app.viewmodel.MediaDetailViewModel
@@ -75,7 +76,19 @@ fun extractYearFromDate(dateString: String): String {
  * Now uses only the ID for serialization safety
  */
 @Serializable
-class MediaDetailScreen(private val opinionId: Long) : Screen {
+data class MediaDetailScreen(
+    private val opinionId: Long? = null,
+    private val tmdbMediaOpinion: MediaOpinion? = null
+) : Screen {
+
+    // Constructor para elementos guardados en la base de datos
+    constructor(opinionId: Long) : this(opinionId = opinionId, tmdbMediaOpinion = null)
+
+    // Constructor para elementos TMDB que no están en la base de datos
+    constructor(tmdbMediaOpinion: MediaOpinion) : this(
+        opinionId = null,
+        tmdbMediaOpinion = tmdbMediaOpinion
+    )
 
     @OptIn(
         ExperimentalMaterial3Api::class
@@ -87,8 +100,14 @@ class MediaDetailScreen(private val opinionId: Long) : Screen {
         val uiState by viewModel.uiState.collectAsState()
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
-        LaunchedEffect(opinionId) {
-            viewModel.loadOpinionById(opinionId)
+        // Si tenemos un ID, cargamos desde la base de datos
+        // Si tenemos un elemento TMDB, establecemos directamente en el ViewModel
+        LaunchedEffect(opinionId, tmdbMediaOpinion) {
+            if (opinionId != null) {
+                viewModel.loadOpinionById(opinionId)
+            } else if (tmdbMediaOpinion != null) {
+                viewModel.setTmdbMediaOpinion(tmdbMediaOpinion)
+            }
         }
 
         Scaffold(

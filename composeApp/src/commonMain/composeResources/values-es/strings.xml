@@ -66,6 +66,12 @@
     <!-- Menu -->
     <string name="your_recommendations">Recomendaciones Guardadas</string>
     <string name="app_name">Critiqo</string>
+    <string name="movies">Películas</string>
+    <string name="series">Series</string>
+    <string name="top_series">Top Series</string>
+    <string name="top_movies">Top Películas</string>
+    <string name="trending">Tendencias</string>
+    <string name="upcoming">Proximamente</string>
 
     <string name="empty_recommendations_message">Todavía no tienes recomendaciones guardadas. Agrega recomendaciones desde la pantalla principal para verlas aquí.</string>
 

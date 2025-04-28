@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material3.DrawerState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -27,6 +26,12 @@ import androidx.compose.ui.unit.dp
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.app_name
 import moviesseriesshare.composeapp.generated.resources.media_list_title
+import moviesseriesshare.composeapp.generated.resources.movies
+import moviesseriesshare.composeapp.generated.resources.series
+import moviesseriesshare.composeapp.generated.resources.top_movies
+import moviesseriesshare.composeapp.generated.resources.top_series
+import moviesseriesshare.composeapp.generated.resources.trending
+import moviesseriesshare.composeapp.generated.resources.upcoming
 import moviesseriesshare.composeapp.generated.resources.your_recommendations
 import org.jetbrains.compose.resources.stringResource
 
@@ -37,15 +42,12 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun AppDrawerContent(
     onNavigateToMediaList: () -> Unit,
-    onNavigateToProfile: () -> Unit,
     onNavigateToRecommendations: () -> Unit,
-    onNavigateToSettings: () -> Unit,
     onNavigateToTopSeries: () -> Unit,
     onNavigateToTrendingSeries: () -> Unit,
     onNavigateToUpcomingMovies: () -> Unit,
     onNavigateToTopMovies: () -> Unit,
     onNavigateToTrendingMovies: () -> Unit,
-    drawerState: DrawerState,
     modifier: Modifier = Modifier
 ) {
     ModalDrawerSheet(
@@ -103,7 +105,7 @@ fun AppDrawerContent(
 
             // Series
             Text(
-                text = "Series",
+                text = stringResource(Res.string.series),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -118,7 +120,7 @@ fun AppDrawerContent(
                         tint = MaterialTheme.colorScheme.primary
                     )
                 },
-                label = { Text("Top Series") },
+                label = { Text(stringResource(Res.string.top_series)) },
                 selected = false,
                 onClick = {
                     onNavigateToTopSeries()
@@ -134,7 +136,7 @@ fun AppDrawerContent(
                         tint = MaterialTheme.colorScheme.primary
                     )
                 },
-                label = { Text("Trending Series") },
+                label = { Text(stringResource(Res.string.trending)) },
                 selected = false,
                 onClick = {
                     onNavigateToTrendingSeries()
@@ -144,7 +146,7 @@ fun AppDrawerContent(
 
             // Movies
             Text(
-                text = "Películas",
+                text = stringResource(Res.string.movies),
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -159,7 +161,7 @@ fun AppDrawerContent(
                         tint = MaterialTheme.colorScheme.primary
                     )
                 },
-                label = { Text("Top Películas") },
+                label = { Text(stringResource(Res.string.top_movies)) },
                 selected = false,
                 onClick = {
                     onNavigateToTopMovies()
@@ -175,7 +177,7 @@ fun AppDrawerContent(
                         tint = MaterialTheme.colorScheme.primary
                     )
                 },
-                label = { Text("Trending Películas") },
+                label = { Text(stringResource(Res.string.trending)) },
                 selected = false,
                 onClick = {
                     onNavigateToTrendingMovies()
@@ -191,7 +193,7 @@ fun AppDrawerContent(
                         tint = MaterialTheme.colorScheme.primary
                     )
                 },
-                label = { Text("Próximos Estrenos") },
+                label = { Text(stringResource(Res.string.upcoming)) },
                 selected = false,
                 onClick = {
                     onNavigateToUpcomingMovies()

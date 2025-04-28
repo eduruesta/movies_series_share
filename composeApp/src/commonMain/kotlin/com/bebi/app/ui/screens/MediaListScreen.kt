@@ -141,20 +141,11 @@ class MediaListScreen : Screen {
                             drawerState.close()
                         }
                     },
-                    onNavigateToProfile = {
-                        scope.launch {
-                            drawerState.close()
-                        }
-                    },
+
                     onNavigateToRecommendations = {
                         scope.launch {
                             drawerState.close()
                             navigator.push(SavedRecommendationScreen())
-                        }
-                    },
-                    onNavigateToSettings = {
-                        scope.launch {
-                            drawerState.close()
                         }
                     },
                     onNavigateToTopSeries = {
@@ -187,7 +178,6 @@ class MediaListScreen : Screen {
                             navigator.push(TrendingMoviesScreen())
                         }
                     },
-                    drawerState = drawerState
                 )
             },
             content = {

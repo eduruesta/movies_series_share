@@ -75,11 +75,9 @@ class MediaDetailViewModel(
         
         viewModelScope.launch {
             try {
-                // Verificamos si la opinión existe en el remoto consultando por su ID
                 val existingOpinion = repository.getOpinionByIdDirect(currentOpinion.id)
                 
                 if (existingOpinion == null) {
-                    // La opinión no existe en el remoto - Crear y guardar nueva opinión
                     val randomId = kotlin.random.Random.nextLong(1_000_000, Long.MAX_VALUE)
                     
                     val newOpinion = MediaOpinion(
@@ -105,7 +103,6 @@ class MediaDetailViewModel(
                         _uiState.update { it.copy(commentError = "No se pudo guardar la opinión") }
                     }
                 } else {
-                    // La opinión existe - Actualizar con el nuevo comentario
                     val updatedComments = existingOpinion.comments.toMutableList().apply {
                         add(comment)
                     }

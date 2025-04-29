@@ -30,6 +30,8 @@
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
 
+   <string name="dark_mode">Dark Mode</string>
+
 
     <!-- Media List Screen Strings -->
     <string name="media_list_title">Recommendations</string>

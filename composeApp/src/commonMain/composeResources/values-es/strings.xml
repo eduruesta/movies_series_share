@@ -29,6 +29,8 @@
     <string name="save">Guardar</string>
     <string name="cancel">Cancelar</string>
 
+    <string name="dark_mode">Modo Oscuro</string>
+
 
     <!-- Media List Screen Strings -->
     <string name="media_list_title">Recomendaciones</string>

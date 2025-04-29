@@ -2,6 +2,7 @@ package com.bebi.app.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,13 +18,15 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
-import com.bebi.app.ui.components.bookmarkCheck
+import com.bebi.app.theme.LocalThemeIsDark
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.app_name
 import moviesseriesshare.composeapp.generated.resources.media_list_title
@@ -34,6 +37,8 @@ import moviesseriesshare.composeapp.generated.resources.top_series
 import moviesseriesshare.composeapp.generated.resources.trending
 import moviesseriesshare.composeapp.generated.resources.upcoming
 import moviesseriesshare.composeapp.generated.resources.your_recommendations
+import moviesseriesshare.composeapp.generated.resources.dark_mode
+
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -201,6 +206,36 @@ fun AppDrawerContent(
                 },
                 modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
             )
+            
+            Spacer(modifier = Modifier.weight(1f))
+            
+            // Separador antes del switch de tema
+            HorizontalDivider(color = Color(0xFF38444D))
+            
+            // Switch para cambiar entre modo oscuro y claro
+            val isDarkTheme = LocalThemeIsDark.current
+            val isDark by isDarkTheme
+            
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = stringResource(Res.string.dark_mode),
+                    style = MaterialTheme.typography.titleMedium
+                )
+                
+                Switch(
+                    checked = isDark,
+                    onCheckedChange = { isDarkTheme.value = it },
+                    modifier = Modifier.padding(start = 8.dp)
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
         }
     }
 }

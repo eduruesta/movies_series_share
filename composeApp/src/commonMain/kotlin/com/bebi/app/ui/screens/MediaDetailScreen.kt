@@ -1,10 +1,10 @@
 package com.bebi.app.ui.screens
 
+
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -14,19 +14,21 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -60,16 +62,20 @@ import com.bebi.app.viewmodel.MediaDetailError
 import com.bebi.app.viewmodel.MediaDetailViewModel
 import kotlinx.serialization.Serializable
 import moviesseriesshare.composeapp.generated.resources.Res
+import moviesseriesshare.composeapp.generated.resources.add_new_comment
 import moviesseriesshare.composeapp.generated.resources.back
 import moviesseriesshare.composeapp.generated.resources.back_button
+import moviesseriesshare.composeapp.generated.resources.cancel
 import moviesseriesshare.composeapp.generated.resources.comment
 import moviesseriesshare.composeapp.generated.resources.error_loading_details
 import moviesseriesshare.composeapp.generated.resources.error_opinion_not_found
 import moviesseriesshare.composeapp.generated.resources.loading_details
 import moviesseriesshare.composeapp.generated.resources.loading_title
 import moviesseriesshare.composeapp.generated.resources.opinion_count
+import moviesseriesshare.composeapp.generated.resources.save
 import moviesseriesshare.composeapp.generated.resources.synopsis_field
 import moviesseriesshare.composeapp.generated.resources.without_comment
+import moviesseriesshare.composeapp.generated.resources.write_your_comment
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import placeholder
@@ -127,13 +133,13 @@ data class MediaDetailScreen(
         if (showCommentDialog) {
             AlertDialog(
                 onDismissRequest = { showCommentDialog = false },
-                title = { Text("Agregar comentario") },
+                title = { Text(stringResource(Res.string.add_new_comment)) },
                 text = {
                     OutlinedTextField(
                         value = uiState.newComment,
                         onValueChange = { viewModel.updateNewComment(it) },
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text("Escribe tu comentario...") },
+                        placeholder = { Text(stringResource(Res.string.write_your_comment)) },
                         minLines = 3
                     )
                 },
@@ -144,16 +150,16 @@ data class MediaDetailScreen(
                             showCommentDialog = false
                         }
                     ) {
-                        Text("Guardar")
+                        Text(stringResource(Res.string.save))
                     }
                 },
                 dismissButton = {
                     TextButton(
-                        onClick = { 
+                        onClick = {
                             showCommentDialog = false
                         }
                     ) {
-                        Text("Cancelar")
+                        Text(stringResource(Res.string.cancel))
                     }
                 }
             )
@@ -324,13 +330,11 @@ data class MediaDetailScreen(
                             }
 
                             if (opinion.genre.isNotEmpty() || opinion.platform.isNotEmpty()) {
-                                @OptIn(ExperimentalLayoutApi::class)
                                 FlowRow(
                                     modifier = Modifier.fillMaxWidth(),
                                     horizontalArrangement = Arrangement.spacedBy(8.dp),
                                     verticalArrangement = Arrangement.spacedBy(8.dp)
                                 ) {
-                                    // Género
                                     if (opinion.genre.isNotEmpty()) {
                                         FilledTonalButton(
                                             onClick = { },
@@ -378,26 +382,57 @@ data class MediaDetailScreen(
                                         style = MaterialTheme.typography.bodyLarge
                                     )
                                 } else {
-                                    // Mostrar todos los comentarios
                                     Column(
                                         modifier = Modifier.fillMaxWidth(),
                                         verticalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
-                                        opinion.comments.forEach { comment ->
-                                            Text(
-                                                text = comment,
-                                                style = MaterialTheme.typography.bodyLarge
-                                            )
-                                            
-                                            if (comment != opinion.comments.last()) {
-                                                Spacer(modifier = Modifier.height(4.dp))
-                                                Divider()
+                                        opinion.comments.forEachIndexed { index, comment ->
+                                            val isEven = index % 2 == 0
+                                            val backgroundColor = if (isEven)
+                                                MaterialTheme.colorScheme.primaryContainer
+                                            else
+                                                MaterialTheme.colorScheme.secondaryContainer
+
+                                            val contentColor = if (isEven)
+                                                MaterialTheme.colorScheme.onPrimaryContainer
+                                            else
+                                                MaterialTheme.colorScheme.onSecondaryContainer
+
+                                            val alignment = if (isEven)
+                                                Arrangement.Start
+                                            else
+                                                Arrangement.End
+
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = alignment
+                                            ) {
+                                                Card(
+                                                    modifier = Modifier
+                                                        .widthIn(max = 280.dp)
+                                                        .padding(vertical = 4.dp),
+                                                    colors = CardDefaults.cardColors(
+                                                        containerColor = backgroundColor,
+                                                        contentColor = contentColor
+                                                    ),
+                                                    shape = RoundedCornerShape(
+                                                        topStart = if (!isEven) 12.dp else 4.dp,
+                                                        topEnd = if (isEven) 12.dp else 4.dp,
+                                                        bottomStart = 12.dp,
+                                                        bottomEnd = 12.dp
+                                                    )
+                                                ) {
+                                                    Text(
+                                                        text = comment,
+                                                        style = MaterialTheme.typography.bodyMedium,
+                                                        modifier = Modifier.padding(12.dp)
+                                                    )
+                                                }
                                             }
                                         }
                                     }
                                 }
-                                
-                                // Mostrar error de comentario si existe
+
                                 if (uiState.commentError != null) {
                                     Text(
                                         text = uiState.commentError.toString(),
@@ -406,9 +441,9 @@ data class MediaDetailScreen(
                                         modifier = Modifier.padding(top = 8.dp)
                                     )
                                 }
-                                
+
                                 Spacer(modifier = Modifier.height(24.dp))
-                                
+
                                 Button(
                                     onClick = { showCommentDialog = true },
                                     modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -418,7 +453,7 @@ data class MediaDetailScreen(
                                         contentDescription = null,
                                         modifier = Modifier.padding(end = 8.dp)
                                     )
-                                    Text("Agregar comentario")
+                                    Text(stringResource(Res.string.add_new_comment))
                                 }
                             }
                         }

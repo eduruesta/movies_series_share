@@ -24,7 +24,12 @@
     <string name="result_error">Hubo un error en la búsqueda, volvé a internarlo</string>
     <string name="comment">Comentario:</string>
     <string name="without_comment">Sin comentarios</string>
-    
+    <string name="add_new_comment">Agregar comentario</string>
+    <string name="write_your_comment">Escribe tu comentario...</string>
+    <string name="save">Guardar</string>
+    <string name="cancel">Cancelar</string>
+
+
     <!-- Media List Screen Strings -->
     <string name="media_list_title">Recomendaciones</string>
     <string name="empty_list_message">No hay críticas disponibles. Crea tu primera crítica haciendo clic en el botón de abajo.</string>

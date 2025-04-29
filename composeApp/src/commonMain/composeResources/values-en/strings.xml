@@ -25,6 +25,10 @@
     <string name="comment">Comment:</string>
     <string name="without_comment">No comments</string>
     <string name="qualifying">Qualifying...</string>
+    <string name="add_new_comment">Add comment</string>
+    <string name="write_your_comment">Write your comment...</string>
+    <string name="save">Save</string>
+    <string name="cancel">Cancel</string>
 
 
     <!-- Media List Screen Strings -->

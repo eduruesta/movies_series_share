@@ -39,7 +39,8 @@ class MediaOpinionFormViewModel(
     var rating by mutableStateOf(0f)
         private set
 
-    var comment by mutableStateOf("")
+    // Cambiado de comment a comments como String (se convertirá a lista al guardar)
+    var comments by mutableStateOf("")
         private set
 
     var synopsis by mutableStateOf("")
@@ -180,7 +181,7 @@ class MediaOpinionFormViewModel(
     }
 
     fun updateComment(newComment: String) {
-        comment = newComment
+        comments = newComment
     }
 
     fun updateSynopsis(newSynopsis: String) {
@@ -208,7 +209,7 @@ class MediaOpinionFormViewModel(
                 platform = platform,
                 genre = genre,
                 rating = rating,
-                comment = comment,
+                comments = listOf(comments),
                 synopsis = synopsis,
                 posterUrl = posterUrl,
                 ratingCount = 1,
@@ -233,7 +234,7 @@ class MediaOpinionFormViewModel(
         platform = ""
         genre = ""
         rating = 0f
-        comment = ""
+        comments = ""
         synopsis = ""
         posterUrl = ""
         // Crear una nueva instancia del estado UI para asegurarnos de que saved sea false

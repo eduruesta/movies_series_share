@@ -16,20 +16,20 @@ import kotlinx.coroutines.launch
 class MediaOpinionViewModel(
     private val repository: MediaOpinionRepository
 ) : ViewModel() {
-    
+
     private val _uiState = MutableStateFlow(MediaOpinionUiState())
     val uiState: StateFlow<MediaOpinionUiState> = _uiState.asStateFlow()
-    
+
     // Se quita el init para cargar datos bajo demanda
-    
+
     fun loadOpinions() {
         viewModelScope.launch {
             // Set loading state to true
             _uiState.update { it.copy(isLoading = true) }
-            
+
             try {
                 repository.getAllOpinions().collect { opinions ->
-                    _uiState.update { 
+                    _uiState.update {
                         val currentQuery = it.searchQuery
                         val filtered = if (currentQuery.isNotEmpty()) {
                             filterOpinions(opinions, currentQuery)
@@ -37,7 +37,7 @@ class MediaOpinionViewModel(
                             opinions
                         }
                         it.copy(
-                            opinions = opinions, 
+                            opinions = opinions,
                             filteredOpinions = filtered,
                             isLoading = false
                         )
@@ -48,7 +48,7 @@ class MediaOpinionViewModel(
             }
         }
     }
-    
+
     /**
      * Obtiene una crítica específica por su ID
      * @param id ID de la crítica a obtener
@@ -65,7 +65,7 @@ class MediaOpinionViewModel(
             }
         }
     }
-    
+
     fun saveOpinion(opinion: MediaOpinion) {
         viewModelScope.launch {
             try {
@@ -75,7 +75,7 @@ class MediaOpinionViewModel(
             }
         }
     }
-    
+
     fun deleteOpinion(opinion: MediaOpinion) {
         viewModelScope.launch {
             try {
@@ -85,10 +85,10 @@ class MediaOpinionViewModel(
             }
         }
     }
-    
+
     /**
      * Envía una calificación para una película o serie
-     * 
+     *
      * @param opinion La opinión a actualizar
      * @param rating La nueva calificación (de 0 a 10)
      * @return Devuelve true cuando la calificación se ha completado
@@ -98,15 +98,15 @@ class MediaOpinionViewModel(
             try {
                 // Indicar que estamos en proceso de calificación
                 _uiState.update { it.copy(isRating = true) }
-                
+
                 // Calcular el nuevo promedio y contador de calificaciones
                 val newRatingCount = opinion.ratingCount + 1
-                
+
                 // Si es la primera calificación, el promedio es igual a la calificación
                 // Si no, calculamos el promedio ponderado
                 val totalRatingPoints = opinion.averageRating * opinion.ratingCount + rating
                 val newAverageRating = totalRatingPoints / newRatingCount
-                
+
                 // Aseguramos que se mantenga el ID original
                 val updatedOpinion = opinion.copy(
                     // La calificación original se mantiene (es la del creador)
@@ -114,23 +114,28 @@ class MediaOpinionViewModel(
                     ratingCount = newRatingCount,
                     averageRating = newAverageRating
                 )
-                
+
                 val success = repository.updateOpinionById(opinion.id, updatedOpinion)
-                
+
                 if (success) {
                     // También podríamos actualizar el UI state directamente si queremos
                     // que la UI reaccione inmediatamente sin esperar a que el flow se actualice
                     _uiState.update { currentState ->
-                        val updatedOpinions = currentState.opinions.map { 
-                            if (it.id == opinion.id) updatedOpinion else it 
+                        val updatedOpinions = currentState.opinions.map {
+                            if (it.id == opinion.id) updatedOpinion else it
                         }
                         currentState.copy(opinions = updatedOpinions, isRating = false)
                     }
-                    
+
                     // Notificar que la calificación se ha completado con éxito
                     onComplete(true)
                 } else {
-                    _uiState.update { it.copy(error = "No se pudo actualizar la calificación", isRating = false) }
+                    _uiState.update {
+                        it.copy(
+                            error = "No se pudo actualizar la calificación",
+                            isRating = false
+                        )
+                    }
                     onComplete(false)
                 }
             } catch (e: Exception) {
@@ -140,7 +145,7 @@ class MediaOpinionViewModel(
             }
         }
     }
-    
+
     /**
      * Actualiza la consulta de búsqueda y filtra las opiniones
      */
@@ -157,18 +162,17 @@ class MediaOpinionViewModel(
             )
         }
     }
-    
+
     /**
      * Filtra las opiniones basándose en la consulta de búsqueda
      */
     private fun filterOpinions(opinions: List<MediaOpinion>, query: String): List<MediaOpinion> {
         if (query.isBlank()) return opinions
-        
+
         val lowercaseQuery = query.lowercase()
         return opinions.filter { opinion ->
             opinion.title.lowercase().contains(lowercaseQuery) ||
-            opinion.genre.lowercase().contains(lowercaseQuery) ||
-            opinion.comment.lowercase().contains(lowercaseQuery)
+                    opinion.genre.lowercase().contains(lowercaseQuery)
         }
     }
 }

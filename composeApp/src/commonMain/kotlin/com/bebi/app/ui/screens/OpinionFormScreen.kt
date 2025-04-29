@@ -304,7 +304,7 @@ class OpinionFormScreen : Screen {
                     )
 
                     OutlinedTextField(
-                        value = viewModel.comment,
+                        value = viewModel.comments,
                         onValueChange = { viewModel.updateComment(it) },
                         label = { Text(stringResource(Res.string.comment_field)) },
                         modifier = Modifier

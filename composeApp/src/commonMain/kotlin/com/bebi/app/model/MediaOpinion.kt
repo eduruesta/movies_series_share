@@ -23,8 +23,8 @@ data class MediaOpinion(
     val title: String = "",
     @ColumnInfo(name = "rating")
     val rating: Float = 0f,
-    @ColumnInfo(name = "comment")
-    val comment: String = "",
+    @ColumnInfo(name = "comments")
+    val comments: List<String> = mutableListOf(),
     @ColumnInfo(name = "image_url")
     val imageUrl: String = "",
     @ColumnInfo(name = "genre")
@@ -54,4 +54,4 @@ data class MediaOpinion(
      */
     @ColumnInfo(name = "average_rating")
     val averageRating: Float = 0f
-): JavaSerializable
+) : JavaSerializable

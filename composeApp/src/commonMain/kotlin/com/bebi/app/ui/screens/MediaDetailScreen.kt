@@ -19,15 +19,21 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -106,7 +112,7 @@ data class MediaDetailScreen(
         val uiState by viewModel.uiState.collectAsState()
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         var isTmbdMediaOpinion by remember { mutableStateOf(false) }
-
+        var showCommentDialog by remember { mutableStateOf(false) }
 
         LaunchedEffect(opinionId, tmdbMediaOpinion) {
             if (opinionId != null) {
@@ -116,6 +122,41 @@ data class MediaDetailScreen(
                 viewModel.setTmdbMediaOpinion(tmdbMediaOpinion)
                 isTmbdMediaOpinion = true
             }
+        }
+
+        if (showCommentDialog) {
+            AlertDialog(
+                onDismissRequest = { showCommentDialog = false },
+                title = { Text("Agregar comentario") },
+                text = {
+                    OutlinedTextField(
+                        value = uiState.newComment,
+                        onValueChange = { viewModel.updateNewComment(it) },
+                        modifier = Modifier.fillMaxWidth(),
+                        placeholder = { Text("Escribe tu comentario...") },
+                        minLines = 3
+                    )
+                },
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            viewModel.addComment(uiState.newComment)
+                            showCommentDialog = false
+                        }
+                    ) {
+                        Text("Guardar")
+                    }
+                },
+                dismissButton = {
+                    TextButton(
+                        onClick = { 
+                            showCommentDialog = false
+                        }
+                    ) {
+                        Text("Cancelar")
+                    }
+                }
+            )
         }
 
         Scaffold(
@@ -305,7 +346,6 @@ data class MediaDetailScreen(
                                         }
                                     }
 
-                                    // Plataforma
                                     if (opinion.platform.isNotEmpty()) {
                                         FilledTonalButton(
                                             onClick = { },
@@ -332,11 +372,54 @@ data class MediaDetailScreen(
 
                                 Spacer(modifier = Modifier.height(8.dp))
 
-
-                                Text(
-                                    text = opinion.comment.ifEmpty { stringResource(Res.string.without_comment) },
-                                    style = MaterialTheme.typography.bodyLarge
-                                )
+                                if (opinion.comments.isEmpty()) {
+                                    Text(
+                                        text = stringResource(Res.string.without_comment),
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                } else {
+                                    // Mostrar todos los comentarios
+                                    Column(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        opinion.comments.forEach { comment ->
+                                            Text(
+                                                text = comment,
+                                                style = MaterialTheme.typography.bodyLarge
+                                            )
+                                            
+                                            if (comment != opinion.comments.last()) {
+                                                Spacer(modifier = Modifier.height(4.dp))
+                                                Divider()
+                                            }
+                                        }
+                                    }
+                                }
+                                
+                                // Mostrar error de comentario si existe
+                                if (uiState.commentError != null) {
+                                    Text(
+                                        text = uiState.commentError.toString(),
+                                        color = MaterialTheme.colorScheme.error,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        modifier = Modifier.padding(top = 8.dp)
+                                    )
+                                }
+                                
+                                Spacer(modifier = Modifier.height(24.dp))
+                                
+                                Button(
+                                    onClick = { showCommentDialog = true },
+                                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = null,
+                                        modifier = Modifier.padding(end = 8.dp)
+                                    )
+                                    Text("Agregar comentario")
+                                }
                             }
                         }
                     }

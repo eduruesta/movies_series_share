@@ -65,6 +65,40 @@ class MediaDetailViewModel(
             )
         }
     }
+    
+    /**
+     * Añade un nuevo comentario a la opinión actual
+     */
+    fun addComment(comment: String) {
+        if (comment.isBlank()) return
+        
+        val currentOpinion = _uiState.value.opinion ?: return
+        val updatedComments = currentOpinion.comments.toMutableList().apply {
+            add(comment)
+        }
+        
+        val updatedOpinion = currentOpinion.copy(comments = updatedComments)
+        
+        viewModelScope.launch {
+            try {
+                val success = repository.updateOpinionById(currentOpinion.id, updatedOpinion)
+                if (success) {
+                    _uiState.update { it.copy(opinion = updatedOpinion, newComment = "") }
+                } else {
+                    _uiState.update { it.copy(commentError = "No se pudo actualizar la opinión") }
+                }
+            } catch (e: Exception) {
+                _uiState.update { it.copy(commentError = "Error al añadir el comentario") }
+            }
+        }
+    }
+    
+    /**
+     * Actualiza el texto del nuevo comentario
+     */
+    fun updateNewComment(comment: String) {
+        _uiState.update { it.copy(newComment = comment) }
+    }
 }
 
 /**
@@ -73,7 +107,9 @@ class MediaDetailViewModel(
 data class MediaDetailUiState(
     val opinion: MediaOpinion? = null,
     val isLoading: Boolean = false,
-    val error: MediaDetailError? = null
+    val error: MediaDetailError? = null,
+    val newComment: String = "",
+    val commentError: String? = null
 )
 
 /**

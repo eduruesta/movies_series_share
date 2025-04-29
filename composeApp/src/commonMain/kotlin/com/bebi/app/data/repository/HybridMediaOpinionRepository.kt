@@ -99,7 +99,7 @@ class HybridMediaOpinionRepository(
                         return MediaOpinion(
                             id = savedRec.opinionId,
                             title = savedRec.title,
-                            comment = "", // No tenemos este dato
+                            comments = emptyList(), // Ahora es una lista vacía
                             genre = savedRec.genre ?: "",
                             posterUrl = savedRec.posterUrl,
                             backdropUrl = savedRec.backdropUrl,

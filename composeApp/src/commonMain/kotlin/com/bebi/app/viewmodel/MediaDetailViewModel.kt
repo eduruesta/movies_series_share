@@ -65,28 +65,62 @@ class MediaDetailViewModel(
     }
     
     /**
-     * Añade un nuevo comentario a la opinión actual
+     * Añade un nuevo comentario a la opinión actual.
+     * Verifica si la opinión existe en el servidor antes de decidir si crear nueva o actualizar.
      */
     fun addComment(comment: String) {
         if (comment.isBlank()) return
         
         val currentOpinion = _uiState.value.opinion ?: return
-        val updatedComments = currentOpinion.comments.toMutableList().apply {
-            add(comment)
-        }
-        
-        val updatedOpinion = currentOpinion.copy(comments = updatedComments)
         
         viewModelScope.launch {
             try {
-                val success = repository.updateOpinionById(currentOpinion.id, updatedOpinion)
-                if (success) {
-                    _uiState.update { it.copy(opinion = updatedOpinion, newComment = "") }
+                // Verificamos si la opinión existe en el remoto consultando por su ID
+                val existingOpinion = repository.getOpinionByIdDirect(currentOpinion.id)
+                
+                if (existingOpinion == null) {
+                    // La opinión no existe en el remoto - Crear y guardar nueva opinión
+                    val randomId = kotlin.random.Random.nextLong(1_000_000, Long.MAX_VALUE)
+                    
+                    val newOpinion = MediaOpinion(
+                        id = randomId,
+                        title = currentOpinion.title,
+                        platform = currentOpinion.platform,
+                        genre = currentOpinion.genre,
+                        rating = currentOpinion.rating,
+                        comments = listOf(comment),
+                        synopsis = currentOpinion.synopsis,
+                        posterUrl = currentOpinion.posterUrl,
+                        ratingCount = 1,
+                        averageRating = currentOpinion.rating,
+                        year = currentOpinion.year,
+                        backdropUrl = currentOpinion.backdropUrl
+                    )
+                    
+                    val savedId = repository.saveOpinion(newOpinion)
+                    if (savedId > 0) {
+                        loadOpinionById(savedId)
+                        _uiState.update { it.copy(newComment = "") }
+                    } else {
+                        _uiState.update { it.copy(commentError = "No se pudo guardar la opinión") }
+                    }
                 } else {
-                    _uiState.update { it.copy(commentError = "No se pudo actualizar la opinión") }
+                    // La opinión existe - Actualizar con el nuevo comentario
+                    val updatedComments = existingOpinion.comments.toMutableList().apply {
+                        add(comment)
+                    }
+                    
+                    val updatedOpinion = existingOpinion.copy(comments = updatedComments)
+                    
+                    val success = repository.updateOpinionById(existingOpinion.id, updatedOpinion)
+                    if (success) {
+                        _uiState.update { it.copy(opinion = updatedOpinion, newComment = "") }
+                    } else {
+                        _uiState.update { it.copy(commentError = "No se pudo actualizar la opinión") }
+                    }
                 }
             } catch (e: Exception) {
-                _uiState.update { it.copy(commentError = "Error al añadir el comentario") }
+                _uiState.update { it.copy(commentError = "Error al añadir el comentario: ${e.message}") }
             }
         }
     }

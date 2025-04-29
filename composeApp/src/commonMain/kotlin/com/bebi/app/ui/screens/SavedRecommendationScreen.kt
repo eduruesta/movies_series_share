@@ -42,7 +42,6 @@ import moviesseriesshare.composeapp.generated.resources.empty_recommendations_me
 import moviesseriesshare.composeapp.generated.resources.recommendation_not_saved
 import moviesseriesshare.composeapp.generated.resources.recommendation_remove_error
 import moviesseriesshare.composeapp.generated.resources.recommendation_removed
-import moviesseriesshare.composeapp.generated.resources.search_movies_series
 import moviesseriesshare.composeapp.generated.resources.search_recommendations
 import moviesseriesshare.composeapp.generated.resources.your_recommendations
 import org.jetbrains.compose.resources.stringResource
@@ -55,11 +54,15 @@ class SavedRecommendationScreen : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
-        val viewModel = koinViewModel<SavedRecommendationViewModel>()
         val navigator = LocalNavigator.currentOrThrow
+        val viewModel: SavedRecommendationViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsState()
-        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         val snackbarHostState = remember { SnackbarHostState() }
+        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+        
+        LaunchedEffect(navigator) {
+            viewModel.updateSearchQuery("")
+        }
 
         var lastRecommendationMessage by remember { mutableStateOf<com.bebi.app.viewmodel.RecommendationMessage?>(null) }
         

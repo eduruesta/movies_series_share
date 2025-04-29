@@ -83,16 +83,21 @@ class MediaListScreen : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
-        val viewModel = koinViewModel<MediaOpinionViewModel>()
         val navigator = LocalNavigator.currentOrThrow
-        val uiState = viewModel.uiState.collectAsState().value
-        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         val snackbarHostState = remember { SnackbarHostState() }
-        var showRatingSheet by remember { mutableStateOf(false) }
-        var selectedOpinion by remember { mutableStateOf<MediaOpinion?>(null) }
+        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+        val scope = rememberCoroutineScope()
+
+        val viewModel: MediaOpinionViewModel = koinViewModel()
+        val uiState by viewModel.uiState.collectAsState()
+        
+        LaunchedEffect(navigator) {
+            viewModel.updateSearchQuery("")
+        }
 
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
-        val scope = rememberCoroutineScope()
+        var showRatingSheet by remember { mutableStateOf(false) }
+        var selectedOpinion by remember { mutableStateOf<MediaOpinion?>(null) }
 
         var drawerProgress by remember { mutableStateOf(0f) }
 

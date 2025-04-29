@@ -96,21 +96,15 @@ class MediaOpinionViewModel(
     fun submitRating(opinion: MediaOpinion, rating: Int, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch {
             try {
-                // Indicar que estamos en proceso de calificación
                 _uiState.update { it.copy(isRating = true) }
 
-                // Calcular el nuevo promedio y contador de calificaciones
                 val newRatingCount = opinion.ratingCount + 1
 
-                // Si es la primera calificación, el promedio es igual a la calificación
-                // Si no, calculamos el promedio ponderado
+
                 val totalRatingPoints = opinion.averageRating * opinion.ratingCount + rating
                 val newAverageRating = totalRatingPoints / newRatingCount
 
-                // Aseguramos que se mantenga el ID original
                 val updatedOpinion = opinion.copy(
-                    // La calificación original se mantiene (es la del creador)
-                    // pero actualizamos los campos de promedio y contador
                     ratingCount = newRatingCount,
                     averageRating = newAverageRating
                 )
@@ -118,8 +112,6 @@ class MediaOpinionViewModel(
                 val success = repository.updateOpinionById(opinion.id, updatedOpinion)
 
                 if (success) {
-                    // También podríamos actualizar el UI state directamente si queremos
-                    // que la UI reaccione inmediatamente sin esperar a que el flow se actualice
                     _uiState.update { currentState ->
                         val updatedOpinions = currentState.opinions.map {
                             if (it.id == opinion.id) updatedOpinion else it
@@ -127,7 +119,6 @@ class MediaOpinionViewModel(
                         currentState.copy(opinions = updatedOpinions, isRating = false)
                     }
 
-                    // Notificar que la calificación se ha completado con éxito
                     onComplete(true)
                 } else {
                     _uiState.update {

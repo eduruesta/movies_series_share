@@ -1,8 +1,6 @@
 package com.bebi.app.data.database
 
 import androidx.room.TypeConverter
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 
 /**

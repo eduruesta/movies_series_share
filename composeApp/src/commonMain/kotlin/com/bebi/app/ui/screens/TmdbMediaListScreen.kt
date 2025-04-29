@@ -7,7 +7,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -21,7 +20,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -40,6 +38,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.bebi.app.data.remote.model.TmdbMediaItem
 import com.bebi.app.data.repository.TmdbRepository
 import com.bebi.app.ui.components.MediaOpinionItem
+import com.bebi.app.ui.components.SearchTopAppBar
 import com.bebi.app.viewmodel.TmdbMediaListViewModel
 import com.bebi.app.viewmodel.TopMoviesViewModel
 import com.bebi.app.viewmodel.TopSeriesViewModel
@@ -49,6 +48,7 @@ import com.bebi.app.viewmodel.UpcomingMoviesViewModel
 import kotlinx.coroutines.launch
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.back_button
+import moviesseriesshare.composeapp.generated.resources.search
 import moviesseriesshare.composeapp.generated.resources.top_movies
 import moviesseriesshare.composeapp.generated.resources.top_series
 import moviesseriesshare.composeapp.generated.resources.trending
@@ -84,8 +84,8 @@ abstract class TmdbMediaListScreen : Screen {
 
         Scaffold(
             topBar = {
-                TopAppBar(
-                    title = { Text(title) },
+                SearchTopAppBar(
+                    title = title,
                     navigationIcon = {
                         IconButton(onClick = { navigator.pop() }) {
                             Icon(
@@ -94,11 +94,12 @@ abstract class TmdbMediaListScreen : Screen {
                             )
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    ),
+                    onNavigationIconClick = { navigator.pop() },
+                    onSearchQueryChanged = { query ->
+                        viewModel.updateSearchQuery(query)
+                    },
                     scrollBehavior = scrollBehavior,
+                    placeHolderText = stringResource(Res.string.search)
                 )
             },
             snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -151,15 +152,24 @@ abstract class TmdbMediaListScreen : Screen {
 
                     else -> {
                         LazyColumn(
-                            contentPadding = PaddingValues(16.dp)
+                            modifier = Modifier
+                                .fillMaxSize(),
+                            contentPadding = PaddingValues(16.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            itemsIndexed(uiState.mediaItems) { index, mediaOpinion ->
+                            val displayedItems = if (uiState.searchQuery.isNotEmpty()) {
+                                uiState.filteredMediaItems
+                            } else {
+                                uiState.mediaItems
+                            }
+                            
+                            itemsIndexed(displayedItems) { index, mediaItem ->
                                 MediaOpinionItem(
-                                    opinion = mediaOpinion,
+                                    opinion = mediaItem,
                                     onClick = {
                                         navigator.push(
                                             MediaDetailScreen(
-                                                tmdbMediaOpinion = mediaOpinion
+                                                tmdbMediaOpinion = mediaItem
                                             )
                                         )
                                     },
@@ -174,11 +184,10 @@ abstract class TmdbMediaListScreen : Screen {
                                         }
                                     }
                                 )
-                                if (index < uiState.mediaItems.lastIndex) {
+
+                                if (index < displayedItems.lastIndex) {
                                     HorizontalDivider(
-                                        modifier = Modifier.padding(
-                                            vertical = 8.dp
-                                        )
+                                        modifier = Modifier.padding(vertical = 8.dp)
                                     )
                                 }
                             }

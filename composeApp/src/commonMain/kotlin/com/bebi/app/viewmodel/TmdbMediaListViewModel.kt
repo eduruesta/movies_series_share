@@ -50,7 +50,8 @@ abstract class TmdbMediaListViewModel(
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
-                                mediaItems = mediaOpinions
+                                mediaItems = mediaOpinions,
+                                filteredMediaItems = mediaOpinions
                             )
                         }
                     },
@@ -127,11 +128,44 @@ abstract class TmdbMediaListViewModel(
     }
 
     /**
+     * Actualiza la consulta de búsqueda y filtra los elementos de medios
+     */
+    fun updateSearchQuery(query: String) {
+        _uiState.update { currentState ->
+            val filtered = if (query.isNotEmpty()) {
+                filterMediaItems(currentState.mediaItems, query)
+            } else {
+                currentState.mediaItems
+            }
+            currentState.copy(
+                searchQuery = query,
+                filteredMediaItems = filtered
+            )
+        }
+    }
+    
+    /**
+     * Filtra los elementos de medios basándose en la consulta de búsqueda
+     */
+    private fun filterMediaItems(mediaItems: List<MediaOpinion>, query: String): List<MediaOpinion> {
+        if (query.isBlank()) return mediaItems
+        
+        val lowercaseQuery = query.lowercase()
+        return mediaItems.filter { mediaItem ->
+            mediaItem.title.lowercase().contains(lowercaseQuery) ||
+            mediaItem.genre.lowercase().contains(lowercaseQuery) ||
+            mediaItem.year.lowercase().contains(lowercaseQuery)
+        }
+    }
+
+    /**
      * Estado UI para las pantallas de listado de medios de TMDB
      */
     data class TmdbMediaListUiState(
         val isLoading: Boolean = true,
         val mediaItems: List<MediaOpinion> = emptyList(),
+        val filteredMediaItems: List<MediaOpinion> = emptyList(),
+        val searchQuery: String = "",
         val error: String? = null
     )
 }

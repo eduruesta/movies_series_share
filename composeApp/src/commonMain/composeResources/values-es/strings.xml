@@ -73,6 +73,13 @@
     <string name="trending">Tendencias</string>
     <string name="upcoming">Proximamente</string>
 
+    <!-- Search placeholders -->
+    <string name="search_movies_series">Buscar películas y series...</string>
+    <string name="search_recommendations">Buscar recomendaciones...</string>
+    <string name="search">Buscar...</string>
+
+
+
     <string name="empty_recommendations_message">Todavía no tienes recomendaciones guardadas. Agrega recomendaciones desde la pantalla principal para verlas aquí.</string>
 
 </resources>

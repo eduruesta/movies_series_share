@@ -18,7 +18,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,12 +35,15 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.bebi.app.ui.components.SavedRecommendationItem
+import com.bebi.app.ui.components.SearchTopAppBar
 import com.bebi.app.viewmodel.SavedRecommendationViewModel
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.empty_recommendations_message
 import moviesseriesshare.composeapp.generated.resources.recommendation_not_saved
 import moviesseriesshare.composeapp.generated.resources.recommendation_remove_error
 import moviesseriesshare.composeapp.generated.resources.recommendation_removed
+import moviesseriesshare.composeapp.generated.resources.search_movies_series
+import moviesseriesshare.composeapp.generated.resources.search_recommendations
 import moviesseriesshare.composeapp.generated.resources.your_recommendations
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
@@ -86,8 +88,8 @@ class SavedRecommendationScreen : Screen {
 
         Scaffold(
             topBar = {
-                TopAppBar(
-                    title = { Text(stringResource(Res.string.your_recommendations)) },
+                SearchTopAppBar(
+                    title = stringResource(Res.string.your_recommendations),
                     navigationIcon = {
                         IconButton(onClick = { navigator.pop() }) {
                             Icon(
@@ -96,11 +98,12 @@ class SavedRecommendationScreen : Screen {
                             )
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    ),
-                    scrollBehavior = scrollBehavior
+                    onNavigationIconClick = { navigator.pop() },
+                    onSearchQueryChanged = { query ->
+                        viewModel.updateSearchQuery(query)
+                    },
+                    scrollBehavior = scrollBehavior,
+                    placeHolderText = stringResource(Res.string.search_recommendations)
                 )
             },
             snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -137,7 +140,13 @@ class SavedRecommendationScreen : Screen {
                             modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            itemsIndexed(uiState.savedRecommendations) { index, savedRecommendation ->
+                            val displayedRecommendations = if (uiState.searchQuery.isNotEmpty()) {
+                                uiState.filteredRecommendations
+                            } else {
+                                uiState.savedRecommendations
+                            }
+                            
+                            itemsIndexed(displayedRecommendations) { index, savedRecommendation ->
                                 SavedRecommendationItem(
                                     recommendation = savedRecommendation,
                                     onClick = {
@@ -152,7 +161,7 @@ class SavedRecommendationScreen : Screen {
                                     }
                                 )
 
-                                if (index < uiState.savedRecommendations.lastIndex) {
+                                if (index < displayedRecommendations.lastIndex) {
                                     HorizontalDivider(modifier = Modifier.padding(vertical = 8.dp))
                                 }
                             }

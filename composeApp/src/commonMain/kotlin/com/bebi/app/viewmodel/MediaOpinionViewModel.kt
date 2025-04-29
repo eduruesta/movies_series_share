@@ -29,7 +29,19 @@ class MediaOpinionViewModel(
             
             try {
                 repository.getAllOpinions().collect { opinions ->
-                    _uiState.update { it.copy(opinions = opinions, isLoading = false) }
+                    _uiState.update { 
+                        val currentQuery = it.searchQuery
+                        val filtered = if (currentQuery.isNotEmpty()) {
+                            filterOpinions(opinions, currentQuery)
+                        } else {
+                            opinions
+                        }
+                        it.copy(
+                            opinions = opinions, 
+                            filteredOpinions = filtered,
+                            isLoading = false
+                        )
+                    }
                 }
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message, isLoading = false) }
@@ -128,6 +140,37 @@ class MediaOpinionViewModel(
             }
         }
     }
+    
+    /**
+     * Actualiza la consulta de búsqueda y filtra las opiniones
+     */
+    fun updateSearchQuery(query: String) {
+        _uiState.update { currentState ->
+            val filtered = if (query.isNotEmpty()) {
+                filterOpinions(currentState.opinions, query)
+            } else {
+                currentState.opinions
+            }
+            currentState.copy(
+                searchQuery = query,
+                filteredOpinions = filtered
+            )
+        }
+    }
+    
+    /**
+     * Filtra las opiniones basándose en la consulta de búsqueda
+     */
+    private fun filterOpinions(opinions: List<MediaOpinion>, query: String): List<MediaOpinion> {
+        if (query.isBlank()) return opinions
+        
+        val lowercaseQuery = query.lowercase()
+        return opinions.filter { opinion ->
+            opinion.title.lowercase().contains(lowercaseQuery) ||
+            opinion.genre.lowercase().contains(lowercaseQuery) ||
+            opinion.comment.lowercase().contains(lowercaseQuery)
+        }
+    }
 }
 
 /**
@@ -135,6 +178,8 @@ class MediaOpinionViewModel(
  */
 data class MediaOpinionUiState(
     val opinions: List<MediaOpinion> = emptyList(),
+    val filteredOpinions: List<MediaOpinion> = emptyList(),
+    val searchQuery: String = "",
     val isLoading: Boolean = false,
     val isRating: Boolean = false,
     val error: String? = null

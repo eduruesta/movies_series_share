@@ -27,7 +27,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
@@ -53,12 +52,14 @@ import com.bebi.app.model.MediaOpinion
 import com.bebi.app.ui.components.AppDrawerContent
 import com.bebi.app.ui.components.MediaOpinionItem
 import com.bebi.app.ui.components.RatingBottomSheet
+import com.bebi.app.ui.components.SearchTopAppBar
 import com.bebi.app.viewmodel.MediaOpinionViewModel
 import kotlinx.coroutines.launch
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.create_critic_button
 import moviesseriesshare.composeapp.generated.resources.empty_list_message
 import moviesseriesshare.composeapp.generated.resources.media_list_title
+import moviesseriesshare.composeapp.generated.resources.search_movies_series
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import kotlin.math.round
@@ -207,8 +208,8 @@ class MediaListScreen : Screen {
                         ) {
                             Scaffold(
                                 topBar = {
-                                    TopAppBar(
-                                        title = { Text(stringResource(Res.string.media_list_title)) },
+                                    SearchTopAppBar(
+                                        title = stringResource(Res.string.media_list_title),
                                         navigationIcon = {
                                             IconButton(onClick = {
                                                 scope.launch {
@@ -225,11 +226,20 @@ class MediaListScreen : Screen {
                                                 )
                                             }
                                         },
+                                        onNavigationIconClick = {
+                                            scope.launch {
+                                                if (drawerState.isClosed) {
+                                                    drawerState.open()
+                                                } else {
+                                                    drawerState.close()
+                                                }
+                                            }
+                                        },
+                                        onSearchQueryChanged = { query ->
+                                            viewModel.updateSearchQuery(query)
+                                        },
                                         scrollBehavior = scrollBehavior,
-                                        colors = TopAppBarDefaults.topAppBarColors(
-                                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                                            titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                                        )
+                                        placeHolderText = stringResource(Res.string.search_movies_series)
                                     )
                                 },
                                 snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -281,7 +291,13 @@ class MediaListScreen : Screen {
                                                 contentPadding = PaddingValues(16.dp),
                                                 verticalArrangement = Arrangement.spacedBy(8.dp)
                                             ) {
-                                                itemsIndexed(uiState.opinions) { index, opinion ->
+                                                val displayedOpinions = if (uiState.searchQuery.isNotEmpty()) {
+                                                    uiState.filteredOpinions
+                                                } else {
+                                                    uiState.opinions
+                                                }
+                                                
+                                                itemsIndexed(displayedOpinions) { index, opinion ->
                                                     MediaOpinionItem(
                                                         opinion = opinion,
                                                         onClick = {
@@ -300,7 +316,7 @@ class MediaListScreen : Screen {
                                                         }
                                                     )
 
-                                                    if (index < uiState.opinions.lastIndex) {
+                                                    if (index < displayedOpinions.lastIndex) {
                                                         HorizontalDivider(
                                                             modifier = Modifier.padding(
                                                                 vertical = 8.dp

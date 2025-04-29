@@ -138,7 +138,6 @@ class MediaOpinionFormViewModel(
         synopsis = mediaItem.overview ?: ""
         year = mediaItem.displayReleaseDate
 
-        // Obtener la URL del póster y manejar correctamente valores null
         val fullUrl = tmdbRepository.getFullPosterUrl(mediaItem.posterPath)
         val fullBackdropUrl = tmdbRepository.getFullBackdropUrl(mediaItem.backdropPath)
 
@@ -150,7 +149,6 @@ class MediaOpinionFormViewModel(
             backdropUrl = it
         }
 
-        // Obtener géneros
         val genres = if (mediaItem.isMovie) {
             tmdbRepository.getGenreNames(mediaItem.genreIds, isMovie = true)
         } else {

@@ -35,6 +35,12 @@ interface SavedRecommendationDao {
     suspend fun isRecommendationSaved(opinionId: Long): Boolean
     
     /**
+     * Obtiene una recomendación guardada por su ID de opinión
+     */
+    @Query("SELECT * FROM saved_recommendations WHERE opinion_id = :opinionId LIMIT 1")
+    suspend fun getSavedRecommendationById(opinionId: Long): SavedRecommendation?
+    
+    /**
      * Elimina una recomendación por su ID de opinión
      */
     @Query("DELETE FROM saved_recommendations WHERE opinion_id = :opinionId")

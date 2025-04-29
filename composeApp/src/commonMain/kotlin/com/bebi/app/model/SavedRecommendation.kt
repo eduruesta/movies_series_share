@@ -32,5 +32,8 @@ data class SavedRecommendation(
     val rating: Float,
 
     @ColumnInfo(name = "genre")
-    val genre: String
+    val genre: String,
+
+    @ColumnInfo(name = "overview")
+    val overview: String
 )

@@ -105,10 +105,8 @@ fun MediaOpinionItem(
             )
         }
 
-        // Mostrar el mensaje una sola vez
         LaunchedEffect(messageText) {
             onShowMessage(messageText)
-            // Resetear el mensaje para que no se muestre de nuevo
             lastRecommendationMessage = null
         }
     }
@@ -177,7 +175,6 @@ fun MediaOpinionItem(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Genre and Platform
                 Text(
                     text = listOfNotNull(opinion.genre, opinion.platform)
                         .filter { it.isNotEmpty() }
@@ -190,13 +187,11 @@ fun MediaOpinionItem(
 
                 Spacer(modifier = Modifier.height(16.dp))
 
-                // Rating row
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.Start,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    // Estrella de rating
                     Icon(
                         imageVector = Icons.Default.Star,
                         contentDescription = null,
@@ -204,10 +199,8 @@ fun MediaOpinionItem(
                         modifier = Modifier.size(16.dp)
                     )
 
-                    // Espacio después de la estrella
                     Spacer(modifier = Modifier.width(4.dp))
 
-                    // Texto de calificación
                     val ratingText = if (opinion.ratingCount > 1) {
                         val formattedRating = opinion.averageRating.formatWithOneDecimal()
                         stringResource(
@@ -224,17 +217,14 @@ fun MediaOpinionItem(
                         style = MaterialTheme.typography.bodyMedium
                     )
 
-                    // Espacio entre rating y botón calificar
                     Spacer(modifier = Modifier.width(16.dp))
 
-                    // Botón Calificar
                     Row(
                         modifier = Modifier
                             .clip(RoundedCornerShape(4.dp))
                             .clickable { onRateClick() },
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        // Icono calificar
                         Icon(
                             imageVector = Icons.Default.Star,
                             contentDescription = stringResource(Res.string.rate_action),
@@ -244,7 +234,6 @@ fun MediaOpinionItem(
 
                         Spacer(modifier = Modifier.width(4.dp))
 
-                        // Texto calificar
                         Text(
                             text = stringResource(Res.string.rate_action),
                             style = MaterialTheme.typography.bodyMedium.copy(
@@ -253,12 +242,9 @@ fun MediaOpinionItem(
                         )
                     }
 
-                    // Espacio entre calificar y guardar
                     Spacer(modifier = Modifier.width(16.dp))
 
-                    // Icono de guardado
                     Icon(
-                        // Mostrar bookmarkCheck si ya está guardado, o bookmark si no
                         imageVector = if (isSaved) bookmarkCheck else bookmark,
                         contentDescription = if (isSaved)
                             stringResource(Res.string.delete_from_recommendations) else
@@ -268,38 +254,32 @@ fun MediaOpinionItem(
                             .size(20.dp)
                             .clickable {
                                 if (isSaved) {
-                                    // Si ya está guardado, lo eliminamos
-                                    // Crear un objeto SavedRecommendation con la información necesaria
                                     val recommendation = SavedRecommendation(
                                         opinionId = opinion.id,
                                         title = opinion.title,
                                         posterUrl = opinion.posterUrl,
                                         rating = opinion.averageRating,
                                         genre = opinion.genre,
-                                        backdropUrl = opinion.backdropUrl
+                                        backdropUrl = opinion.backdropUrl,
+                                        overview = opinion.synopsis
                                     )
                                     savedViewModel.removeRecommendation(
                                         recommendation = recommendation
                                     ) { message ->
                                         if (message is RecommendationMessage.Removed) {
-                                            // Actualizar estado local
                                             isSaved = false
                                         }
-                                        // Almacenar el mensaje para procesarlo en un contexto @Composable
                                         lastRecommendationMessage = message
                                     }
                                 } else {
-                                    // Si no está guardado, lo guardamos
                                     savedViewModel.saveRecommendation(
                                         opinion = opinion
                                     ) { message ->
                                         if (message is RecommendationMessage.Saved ||
                                             message is RecommendationMessage.AlreadySaved
                                         ) {
-                                            // Actualizar estado local
                                             isSaved = true
                                         }
-                                        // Almacenar el mensaje para procesarlo en un contexto @Composable
                                         lastRecommendationMessage = message
                                     }
                                 }

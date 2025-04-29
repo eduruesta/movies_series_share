@@ -74,13 +74,11 @@ class SavedRecommendationViewModel(
     fun saveRecommendation(opinion: MediaOpinion, callback: (RecommendationMessage) -> Unit) {
         viewModelScope.launch {
             try {
-                // Verificar si ya está guardada
                 if (repository.isRecommendationSaved(opinion.id)) {
                     callback(RecommendationMessage.AlreadySaved(opinion.title))
                     return@launch
                 }
 
-                // Guardar la recomendación
                 val result = repository.saveRecommendation(opinion)
                 if (result) {
                     callback(RecommendationMessage.Saved(opinion.title))
@@ -101,7 +99,6 @@ class SavedRecommendationViewModel(
             try {
                 val result = repository.removeSavedRecommendation(recommendation.opinionId)
                 if (result) {
-                    // Recargar las recomendaciones usando una colección finita
                     val updatedRecommendations = repository.getAllSavedRecommendations().first()
                     
                     _uiState.update { it.copy(savedRecommendations = updatedRecommendations) }

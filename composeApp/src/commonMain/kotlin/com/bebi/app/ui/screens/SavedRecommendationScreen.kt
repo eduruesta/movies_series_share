@@ -72,17 +72,14 @@ class SavedRecommendationScreen : Screen {
                 else -> null
             }
             
-            // Mostrar el mensaje una sola vez
             messageText?.let {
                 LaunchedEffect(messageText) {
                     snackbarHostState.showSnackbar(messageText)
-                    // Resetear el mensaje para no mostrarlo nuevamente
                     lastRecommendationMessage = null
                 }
             }
         }
 
-        // Cargar las recomendaciones guardadas al entrar a la pantalla
         LaunchedEffect(Unit) {
             viewModel.loadSavedRecommendations()
         }
@@ -116,14 +113,12 @@ class SavedRecommendationScreen : Screen {
             ) {
                 when {
                     uiState.isLoading -> {
-                        // Mostrar estado de carga
                         CircularProgressIndicator(
                             modifier = Modifier.align(Alignment.Center)
                         )
                     }
 
                     uiState.savedRecommendations.isEmpty() -> {
-                        // Mostrar estado vacío
                         Box(
                             modifier = Modifier.fillMaxSize(),
                             contentAlignment = Alignment.Center
@@ -138,7 +133,6 @@ class SavedRecommendationScreen : Screen {
                     }
 
                     else -> {
-                        // Mostrar lista de recomendaciones guardadas
                         LazyColumn(
                             modifier = Modifier.fillMaxSize().padding(horizontal = 16.dp),
                             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -147,15 +141,12 @@ class SavedRecommendationScreen : Screen {
                                 SavedRecommendationItem(
                                     recommendation = savedRecommendation,
                                     onClick = {
-                                        // Navegar a la pantalla de detalle si es necesario
                                         navigator.push(MediaDetailScreen(savedRecommendation.opinionId))
                                     },
                                     onRemoveClick = {
-                                        // Eliminar la recomendación guardada
                                         viewModel.removeRecommendation(
                                             recommendation = savedRecommendation
                                         ) { message ->
-                                            // Guardar el mensaje para procesarlo en el contexto @Composable
                                             lastRecommendationMessage = message
                                         }
                                     }

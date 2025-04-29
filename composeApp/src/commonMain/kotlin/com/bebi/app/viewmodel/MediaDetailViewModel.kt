@@ -3,11 +3,13 @@ package com.bebi.app.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bebi.app.data.repository.MediaOpinionRepository
+import com.bebi.app.data.repository.SavedRecommendationRepository
 import com.bebi.app.model.MediaOpinion
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -35,34 +37,32 @@ class MediaDetailViewModel(
                         opinion = opinion,
                         isLoading = false,
                         error = if (opinion == null) MediaDetailError.NOT_FOUND else null
-                    ) 
+                    )
                 }
             } catch (e: CancellationException) {
-                // No hacer nada si es una cancelación del job
-                // Este es un comportamiento normal cuando se navega hacia atrás
-                throw e // Re-lanzar la excepción para que se maneje correctamente
+                throw e
             } catch (e: Exception) {
-                _uiState.update { 
+                _uiState.update {
                     it.copy(
                         isLoading = false,
                         error = MediaDetailError.GENERIC
-                    ) 
+                    )
                 }
             }
         }
     }
-    
+
     /**
      * Establece directamente un MediaOpinion para elementos TMDB
      * que no están guardados en la base de datos
      */
     fun setTmdbMediaOpinion(opinion: MediaOpinion) {
-        _uiState.update { 
+        _uiState.update {
             it.copy(
                 opinion = opinion,
                 isLoading = false,
                 error = null
-            ) 
+            )
         }
     }
 }

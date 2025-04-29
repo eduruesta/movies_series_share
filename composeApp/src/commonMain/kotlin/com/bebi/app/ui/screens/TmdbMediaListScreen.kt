@@ -8,10 +8,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -151,7 +153,7 @@ abstract class TmdbMediaListScreen : Screen {
                         LazyColumn(
                             contentPadding = PaddingValues(16.dp)
                         ) {
-                            items(uiState.mediaItems) { mediaOpinion ->
+                            itemsIndexed(uiState.mediaItems) { index, mediaOpinion ->
                                 MediaOpinionItem(
                                     opinion = mediaOpinion,
                                     onClick = {
@@ -172,6 +174,13 @@ abstract class TmdbMediaListScreen : Screen {
                                         }
                                     }
                                 )
+                                if (index < uiState.mediaItems.lastIndex) {
+                                    HorizontalDivider(
+                                        modifier = Modifier.padding(
+                                            vertical = 8.dp
+                                        )
+                                    )
+                                }
                             }
                         }
                     }

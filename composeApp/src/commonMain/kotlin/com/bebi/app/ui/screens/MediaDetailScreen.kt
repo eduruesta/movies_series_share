@@ -1,5 +1,6 @@
 package com.bebi.app.ui.screens
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -58,7 +59,6 @@ import moviesseriesshare.composeapp.generated.resources.back_button
 import moviesseriesshare.composeapp.generated.resources.comment
 import moviesseriesshare.composeapp.generated.resources.error_loading_details
 import moviesseriesshare.composeapp.generated.resources.error_opinion_not_found
-import moviesseriesshare.composeapp.generated.resources.genre_field
 import moviesseriesshare.composeapp.generated.resources.loading_details
 import moviesseriesshare.composeapp.generated.resources.loading_title
 import moviesseriesshare.composeapp.generated.resources.opinion_count
@@ -189,14 +189,26 @@ data class MediaDetailScreen(
                             .fillMaxSize()
                             .verticalScroll(rememberScrollState())
                     ) {
-                        AsyncImage(
-                            model = opinion.backdropUrl ?: opinion.posterUrl ?: placeholder,
-                            contentDescription = opinion.title,
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .aspectRatio(16f / 9f)
-                        )
+                        if (opinion.backdropUrl == null && opinion.posterUrl == null) {
+                            Image(
+                                imageVector = placeholder,
+                                contentDescription = opinion.title,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(16f / 9f)
+                            )
+
+                        } else {
+                            AsyncImage(
+                                model = opinion.backdropUrl ?: opinion.posterUrl,
+                                contentDescription = opinion.title,
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .aspectRatio(16f / 9f)
+                            )
+                        }
 
 
                         Spacer(modifier = Modifier.height(16.dp))
@@ -213,7 +225,7 @@ data class MediaDetailScreen(
 
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 StarRating(
-                                    rating = opinion.rating,
+                                    rating = opinion.averageRating,
                                     maxRating = 1,
                                 )
                                 val ratingText = if (opinion.ratingCount > 0) {
@@ -307,7 +319,7 @@ data class MediaDetailScreen(
                                         }
                                     }
                                 }
-                                
+
                                 Spacer(modifier = Modifier.height(16.dp))
                             }
                             if (!isTmbdMediaOpinion) {

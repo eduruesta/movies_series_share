@@ -1,7 +1,10 @@
 package com.bebi.app.data.repository
 
 import com.bebi.app.data.remote.CriticsApiService
+import com.bebi.app.data.repository.MediaOpinionRepository
 import com.bebi.app.model.MediaOpinion
+import com.bebi.app.model.SavedRecommendation
+import com.bebi.app.data.repository.SavedRecommendationRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.firstOrNull
@@ -12,7 +15,8 @@ import kotlinx.coroutines.flow.flow
  */
 class HybridMediaOpinionRepository(
     private val apiService: CriticsApiService,
-    private val localRepository: RoomMediaOpinionRepository
+    private val localRepository: MediaOpinionRepository,
+    private val savedRecommendationRepository: SavedRecommendationRepository
 ) : MediaOpinionRepository {
 
     /**
@@ -20,11 +24,11 @@ class HybridMediaOpinionRepository(
      */
     override suspend fun getAllOpinions(): Flow<List<MediaOpinion>> = flow {
         val apiResult = apiService.getAllCritics()
-        
+
         if (apiResult.isSuccess) {
             val opinions = apiResult.getOrNull() ?: emptyList()
             emit(opinions)
-            
+
             opinions.forEach { opinion ->
                 localRepository.saveOpinion(opinion)
             }
@@ -51,7 +55,7 @@ class HybridMediaOpinionRepository(
         }
 
         val apiResult = apiService.saveCritic(opinionToSave)
-        
+
         return if (apiResult.isSuccess) {
             val savedOpinion = apiResult.getOrNull()
             if (savedOpinion != null) {
@@ -70,32 +74,54 @@ class HybridMediaOpinionRepository(
     override suspend fun getOpinionById(id: Long): Flow<MediaOpinion?> {
         return localRepository.getOpinionById(id)
     }
-    
+
     /**
      * Obtiene directamente una opinión por su ID (sin Flow)
      */
     override suspend fun getOpinionByIdDirect(id: Long): MediaOpinion? {
         val apiResult = apiService.getCriticById(id)
-        
+
         if (apiResult.isSuccess) {
             val opinion = apiResult.getOrNull()
-            if (opinion != null) {
+            if (opinion?.id != null && opinion.id > 0) {
                 localRepository.saveOpinion(opinion)
                 return opinion
+            } else {
+                val localOpinion = localRepository.getOpinionByIdDirect(id)
+                if (localOpinion != null) {
+                    return localOpinion
+                }
+                
+                if (savedRecommendationRepository.isRecommendationSaved(id)) {
+                    val savedRec = savedRecommendationRepository.getSavedRecommendationById(id)
+                    
+                    if (savedRec != null) {
+                        return MediaOpinion(
+                            id = savedRec.opinionId,
+                            title = savedRec.title,
+                            comment = "", // No tenemos este dato
+                            genre = savedRec.genre ?: "",
+                            posterUrl = savedRec.posterUrl,
+                            backdropUrl = savedRec.backdropUrl,
+                            averageRating = savedRec.rating,
+                            synopsis = savedRec.overview ?: "",
+                        )
+                    }
+                }
             }
         }
-        
+
         return localRepository.getOpinionById(id).firstOrNull()
     }
-    
+
     /**
      * Actualiza una opinión existente por su ID
      */
     override suspend fun updateOpinionById(id: Long, opinion: MediaOpinion): Boolean {
         val opinionToUpdate = opinion.copy(id = id)
-        
+
         val apiResult = apiService.updateCritic(id, opinionToUpdate)
-        
+
         return if (apiResult.isSuccess) {
             val updatedOpinion = apiResult.getOrNull()
             if (updatedOpinion != null) {

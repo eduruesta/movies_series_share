@@ -1,6 +1,6 @@
 import androidx.compose.ui.window.ComposeUIViewController
-import com.bebi.app.App
-import com.bebi.app.di.module.initKoin
+import com.bebi.watchit.App
+import com.bebi.watchit.di.module.initKoin
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.analytics.analytics
 import dev.gitlive.firebase.database.database

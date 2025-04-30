@@ -1,16 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
-    <!-- Permiso de Internet necesario para realizar solicitudes HTTP -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
-        android:name=".MediaShareApplication"
+        android:name="com.bebi.watchit.MediaShareApplication"
         android:icon="@mipmap/ic_launcher"
-        android:label="Critiqo"
+        android:label="WatchIt"
         android:theme="@style/Theme.App.Starting">
         <activity
-            android:name=".AppActivity"
+            android:name="com.bebi.watchit.AppActivity"
             android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
             android:launchMode="singleInstance"
             android:windowSoftInputMode="adjustPan"

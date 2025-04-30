@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bebi.app.data.remote.model.TmdbMediaItem
 import com.bebi.app.data.repository.TmdbRepository
+import com.bebi.app.data.repository.MediaOpinionRepository
 import com.bebi.app.model.MediaOpinion
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -19,7 +20,8 @@ import org.jetbrains.compose.resources.stringResource
  * ViewModel base para las pantallas de listado de medios de TMDB
  */
 abstract class TmdbMediaListViewModel(
-    protected val repository: TmdbRepository
+    protected val repository: TmdbRepository,
+    private val opinionRepository: MediaOpinionRepository
 ) : ViewModel() {
 
     // Estado UI para la lista
@@ -128,33 +130,113 @@ abstract class TmdbMediaListViewModel(
     }
 
     /**
-     * Actualiza la consulta de búsqueda y filtra los elementos de medios
+     * Actualiza el query de búsqueda y filtra los resultados
      */
     fun updateSearchQuery(query: String) {
-        _uiState.update { currentState ->
-            val filtered = if (query.isNotEmpty()) {
-                filterMediaItems(currentState.mediaItems, query)
+        viewModelScope.launch {
+            val newQuery = query.trim()
+            val currentItems = uiState.value.mediaItems
+            
+            val filteredItems = if (newQuery.isEmpty()) {
+                currentItems
             } else {
-                currentState.mediaItems
+                currentItems.filter { opinion ->
+                    opinion.title.contains(newQuery, ignoreCase = true) || 
+                    opinion.synopsis.contains(newQuery, ignoreCase = true)
+                }
             }
-            currentState.copy(
-                searchQuery = query,
-                filteredMediaItems = filtered
-            )
+            
+            _uiState.update { 
+                it.copy(
+                    searchQuery = newQuery,
+                    filteredMediaItems = filteredItems
+                )
+            }
         }
     }
     
     /**
-     * Filtra los elementos de medios basándose en la consulta de búsqueda
+     * Maneja el proceso de calificación de un medio TMDB
+     * 
+     * @param mediaOpinion Opinión del medio a calificar
+     * @param rating Calificación del usuario (1-10)
+     * @param onComplete Callback con el resultado (éxito o fracaso)
      */
-    private fun filterMediaItems(mediaItems: List<MediaOpinion>, query: String): List<MediaOpinion> {
-        if (query.isBlank()) return mediaItems
+    fun submitRating(mediaOpinion: MediaOpinion, rating: Int, onComplete: (Boolean) -> Unit) {
+        _uiState.update { it.copy(isRating = true) }
         
-        val lowercaseQuery = query.lowercase()
-        return mediaItems.filter { mediaItem ->
-            mediaItem.title.lowercase().contains(lowercaseQuery) ||
-            mediaItem.genre.lowercase().contains(lowercaseQuery) ||
-            mediaItem.year.lowercase().contains(lowercaseQuery)
+        viewModelScope.launch {
+            try {
+                // Verificamos si la opinión existe en el remoto
+                val existingOpinion = opinionRepository.getOpinionByIdDirect(mediaOpinion.id)
+
+                if (existingOpinion == null) {
+                    // La opinión no existe - Crear y guardar nueva opinión
+                    val randomId = kotlin.random.Random.nextLong(1_000_000, Long.MAX_VALUE)
+                    
+                    val newOpinion = MediaOpinion(
+                        id = randomId,
+                        title = mediaOpinion.title,
+                        platform = mediaOpinion.platform,
+                        genre = mediaOpinion.genre,
+                        rating = rating.toFloat(),  // La calificación que acaba de dar el usuario
+                        comments = emptyList(),      // Sin comentarios iniciales
+                        synopsis = mediaOpinion.synopsis,
+                        posterUrl = mediaOpinion.posterUrl,
+                        ratingCount = 1,             // Primera calificación
+                        averageRating = rating.toFloat(), // La primera calificación es el promedio
+                        year = mediaOpinion.year,
+                        backdropUrl = mediaOpinion.backdropUrl
+                    )
+                    
+                    val savedId = opinionRepository.saveOpinion(newOpinion)
+                    if (savedId > 0) {
+                        _uiState.update { it.copy(isRating = false) }
+                        onComplete(true)
+                    } else {
+                        _uiState.update {
+                            it.copy(
+                                error = "No se pudo guardar la calificación",
+                                isRating = false
+                            )
+                        }
+                        onComplete(false)
+                    }
+                } else {
+                    // La opinión existe - Actualizar la calificación
+                    val newRatingCount = existingOpinion.ratingCount + 1
+                    val totalRatingPoints = existingOpinion.averageRating * existingOpinion.ratingCount + rating
+                    val newAverageRating = totalRatingPoints / newRatingCount
+
+                    val updatedOpinion = existingOpinion.copy(
+                        ratingCount = newRatingCount,
+                        averageRating = newAverageRating
+                    )
+
+                    val success = opinionRepository.updateOpinionById(existingOpinion.id, updatedOpinion)
+
+                    if (success) {
+                        _uiState.update { it.copy(isRating = false) }
+                        onComplete(true)
+                    } else {
+                        _uiState.update {
+                            it.copy(
+                                error = "No se pudo actualizar la calificación",
+                                isRating = false
+                            )
+                        }
+                        onComplete(false)
+                    }
+                }
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        error = "Error: ${e.message}",
+                        isRating = false
+                    )
+                }
+                onComplete(false)
+            }
         }
     }
 
@@ -166,14 +248,15 @@ abstract class TmdbMediaListViewModel(
         val mediaItems: List<MediaOpinion> = emptyList(),
         val filteredMediaItems: List<MediaOpinion> = emptyList(),
         val searchQuery: String = "",
-        val error: String? = null
+        val error: String? = null,
+        val isRating: Boolean = false
     )
 }
 
 /**
  * ViewModel para la pantalla de series mejor valoradas
  */
-class TopSeriesViewModel(repository: TmdbRepository) : TmdbMediaListViewModel(repository) {
+class TopSeriesViewModel(repository: TmdbRepository, opinionRepository: MediaOpinionRepository) : TmdbMediaListViewModel(repository, opinionRepository) {
     override suspend fun loadMediaItems(): Result<List<TmdbMediaItem>> {
         return repository.getTopRatedTvShows()
     }
@@ -182,7 +265,7 @@ class TopSeriesViewModel(repository: TmdbRepository) : TmdbMediaListViewModel(re
 /**
  * ViewModel para la pantalla de series en tendencia
  */
-class TrendingSeriesViewModel(repository: TmdbRepository) : TmdbMediaListViewModel(repository) {
+class TrendingSeriesViewModel(repository: TmdbRepository, opinionRepository: MediaOpinionRepository) : TmdbMediaListViewModel(repository, opinionRepository) {
     override suspend fun loadMediaItems(): Result<List<TmdbMediaItem>> {
         return repository.getTrendingTvShows()
     }
@@ -191,7 +274,7 @@ class TrendingSeriesViewModel(repository: TmdbRepository) : TmdbMediaListViewMod
 /**
  * ViewModel para la pantalla de películas próximas a estrenarse
  */
-class UpcomingMoviesViewModel(repository: TmdbRepository) : TmdbMediaListViewModel(repository) {
+class UpcomingMoviesViewModel(repository: TmdbRepository, opinionRepository: MediaOpinionRepository) : TmdbMediaListViewModel(repository, opinionRepository) {
     override suspend fun loadMediaItems(): Result<List<TmdbMediaItem>> {
         return repository.getUpcomingMovies()
     }
@@ -200,7 +283,7 @@ class UpcomingMoviesViewModel(repository: TmdbRepository) : TmdbMediaListViewMod
 /**
  * ViewModel para la pantalla de películas mejor valoradas
  */
-class TopMoviesViewModel(repository: TmdbRepository) : TmdbMediaListViewModel(repository) {
+class TopMoviesViewModel(repository: TmdbRepository, opinionRepository: MediaOpinionRepository) : TmdbMediaListViewModel(repository, opinionRepository) {
     override suspend fun loadMediaItems(): Result<List<TmdbMediaItem>> {
         return repository.getTopRatedMovies()
     }
@@ -209,7 +292,7 @@ class TopMoviesViewModel(repository: TmdbRepository) : TmdbMediaListViewModel(re
 /**
  * ViewModel para la pantalla de películas en tendencia
  */
-class TrendingMoviesViewModel(repository: TmdbRepository) : TmdbMediaListViewModel(repository) {
+class TrendingMoviesViewModel(repository: TmdbRepository, opinionRepository: MediaOpinionRepository) : TmdbMediaListViewModel(repository, opinionRepository) {
     override suspend fun loadMediaItems(): Result<List<TmdbMediaItem>> {
         return repository.getTrendingMovies()
     }

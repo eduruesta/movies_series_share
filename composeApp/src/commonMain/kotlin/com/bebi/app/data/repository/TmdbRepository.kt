@@ -12,7 +12,6 @@ import kotlinx.coroutines.withContext
  */
 class TmdbRepository(private val appService: AppService) {
     
-    // Cache de géneros para evitar llamadas repetidas
     private var movieGenres: List<TmdbGenre>? = null
     private var tvGenres: List<TmdbGenre>? = null
     

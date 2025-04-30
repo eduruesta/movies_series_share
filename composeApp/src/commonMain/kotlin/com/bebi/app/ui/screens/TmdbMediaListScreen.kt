@@ -25,8 +25,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -38,7 +40,9 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.bebi.app.data.remote.model.TmdbMediaItem
 import com.bebi.app.data.repository.TmdbRepository
+import com.bebi.app.model.MediaOpinion
 import com.bebi.app.ui.components.MediaOpinionItem
+import com.bebi.app.ui.components.RatingBottomSheet
 import com.bebi.app.ui.components.SearchTopAppBar
 import com.bebi.app.viewmodel.TmdbMediaListViewModel
 import com.bebi.app.viewmodel.TopMoviesViewModel
@@ -78,6 +82,9 @@ abstract class TmdbMediaListScreen : Screen {
         val snackbarHostState = remember { SnackbarHostState() }
         val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
         val scope = rememberCoroutineScope()
+
+        var showRatingSheet by remember { mutableStateOf(false) }
+        var selectedOpinion by remember { mutableStateOf<MediaOpinion?>(null) }
 
         val viewModel = getViewModel()
 
@@ -179,7 +186,8 @@ abstract class TmdbMediaListScreen : Screen {
                                         )
                                     },
                                     onRateClick = {
-                                        // No implementamos valoración para elementos de TMDB por ahora
+                                        selectedOpinion = mediaItem
+                                        showRatingSheet = true
                                     },
                                     onShowMessage = { message ->
                                         scope.launch {
@@ -200,6 +208,21 @@ abstract class TmdbMediaListScreen : Screen {
                     }
                 }
             }
+        }
+        
+        if (showRatingSheet && selectedOpinion != null) {
+            RatingBottomSheet(
+                opinion = selectedOpinion!!,
+                onDismiss = { if (!uiState.isRating) showRatingSheet = false },
+                isLoading = uiState.isRating,
+                onRatingSubmit = { opinion, rating ->
+                    viewModel.submitRating(opinion, rating) { success ->
+                        if (success) {
+                            showRatingSheet = false
+                        }
+                    }
+                }
+            )
         }
     }
 }

@@ -103,11 +103,13 @@ val viewModelModule = module {
     viewModelOf(::MediaDetailViewModel)
     viewModelOf(::MediaOpinionFormViewModel)
     viewModelOf(::SavedRecommendationViewModel)
-    viewModelOf(::TopSeriesViewModel)
-    viewModelOf(::TrendingSeriesViewModel)
-    viewModelOf(::UpcomingMoviesViewModel)
-    viewModelOf(::TopMoviesViewModel)
-    viewModelOf(::TrendingMoviesViewModel)
+    
+    // ViewModels para las pantallas de TMDB - ahora necesitan MediaOpinionRepository
+    factory { TopSeriesViewModel(get(), get()) }
+    factory { TrendingSeriesViewModel(get(), get()) }
+    factory { UpcomingMoviesViewModel(get(), get()) }
+    factory { TopMoviesViewModel(get(), get()) }
+    factory { TrendingMoviesViewModel(get(), get()) }
 }
 
 expect val nativeModule: Module

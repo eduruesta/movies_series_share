@@ -87,51 +87,93 @@ class MediaOpinionViewModel(
     }
 
     /**
-     * Envía una calificación para una película o serie
+     * Envía una calificación para una película o serie.
+     * Si es una película de TMDB (no guardada), crea una nueva opinión.
+     * Si ya existe, actualiza la calificación existente.
      *
-     * @param opinion La opinión a actualizar
+     * @param opinion La opinión a actualizar o guardar
      * @param rating La nueva calificación (de 0 a 10)
-     * @return Devuelve true cuando la calificación se ha completado
+     * @param onComplete Callback con el resultado (true = éxito, false = error)
      */
     fun submitRating(opinion: MediaOpinion, rating: Int, onComplete: (Boolean) -> Unit) {
         viewModelScope.launch {
             try {
                 _uiState.update { it.copy(isRating = true) }
 
-                val newRatingCount = opinion.ratingCount + 1
+                // Verificamos si la opinión existe en el remoto
+                val existingOpinion = repository.getOpinionByIdDirect(opinion.id)
 
-
-                val totalRatingPoints = opinion.averageRating * opinion.ratingCount + rating
-                val newAverageRating = totalRatingPoints / newRatingCount
-
-                val updatedOpinion = opinion.copy(
-                    ratingCount = newRatingCount,
-                    averageRating = newAverageRating
-                )
-
-                val success = repository.updateOpinionById(opinion.id, updatedOpinion)
-
-                if (success) {
-                    _uiState.update { currentState ->
-                        val updatedOpinions = currentState.opinions.map {
-                            if (it.id == opinion.id) updatedOpinion else it
+                if (existingOpinion == null) {
+                    // La opinión no existe - Crear y guardar nueva opinión
+                    val randomId = kotlin.random.Random.nextLong(1_000_000, Long.MAX_VALUE)
+                    
+                    val newOpinion = MediaOpinion(
+                        id = randomId,
+                        title = opinion.title,
+                        platform = opinion.platform,
+                        genre = opinion.genre,
+                        rating = rating.toFloat(),  // La calificación que acaba de dar el usuario
+                        comments = emptyList(),      // Sin comentarios iniciales
+                        synopsis = opinion.synopsis,
+                        posterUrl = opinion.posterUrl,
+                        ratingCount = 1,             // Primera calificación
+                        averageRating = rating.toFloat(), // La primera calificación es el promedio
+                        year = opinion.year,
+                        backdropUrl = opinion.backdropUrl
+                    )
+                    
+                    val savedId = repository.saveOpinion(newOpinion)
+                    if (savedId > 0) {
+                        _uiState.update { it.copy(isRating = false) }
+                        onComplete(true)
+                    } else {
+                        _uiState.update {
+                            it.copy(
+                                error = "No se pudo guardar la calificación",
+                                isRating = false
+                            )
                         }
-                        currentState.copy(opinions = updatedOpinions, isRating = false)
+                        onComplete(false)
                     }
-
-                    onComplete(true)
                 } else {
-                    _uiState.update {
-                        it.copy(
-                            error = "No se pudo actualizar la calificación",
-                            isRating = false
-                        )
+                    // La opinión existe - Actualizar la calificación
+                    val newRatingCount = existingOpinion.ratingCount + 1
+                    val totalRatingPoints = existingOpinion.averageRating * existingOpinion.ratingCount + rating
+                    val newAverageRating = totalRatingPoints / newRatingCount
+
+                    val updatedOpinion = existingOpinion.copy(
+                        ratingCount = newRatingCount,
+                        averageRating = newAverageRating
+                    )
+
+                    val success = repository.updateOpinionById(existingOpinion.id, updatedOpinion)
+
+                    if (success) {
+                        _uiState.update { currentState ->
+                            val updatedOpinions = currentState.opinions.map {
+                                if (it.id == existingOpinion.id) updatedOpinion else it
+                            }
+                            currentState.copy(opinions = updatedOpinions, isRating = false)
+                        }
+
+                        onComplete(true)
+                    } else {
+                        _uiState.update {
+                            it.copy(
+                                error = "No se pudo actualizar la calificación",
+                                isRating = false
+                            )
+                        }
+                        onComplete(false)
                     }
-                    onComplete(false)
                 }
             } catch (e: Exception) {
-                _uiState.update { it.copy(error = e.message, isRating = false) }
-                // Notificar que ha habido un error
+                _uiState.update {
+                    it.copy(
+                        error = "Error: ${e.message}",
+                        isRating = false
+                    )
+                }
                 onComplete(false)
             }
         }

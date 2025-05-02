@@ -12,7 +12,7 @@ import kotlinx.coroutines.launch
 
 class GroupsViewModel(
     private val groupsRepository: GroupsRepository,
-    private val currentUsername: String // Nombre del usuario actual
+    private val currentUsername: String
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GroupsUiState())

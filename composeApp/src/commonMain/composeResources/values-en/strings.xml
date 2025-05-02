@@ -95,6 +95,15 @@
     <string name="no_groups">You don't have any groups yet</string>
     <string name="create_your_first_group">Create your first group to share recommendations</string>
     <string name="group_members">%1$d members</string>
+    <string name="create_group_button">Create Group</string>
+    <string name="group_name">Group Name</string>
+    <string name="group_description">Description</string>
+    <string name="name">Name</string>
+    <string name="description">Description</string>
+    <string name="group_created_success">Group created successfully!</string>
+    <string name="group_invite_code">Invite Code</string>
+    <string name="share_invite_code">Share this code with friends to invite them to your group</string>
+    <string name="code_copied_to_clipboard">Code copied to clipboard</string>
 
     <!-- Settings -->
     <string name="settings">Settings</string>

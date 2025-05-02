@@ -70,7 +70,7 @@ class GroupsScreen : Screen {
         GroupsScreen(
             uiState = uiState,
             onBackPressed = { navigator.pop() },
-            onCreateGroupClicked = { /* Implementar navegación a crear grupo */ },
+            onCreateGroupClicked = { navigator.push(CreateGroupScreen()) },
             onJoinGroupClicked = { /* Implementar unirse a grupo */ },
             onGroupClicked = { /* Implementar navegar a detalle de grupo */ },
             onRetryLoadGroups = { viewModel.loadGroups() }

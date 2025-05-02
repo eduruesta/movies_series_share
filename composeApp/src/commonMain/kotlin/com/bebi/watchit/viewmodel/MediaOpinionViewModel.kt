@@ -100,11 +100,9 @@ class MediaOpinionViewModel(
             try {
                 _uiState.update { it.copy(isRating = true) }
 
-                // Verificamos si la opinión existe en el remoto
                 val existingOpinion = repository.getOpinionByIdDirect(opinion.id)
 
                 if (existingOpinion == null) {
-                    // La opinión no existe - Crear y guardar nueva opinión
                     val randomId = kotlin.random.Random.nextLong(1_000_000, Long.MAX_VALUE)
                     
                     val newOpinion = MediaOpinion(
@@ -112,12 +110,12 @@ class MediaOpinionViewModel(
                         title = opinion.title,
                         platform = opinion.platform,
                         genre = opinion.genre,
-                        rating = rating.toFloat(),  // La calificación que acaba de dar el usuario
-                        comments = emptyList(),      // Sin comentarios iniciales
+                        rating = rating.toFloat(),
+                        comments = emptyList(),
                         synopsis = opinion.synopsis,
                         posterUrl = opinion.posterUrl,
-                        ratingCount = 1,             // Primera calificación
-                        averageRating = rating.toFloat(), // La primera calificación es el promedio
+                        ratingCount = 1,
+                        averageRating = rating.toFloat(),
                         year = opinion.year,
                         backdropUrl = opinion.backdropUrl
                     )
@@ -136,7 +134,6 @@ class MediaOpinionViewModel(
                         onComplete(false)
                     }
                 } else {
-                    // La opinión existe - Actualizar la calificación
                     val newRatingCount = existingOpinion.ratingCount + 1
                     val totalRatingPoints = existingOpinion.averageRating * existingOpinion.ratingCount + rating
                     val newAverageRating = totalRatingPoints / newRatingCount

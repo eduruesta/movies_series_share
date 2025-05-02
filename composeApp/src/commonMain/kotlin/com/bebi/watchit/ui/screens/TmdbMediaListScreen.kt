@@ -92,6 +92,7 @@ abstract class TmdbMediaListScreen : Screen {
         
         LaunchedEffect(navigator) {
             viewModel.updateSearchQuery("")
+            viewModel.loadMediaList()
         }
 
         Scaffold(

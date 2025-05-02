@@ -9,6 +9,8 @@ import com.bebi.watchit.data.remote.model.TmdbMediaItem
 import com.bebi.watchit.data.repository.TmdbRepository
 import com.bebi.watchit.data.repository.MediaOpinionRepository
 import com.bebi.watchit.model.MediaOpinion
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -23,23 +25,17 @@ abstract class TmdbMediaListViewModel(
     private val opinionRepository: MediaOpinionRepository
 ) : ViewModel() {
 
-    // Estado UI para la lista
     private val _uiState = MutableStateFlow(TmdbMediaListUiState())
     val uiState: StateFlow<TmdbMediaListUiState> = _uiState.asStateFlow()
     var genre by mutableStateOf("")
         private set
-
-    init {
-        loadMediaList()
-    }
-
 
     protected abstract suspend fun loadMediaItems(): Result<List<TmdbMediaItem>>
 
     /**
      * Carga la lista de medios según la implementación específica
      */
-    private fun loadMediaList() {
+    fun loadMediaList() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
@@ -48,11 +44,82 @@ abstract class TmdbMediaListViewModel(
                 result.fold(
                     onSuccess = { items ->
                         val mediaOpinions = items.map { convertToMediaOpinion(it) }
+                        
+                        _uiState.update {
+                            it.copy(
+                                mediaItems = mediaOpinions,
+                                filteredMediaItems = mediaOpinions
+                            )
+                        }
+                        
+                        val loadingTasks = mediaOpinions.map { opinion ->
+                            async {
+                                val item = items.find { it.id.toLong() == opinion.id } ?: return@async null
+                                val isMovie = item.mediaType == "movie"
+                                
+                                val genresResult = if (isMovie) {
+                                    repository.getGenreNames(item.genreIds, isMovie = true)
+                                } else {
+                                    repository.getGenreNames(item.genreIds, isMovie = false)
+                                }
+                                
+                                val providersResult = if (isMovie) {
+                                    repository.getMovieWatchProviders(item.id)
+                                } else {
+                                    repository.getTvWatchProviders(item.id)
+                                }
+                                
+                                var genreText = ""
+                                var platformText = ""
+                                
+                                genresResult.fold(
+                                    onSuccess = { genreNames ->
+                                        if (genreNames.isNotEmpty()) {
+                                            genreText = genreNames.joinToString(", ")
+                                        }
+                                    },
+                                    onFailure = { /* No action needed */ }
+                                )
+                                
+                                providersResult.fold(
+                                    onSuccess = { providers ->
+                                        if (providers.isNotEmpty()) {
+                                            platformText = providers.first()
+                                        }
+                                    },
+                                    onFailure = { /* No action needed */ }
+                                )
+                                
+                                if (genreText.isNotEmpty() || platformText.isNotEmpty()) {
+                                    return@async opinion.copy(
+                                        genre = genreText.ifEmpty { opinion.genre },
+                                        platform = platformText.ifEmpty { opinion.platform }
+                                    )
+                                }
+                                
+                                return@async null
+                            }
+                        }
+                        
+                        val updatedOpinions = loadingTasks.awaitAll().filterNotNull()
+                        
+                        val currentState = _uiState.value
+                        val updatedMediaItems = currentState.mediaItems.map { opinion ->
+                            updatedOpinions.find { it.id == opinion.id } ?: opinion
+                        }
+                        
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
-                                mediaItems = mediaOpinions,
-                                filteredMediaItems = mediaOpinions
+                                mediaItems = updatedMediaItems,
+                                filteredMediaItems = if (it.searchQuery.isEmpty()) {
+                                    updatedMediaItems
+                                } else {
+                                    updatedMediaItems.filter { opinion ->
+                                        opinion.title.contains(it.searchQuery, ignoreCase = true) || 
+                                        opinion.synopsis.contains(it.searchQuery, ignoreCase = true)
+                                    }
+                                }
                             )
                         }
                     },
@@ -80,50 +147,20 @@ abstract class TmdbMediaListViewModel(
      * Convierte un TmdbMediaItem a MediaOpinion para usar en la UI
      */
     private fun convertToMediaOpinion(item: TmdbMediaItem): MediaOpinion {
-        // Valor inicial del género (se actualizará más tarde)
-        val initialGenre = item.genreIds.firstOrNull()?.toString() ?: ""
-        
-        // Determinamos si es película o serie
         val isMovie = item.mediaType == "movie"
         
-        // Creamos el objeto MediaOpinion con la información básica
         val mediaOpinion = MediaOpinion(
             id = item.id.toLong(),
             title = item.displayTitle,
             posterUrl = item.posterPath?.let { repository.getFullPosterUrl(it) },
             backdropUrl = item.backdropPath?.let { repository.getFullBackdropUrl(it) },
-            genre = initialGenre,
-            platform = if (isMovie) "Movie" else "Serie",
+            genre = "",
+            platform = "",
             rating = item.voteAverage?.toFloat() ?: 0f,
             averageRating = item.voteAverage?.toFloat() ?: 0f,
             synopsis = item.overview ?: "",
             year = item.displayReleaseDate
         )
-        
-        // Iniciamos una consulta asíncrona para obtener los nombres de los géneros
-        viewModelScope.launch {
-            val genresResult = repository.getGenreNames(item.genreIds, isMovie = isMovie)
-            
-            genresResult.fold(
-                onSuccess = { genreNames ->
-                    if (genreNames.isNotEmpty()) {
-                        // Actualizamos el estado con los nombres de géneros
-                        _uiState.update { currentState ->
-                            val updatedMediaItems = currentState.mediaItems.map { opinion ->
-                                // Solo actualizamos el elemento actual
-                                if (opinion.id == item.id.toLong()) {
-                                    opinion.copy(genre = genreNames.joinToString(", "))
-                                } else {
-                                    opinion
-                                }
-                            }
-                            currentState.copy(mediaItems = updatedMediaItems)
-                        }
-                    }
-                },
-                onFailure = { /* Mantener valor actual */ }
-            )
-        }
         
         return mediaOpinion
     }
@@ -178,12 +215,12 @@ abstract class TmdbMediaListViewModel(
                         title = mediaOpinion.title,
                         platform = mediaOpinion.platform,
                         genre = mediaOpinion.genre,
-                        rating = rating.toFloat(),  // La calificación que acaba de dar el usuario
-                        comments = emptyList(),      // Sin comentarios iniciales
+                        rating = rating.toFloat(),
+                        comments = emptyList(),
                         synopsis = mediaOpinion.synopsis,
                         posterUrl = mediaOpinion.posterUrl,
-                        ratingCount = 1,             // Primera calificación
-                        averageRating = rating.toFloat(), // La primera calificación es el promedio
+                        ratingCount = 1,
+                        averageRating = rating.toFloat(),
                         year = mediaOpinion.year,
                         backdropUrl = mediaOpinion.backdropUrl
                     )
@@ -236,6 +273,35 @@ abstract class TmdbMediaListViewModel(
                 }
                 onComplete(false)
             }
+        }
+    }
+
+    /**
+     * Actualiza un elemento en la lista
+     */
+    private fun updateMediaItemInList(updatedItem: MediaOpinion) {
+        _uiState.update { currentState ->
+            val updatedMediaItems = currentState.mediaItems.map { opinion ->
+                if (opinion.id == updatedItem.id) {
+                    updatedItem
+                } else {
+                    opinion
+                }
+            }
+            
+            val updatedFilteredMediaItems = if (currentState.searchQuery.isNotEmpty()) {
+                updatedMediaItems.filter { opinion ->
+                    opinion.title.contains(currentState.searchQuery, ignoreCase = true) || 
+                    opinion.synopsis.contains(currentState.searchQuery, ignoreCase = true)
+                }
+            } else {
+                updatedMediaItems
+            }
+            
+            currentState.copy(
+                mediaItems = updatedMediaItems,
+                filteredMediaItems = updatedFilteredMediaItems
+            )
         }
     }
 

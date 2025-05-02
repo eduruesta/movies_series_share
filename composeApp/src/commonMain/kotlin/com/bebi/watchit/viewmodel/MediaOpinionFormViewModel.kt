@@ -200,8 +200,13 @@ class MediaOpinionFormViewModel(
     fun saveOpinion() {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isSaving = true)
-            // Generar un ID aleatorio para cada crítica
             val randomId = kotlin.random.Random.nextLong(1_000_000, Long.MAX_VALUE)
+
+            val commentsList = if (comments.isBlank()) {
+                emptyList()
+            } else {
+                listOf(comments)
+            }
 
             val opinion = MediaOpinion(
                 id = randomId,
@@ -209,7 +214,7 @@ class MediaOpinionFormViewModel(
                 platform = platform,
                 genre = genre,
                 rating = rating,
-                comments = listOf(comments),
+                comments = commentsList,
                 synopsis = synopsis,
                 posterUrl = posterUrl,
                 ratingCount = 1,
@@ -237,7 +242,6 @@ class MediaOpinionFormViewModel(
         comments = ""
         synopsis = ""
         posterUrl = ""
-        // Crear una nueva instancia del estado UI para asegurarnos de que saved sea false
         _uiState.value = MediaOpinionFormUiState()
     }
 

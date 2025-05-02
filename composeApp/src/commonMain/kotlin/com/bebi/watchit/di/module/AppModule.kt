@@ -34,6 +34,11 @@ import org.koin.core.module.dsl.viewModelOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
+import com.bebi.watchit.data.remote.GroupsApiService
+import com.bebi.watchit.data.repository.GroupsRepository
+import com.bebi.watchit.data.repository.GroupsRepositoryImpl
+import com.bebi.watchit.viewmodel.GroupCriticsViewModel
+import com.bebi.watchit.viewmodel.GroupsViewModel
 
 /**
  * Common Koin module for the application
@@ -70,6 +75,8 @@ val appModule = module {
 val dataModule = module {
     factoryOf(::RoomMediaOpinionRepository)
     factoryOf(::CriticsApiService)
+    factoryOf(::GroupsApiService)
+
     factory<MediaOpinionRepository> {
         HybridMediaOpinionRepository(
             apiService = get(),
@@ -77,7 +84,12 @@ val dataModule = module {
             savedRecommendationRepository = get<SavedRecommendationRepository>()
         )
     }
-    
+
+    single<GroupsRepository> {
+        GroupsRepositoryImpl(
+            apiService = get<GroupsApiService>()
+        )
+    }
     factoryOf(::SavedRecommendationRepository)
 
     singleOf(::TmdbRepository)
@@ -103,13 +115,27 @@ val viewModelModule = module {
     viewModelOf(::MediaDetailViewModel)
     viewModelOf(::MediaOpinionFormViewModel)
     viewModelOf(::SavedRecommendationViewModel)
-    
+
     // ViewModels para las pantallas de TMDB - ahora necesitan MediaOpinionRepository
     factory { TopSeriesViewModel(get(), get()) }
     factory { TrendingSeriesViewModel(get(), get()) }
     factory { UpcomingMoviesViewModel(get(), get()) }
     factory { TopMoviesViewModel(get(), get()) }
     factory { TrendingMoviesViewModel(get(), get()) }
+    factory { (username: String) ->
+        GroupsViewModel(
+            groupsRepository = get(),
+            currentUsername = username
+        )
+    }
+
+    factory { (username: String, groupId: String) ->
+        GroupCriticsViewModel(
+            groupsRepository = get(),
+            currentUsername = username,
+            groupId = groupId
+        )
+    }
 }
 
 expect val nativeModule: Module
@@ -117,6 +143,11 @@ expect val nativeModule: Module
 fun initKoin(config: KoinAppDeclaration? = null) {
     startKoin {
         config?.invoke(this)
-        modules(appModule, dataModule, viewModelModule, nativeModule)
+        modules(
+            appModule,
+            dataModule,
+            viewModelModule,
+            nativeModule,
+        )
     }
 }

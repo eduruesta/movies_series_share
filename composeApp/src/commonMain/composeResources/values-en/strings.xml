@@ -94,6 +94,7 @@
     <string name="join_group">Join Group</string>
     <string name="no_groups">You don't have any groups yet</string>
     <string name="create_your_first_group">Create your first group to share recommendations</string>
+    <string name="group_members">%1$d members</string>
 
     <!-- Settings -->
     <string name="settings">Settings</string>

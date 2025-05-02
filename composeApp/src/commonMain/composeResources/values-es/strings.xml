@@ -93,6 +93,8 @@
     <string name="join_group">Unirse a Grupo</string>
     <string name="no_groups">No tienes grupos todavía</string>
     <string name="create_your_first_group">Crea tu primer grupo para compartir recomendaciones</string>
+    <string name="group_members">%1$d miembros</string>
+
 
     <!-- Settings -->
     <string name="settings">Configuración</string>

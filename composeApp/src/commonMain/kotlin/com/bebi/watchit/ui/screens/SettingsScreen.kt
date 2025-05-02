@@ -63,6 +63,7 @@ class SettingsScreen : Screen {
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         var isLoading by remember { mutableStateOf(false) }
         var refreshTrigger by remember { mutableStateOf(0) }
+        var currentLanguage by remember { mutableStateOf(myLang ?: "en") }
 
         androidx.compose.runtime.key(refreshTrigger) {
             Scaffold(
@@ -101,7 +102,9 @@ class SettingsScreen : Screen {
                             Spacer(modifier = Modifier.height(24.dp))
 
                             LanguageSection(
-                                onLanguageChanged = {
+                                currentLanguage = currentLanguage,
+                                onLanguageChanged = { newLang ->
+                                    currentLanguage = newLang
                                     isLoading = true
                                     refreshTrigger++
                                 }
@@ -162,19 +165,20 @@ private fun ThemeSection() {
 
 @Composable
 private fun LanguageSection(
-    onLanguageChanged: () -> Unit
+    currentLanguage: String,
+    onLanguageChanged: (String) -> Unit
 ) {
     val languages = listOf("en" to Res.string.english, "es" to Res.string.spanish)
     val localization = koinInject<Localization>()
+    
     var languageIso by rememberStringSetting(
         key = "savedLanguageIso",
-        defaultValue = if (myLang == "es") "es" else "en"
+        defaultValue = currentLanguage
     )
     
-
-    LaunchedEffect(Unit) {
-        if (myLang != null && myLang != languageIso) {
-            languageIso = myLang!!
+    LaunchedEffect(currentLanguage) {
+        if (currentLanguage != languageIso) {
+            languageIso = currentLanguage
         }
     }
 
@@ -202,12 +206,12 @@ private fun LanguageSection(
                     Modifier
                         .fillMaxWidth()
                         .selectable(
-                            selected = langCode == languageIso,
+                            selected = langCode == currentLanguage,
                             onClick = {
-                                if (langCode != languageIso) {
+                                if (langCode != currentLanguage) {
                                     languageIso = langCode
                                     localization.applyLanguage(langCode)
-                                    onLanguageChanged()
+                                    onLanguageChanged(langCode)
                                 }
                             },
                             role = Role.RadioButton
@@ -216,12 +220,12 @@ private fun LanguageSection(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     RadioButton(
-                        selected = langCode == languageIso,
+                        selected = langCode == currentLanguage,
                         onClick = {
-                            if (langCode != languageIso) {
+                            if (langCode != currentLanguage) {
                                 languageIso = langCode
                                 localization.applyLanguage(langCode)
-                                onLanguageChanged()
+                                onLanguageChanged(langCode)
                             }
                         }
                     )

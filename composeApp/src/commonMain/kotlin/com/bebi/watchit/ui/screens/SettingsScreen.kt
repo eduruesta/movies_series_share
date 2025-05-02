@@ -39,6 +39,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.bebi.watchit.data.domain.Language
 import com.bebi.watchit.data.domain.Localization
+import com.bebi.watchit.data.myLang
 import com.bebi.watchit.theme.LocalThemeIsDark
 import dev.burnoo.compose.remembersetting.rememberStringSetting
 import kotlinx.coroutines.delay
@@ -107,12 +108,12 @@ class SettingsScreen : Screen {
                             )
                         }
                     }
-                    
+
                     if (isLoading) {
                         CircularProgressIndicator(
                             modifier = Modifier.align(Alignment.Center)
                         )
-                        
+
                         LaunchedEffect(refreshTrigger) {
                             delay(300)
                             isLoading = false
@@ -167,9 +168,16 @@ private fun LanguageSection(
     val localization = koinInject<Localization>()
     var languageIso by rememberStringSetting(
         key = "savedLanguageIso",
-        defaultValue = Language.English.iso
+        defaultValue = if (myLang == "es") "es" else "en"
     )
     
+
+    LaunchedEffect(Unit) {
+        if (myLang != null && myLang != languageIso) {
+            languageIso = myLang!!
+        }
+    }
+
     Text(
         text = stringResource(Res.string.language),
         style = MaterialTheme.typography.titleLarge
@@ -195,7 +203,7 @@ private fun LanguageSection(
                         .fillMaxWidth()
                         .selectable(
                             selected = langCode == languageIso,
-                            onClick = { 
+                            onClick = {
                                 if (langCode != languageIso) {
                                     languageIso = langCode
                                     localization.applyLanguage(langCode)
@@ -209,7 +217,13 @@ private fun LanguageSection(
                 ) {
                     RadioButton(
                         selected = langCode == languageIso,
-                        onClick = null
+                        onClick = {
+                            if (langCode != languageIso) {
+                                languageIso = langCode
+                                localization.applyLanguage(langCode)
+                                onLanguageChanged()
+                            }
+                        }
                     )
                     Spacer(modifier = Modifier.width(16.dp))
                     Text(

@@ -161,13 +161,11 @@ class TmdbRepository(private val appService: AppService) {
             
             val countryProviders = response.results[userCountry]
             
-            // Recopilar todas las plataformas de streaming, alquiler y compra
             val providers = mutableListOf<Provider>()
             countryProviders?.flatrate?.let { providers.addAll(it) }
             countryProviders?.rent?.let { providers.addAll(it) }
             countryProviders?.buy?.let { providers.addAll(it) }
             
-            // Devolver los nombres de los proveedores
             val providerNames = providers.map { it.providerName }.distinct()
             Result.success(providerNames)
         } catch (e: Exception) {

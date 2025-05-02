@@ -184,6 +184,18 @@ class MediaListScreen : Screen {
                             navigator.push(TrendingMoviesScreen())
                         }
                     },
+                    onNavigateToGroups = {
+                        scope.launch {
+                            drawerState.close()
+                            navigator.push(GroupsScreen())
+                        }
+                    },
+                    onNavigateToSettings = {
+                        scope.launch {
+                            drawerState.close()
+                            navigator.push(SettingsScreen())
+                        }
+                    },
                 )
             },
             content = {

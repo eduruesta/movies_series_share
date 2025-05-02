@@ -51,6 +51,7 @@
     <string name="loading_details">Cargando detalles...</string>
     <string name="loading_title">Cargando...</string>
     <string name="error_loading_details">Hubo un error al cargar los detalles</string>
+    <string name="error_loading_options">Error al cargar opciones</string>
     <string name="back">Volver</string>
     <string name="rating_with_value">%1$s/10</string>
     <string name="separator_dot"> • </string>
@@ -85,7 +86,21 @@
     <string name="search_recommendations">Buscar recomendaciones...</string>
     <string name="search">Buscar...</string>
 
+    <!-- Groups -->
+    <string name="groups">Grupos</string>
+    <string name="my_groups">Mis Grupos</string>
+    <string name="create_group">Crear Grupo</string>
+    <string name="join_group">Unirse a Grupo</string>
+    <string name="no_groups">No tienes grupos todavía</string>
+    <string name="create_your_first_group">Crea tu primer grupo para compartir recomendaciones</string>
 
+    <!-- Settings -->
+    <string name="settings">Configuración</string>
+    <string name="appearance">Apariencia</string>
+    <string name="language">Idioma</string>
+    <string name="select_language">Seleccionar idioma</string>
+    <string name="english">Inglés</string>
+    <string name="spanish">Español</string>
 
     <string name="empty_recommendations_message">Todavía no tienes recomendaciones guardadas. Agrega recomendaciones desde la pantalla principal para verlas aquí.</string>
 

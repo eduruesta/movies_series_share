@@ -8,8 +8,12 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
@@ -18,7 +22,6 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.NavigationDrawerItem
 import androidx.compose.material3.NavigationDrawerItemDefaults
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -29,16 +32,16 @@ import androidx.compose.ui.unit.dp
 import com.bebi.watchit.theme.LocalThemeIsDark
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.app_name
+import moviesseriesshare.composeapp.generated.resources.groups
 import moviesseriesshare.composeapp.generated.resources.media_list_title
 import moviesseriesshare.composeapp.generated.resources.movies
 import moviesseriesshare.composeapp.generated.resources.series
+import moviesseriesshare.composeapp.generated.resources.settings
 import moviesseriesshare.composeapp.generated.resources.top_movies
 import moviesseriesshare.composeapp.generated.resources.top_series
 import moviesseriesshare.composeapp.generated.resources.trending
 import moviesseriesshare.composeapp.generated.resources.upcoming
 import moviesseriesshare.composeapp.generated.resources.your_recommendations
-import moviesseriesshare.composeapp.generated.resources.dark_mode
-
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -54,6 +57,8 @@ fun AppDrawerContent(
     onNavigateToUpcomingMovies: () -> Unit,
     onNavigateToTopMovies: () -> Unit,
     onNavigateToTrendingMovies: () -> Unit,
+    onNavigateToGroups: () -> Unit,
+    onNavigateToSettings: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     ModalDrawerSheet(
@@ -72,6 +77,8 @@ fun AppDrawerContent(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
                 .padding(horizontal = 4.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp),
             horizontalAlignment = Alignment.CenterHorizontally
@@ -105,6 +112,22 @@ fun AppDrawerContent(
                 selected = false,
                 onClick = {
                     onNavigateToRecommendations()
+                },
+                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
+            )
+
+            NavigationDrawerItem(
+                icon = {
+                    Icon(
+                        Icons.Default.Person,
+                        contentDescription = null,
+                        tint = MaterialTheme.colorScheme.primary
+                    )
+                },
+                label = { Text(stringResource(Res.string.groups)) },
+                selected = false,
+                onClick = {
+                    onNavigateToGroups()
                 },
                 modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
             )
@@ -206,36 +229,25 @@ fun AppDrawerContent(
                 },
                 modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
             )
-            
-            Spacer(modifier = Modifier.weight(1f))
-            
-            // Separador antes del switch de tema
-            HorizontalDivider(color = Color(0xFF38444D))
-            
-            // Switch para cambiar entre modo oscuro y claro
-            val isDarkTheme = LocalThemeIsDark.current
-            val isDark by isDarkTheme
-            
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                Text(
-                    text = stringResource(Res.string.dark_mode),
-                    style = MaterialTheme.typography.titleMedium
-                )
-                
-                Switch(
-                    checked = isDark,
-                    onCheckedChange = { isDarkTheme.value = it },
-                    modifier = Modifier.padding(start = 8.dp)
-                )
-            }
-            
-            Spacer(modifier = Modifier.height(16.dp))
         }
+        
+
+        HorizontalDivider(color = Color(0xFF38444D))
+        
+        NavigationDrawerItem(
+            icon = {
+                Icon(
+                    Icons.Default.Settings,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.primary
+                )
+            },
+            label = { Text(stringResource(Res.string.settings)) },
+            selected = false,
+            onClick = {
+                onNavigateToSettings()
+            },
+            modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
+        )
     }
 }

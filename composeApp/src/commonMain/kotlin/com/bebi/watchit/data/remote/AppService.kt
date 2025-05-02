@@ -1,9 +1,11 @@
 package com.bebi.watchit.data.remote
 
 import com.bebi.app.watchit.BuildConfig
+import com.bebi.watchit.data.myCountry
 import com.bebi.watchit.data.myLang
 import com.bebi.watchit.data.remote.model.TmdbGenresResponse
 import com.bebi.watchit.data.remote.model.TmdbSearchResponse
+import com.bebi.watchit.data.remote.model.TmdbWatchProvidersResponse
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -92,6 +94,14 @@ class AppService(
     }
     
     /**
+     * Obtiene el código de país del usuario
+     * @return código de país o "US" por defecto si no se puede determinar
+     */
+    fun getCountryCode(): String {
+        return myCountry ?: "US"
+    }
+    
+    /**
      * Get trending TV shows for the week
      */
     suspend fun getTrendingTvShows(): TmdbSearchResponse {
@@ -163,6 +173,38 @@ class AppService(
             appendPathSegments(apiVersion, "tv", "top_rated")
             parameters.append("language", language)
             parameters.append("page", "1")
+            parameters.append("api_key", BuildConfig.api_key)
+        }.build()
+
+        return client.get(url).body()
+    }
+    
+    /**
+     * Obtiene los proveedores de streaming para una película
+     * @param movieId ID de la película en TMDB
+     * @return Respuesta con los proveedores disponibles por país
+     */
+    suspend fun getMovieWatchProviders(movieId: Int): TmdbWatchProvidersResponse {
+        val url = URLBuilder().apply {
+            protocol = URLProtocol.HTTPS
+            host = baseUrl
+            appendPathSegments(apiVersion, "movie", movieId.toString(), "watch", "providers")
+            parameters.append("api_key", BuildConfig.api_key)
+        }.build()
+
+        return client.get(url).body()
+    }
+    
+    /**
+     * Obtiene los proveedores de streaming para una serie
+     * @param tvId ID de la serie en TMDB
+     * @return Respuesta con los proveedores disponibles por país
+     */
+    suspend fun getTvWatchProviders(tvId: Int): TmdbWatchProvidersResponse {
+        val url = URLBuilder().apply {
+            protocol = URLProtocol.HTTPS
+            host = baseUrl
+            appendPathSegments(apiVersion, "tv", tvId.toString(), "watch", "providers")
             parameters.append("api_key", BuildConfig.api_key)
         }.build()
 

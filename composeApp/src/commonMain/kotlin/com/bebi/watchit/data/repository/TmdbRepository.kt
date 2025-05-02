@@ -1,6 +1,7 @@
 package com.bebi.watchit.data.repository
 
 import com.bebi.watchit.data.remote.AppService
+import com.bebi.watchit.data.remote.model.Provider
 import com.bebi.watchit.data.remote.model.TmdbGenre
 import com.bebi.watchit.data.remote.model.TmdbMediaItem
 import kotlinx.coroutines.Dispatchers
@@ -147,5 +148,53 @@ class TmdbRepository(private val appService: AppService) {
 
     fun getFullBackdropUrl(posterPath: String?): String? {
         return appService.getBackdropUrl(posterPath)
+    }
+    
+    /**
+     * Obtiene los proveedores de streaming para una película
+     * @return Lista de nombres de plataformas disponibles en el país del usuario
+     */
+    suspend fun getMovieWatchProviders(movieId: Int): Result<List<String>> = withContext(Dispatchers.IO) {
+        try {
+            val userCountry = appService.getCountryCode()
+            val response = appService.getMovieWatchProviders(movieId)
+            
+            val countryProviders = response.results[userCountry]
+            
+            // Recopilar todas las plataformas de streaming, alquiler y compra
+            val providers = mutableListOf<Provider>()
+            countryProviders?.flatrate?.let { providers.addAll(it) }
+            countryProviders?.rent?.let { providers.addAll(it) }
+            countryProviders?.buy?.let { providers.addAll(it) }
+            
+            // Devolver los nombres de los proveedores
+            val providerNames = providers.map { it.providerName }.distinct()
+            Result.success(providerNames)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    /**
+     * Obtiene los proveedores de streaming para una serie
+     * @return Lista de nombres de plataformas disponibles en el país del usuario
+     */
+    suspend fun getTvWatchProviders(tvId: Int): Result<List<String>> = withContext(Dispatchers.IO) {
+        try {
+            val userCountry = appService.getCountryCode()
+            val response = appService.getTvWatchProviders(tvId)
+            
+            val countryProviders = response.results[userCountry]
+            
+            val providers = mutableListOf<Provider>()
+            countryProviders?.flatrate?.let { providers.addAll(it) }
+            countryProviders?.rent?.let { providers.addAll(it) }
+            countryProviders?.buy?.let { providers.addAll(it) }
+            
+            val providerNames = providers.map { it.providerName }.distinct()
+            Result.success(providerNames)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 }

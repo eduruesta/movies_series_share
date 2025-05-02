@@ -150,6 +150,21 @@ class MediaOpinionFormViewModel(
             backdropUrl = it
         }
 
+        val watchProvidersResult = if (mediaItem.isMovie) {
+            tmdbRepository.getMovieWatchProviders(mediaItem.id)
+        } else {
+            tmdbRepository.getTvWatchProviders(mediaItem.id)
+        }
+        
+        watchProvidersResult.fold(
+            onSuccess = { providers ->
+                if (providers.isNotEmpty()) {
+                    platform = providers.firstOrNull() ?: ""
+                }
+            },
+            onFailure = { /* Mantener valor actual */ }
+        )
+
         val genres = if (mediaItem.isMovie) {
             tmdbRepository.getGenreNames(mediaItem.genreIds, isMovie = true)
         } else {

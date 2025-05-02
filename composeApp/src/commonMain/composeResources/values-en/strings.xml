@@ -6,17 +6,17 @@
     <string name="theme">Theme</string>
 
     <!-- Opinion Form Strings -->
-    <string name="new_opinion">New Review</string>
-    <string name="title_field">Movie or Series Name</string>
+    <string name="new_opinion">New Critic</string>
+    <string name="title_field">Movie or Tv Shows Name</string>
     <string name="rating_field">Rating</string>
     <string name="comment_field">What did you think?</string>
     <string name="genre_field">Genre</string>
     <string name="platform_field">On which platform did you watch it?</string>
-    <string name="save_button">Save Review</string>
+    <string name="save_button">Save Critic</string>
     <string name="image_field">Poster</string>
     <string name="select_from_gallery">Select from gallery</string>
     <string name="search_online">Search online</string>
-    <string name="new_critic">New Review</string>
+    <string name="new_critic">New Critic</string>
     <string name="year_field">Year</string>
     <string name="duration_field">Duration</string>
     <string name="content_rating_field">Content Rating</string>
@@ -36,7 +36,7 @@
     <!-- Media List Screen Strings -->
     <string name="media_list_title">Recommendations</string>
     <string name="empty_list_message">There are no reviews available. Create your first review by clicking the button below.</string>
-    <string name="create_critic_button">Create Review</string>
+    <string name="create_critic_button">Create Critic</string>
     <string name="opinion_count">%1$s (%2$s)</string>
 
     <!-- Rating Strings -->
@@ -58,7 +58,7 @@
     <string name="save_as_recommendation">Save recommendation</string>
 
     <!-- Error Messages -->
-    <string name="error_opinion_not_found">Review not found</string>
+    <string name="error_opinion_not_found">Critic not found</string>
     <string name="search_no_results">No results found for %1$s</string>
     <string name="search_results_count">%1$s results found for %2$s</string>
     <string name="search_error">Error searching: %1$s</string>
@@ -74,14 +74,14 @@
     <string name="your_recommendations">Saved Recommendations</string>
     <string name="app_name">Criticly</string>
     <string name="movies">Movies</string>
-    <string name="series">Series</string>
-    <string name="top_series">Top Series</string>
+    <string name="series">Tv Shows</string>
+    <string name="top_series">Top Tv Shows</string>
     <string name="top_movies">Top Movies</string>
     <string name="trending">Trending</string>
     <string name="upcoming">Upcoming</string>
 
     <!-- Search placeholders -->
-    <string name="search_movies_series">Search movies and series...</string>
+    <string name="search_movies_series">Search Movies and Tv shows...</string>
     <string name="search_recommendations">Search recommendations...</string>
     <string name="search">Search...</string>
 

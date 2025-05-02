@@ -17,3 +17,4 @@ Pods/
 *.jks
 *.gpg
 *yarn.lock
+/composeApp/release/composeApp-release.aab

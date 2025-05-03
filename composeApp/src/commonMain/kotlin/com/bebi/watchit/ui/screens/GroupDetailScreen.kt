@@ -1,21 +1,15 @@
 package com.bebi.watchit.ui.screens
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
@@ -42,56 +36,54 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.bebi.watchit.data.models.GroupResponse
-import com.bebi.watchit.viewmodel.GroupsUiState
-import com.bebi.watchit.viewmodel.GroupsViewModel
+import com.bebi.watchit.model.MediaOpinion
+import com.bebi.watchit.ui.components.MediaOpinionCard
+import com.bebi.watchit.viewmodel.GroupDetailUiState
+import com.bebi.watchit.viewmodel.GroupDetailViewModel
+import com.bebi.watchit.viewmodel.MediaOpinionFormViewModel
 import moviesseriesshare.composeapp.generated.resources.Res
+import moviesseriesshare.composeapp.generated.resources.add_new_comment
 import moviesseriesshare.composeapp.generated.resources.back_button
-import moviesseriesshare.composeapp.generated.resources.create_group
-import moviesseriesshare.composeapp.generated.resources.create_your_first_group
-import moviesseriesshare.composeapp.generated.resources.group_members
-import moviesseriesshare.composeapp.generated.resources.join_group
-import moviesseriesshare.composeapp.generated.resources.my_groups
-import moviesseriesshare.composeapp.generated.resources.no_groups
+import moviesseriesshare.composeapp.generated.resources.without_comment
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 
-class GroupsScreen : Screen {
+class GroupDetailScreen(val group: GroupResponse) : Screen {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
+        
+        val viewModel = koinInject<GroupDetailViewModel> { parametersOf(group.id) }
+        val opinionViewModel = koinInject<MediaOpinionFormViewModel>()
 
-        val currentUsername = "Usuario"
-        
-        val viewModel = koinInject<GroupsViewModel> { parametersOf(currentUsername) }
-        
         val uiState by viewModel.uiState.collectAsState()
 
-        GroupsScreen(
+        GroupDetailScreen(
             uiState = uiState,
+            groupName = group.name,
             onBackPressed = { navigator.pop() },
-            onCreateGroupClicked = { navigator.push(CreateGroupScreen()) },
-            onJoinGroupClicked = { /* Implementar unirse a grupo */ },
-            onGroupClicked = { group -> navigator.push(GroupOpinionList(group)) },
-            onRetryLoadGroups = { viewModel.loadGroups() }
+            onOpinionClick = { /* Implementar navegación a detalle de opinión */ },
+            onAddOpinionClick = { 
+                opinionViewModel.setGroupIdForNextSave(group.id)
+                navigator.push(OpinionFormScreen((group.id)))
+            }
         )
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun GroupsScreen(
-    uiState: GroupsUiState,
+private fun GroupDetailScreen(
+    uiState: GroupDetailUiState,
+    groupName: String,
     onBackPressed: () -> Unit,
-    onCreateGroupClicked: () -> Unit,
-    onJoinGroupClicked: () -> Unit,
-    onGroupClicked: (GroupResponse) -> Unit,
-    onRetryLoadGroups: () -> Unit
+    onOpinionClick: (MediaOpinion) -> Unit,
+    onAddOpinionClick: () -> Unit
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val snackbarHostState = remember { SnackbarHostState() }
     
-    // Mostrar errores en el Snackbar
     LaunchedEffect(uiState.error) {
         uiState.error?.let { 
             snackbarHostState.showSnackbar(it)
@@ -101,7 +93,12 @@ private fun GroupsScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(Res.string.my_groups)) },
+                title = { 
+                    Text(
+                        text = groupName,
+                        style = MaterialTheme.typography.titleLarge
+                    )
+                },
                 navigationIcon = {
                     IconButton(onClick = { onBackPressed() }) {
                         Icon(
@@ -114,43 +111,36 @@ private fun GroupsScreen(
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
                     titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                ),
-                actions = {
-                    IconButton(onClick = onJoinGroupClicked) {
-                        Text(stringResource(Res.string.join_group))
-                    }
-                }
+                )
             )
         },
         modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         snackbarHost = { SnackbarHost(snackbarHostState) },
         floatingActionButton = {
             FloatingActionButton(
-                onClick = onCreateGroupClicked,
+                onClick = onAddOpinionClick,
                 containerColor = MaterialTheme.colorScheme.primary
             ) {
                 Icon(
                     imageVector = Icons.Default.Add,
-                    contentDescription = stringResource(Res.string.create_group)
+                    contentDescription = stringResource(Res.string.add_new_comment)
                 )
             }
         }
     ) { paddingValues ->
-        GroupsContent(
+        GroupDetailContent(
             paddingValues = paddingValues,
             uiState = uiState,
-            onGroupClicked = onGroupClicked,
-            onRetryLoadGroups = onRetryLoadGroups
+            onOpinionClick = onOpinionClick
         )
     }
 }
 
 @Composable
-private fun GroupsContent(
+private fun GroupDetailContent(
     paddingValues: PaddingValues,
-    uiState: GroupsUiState,
-    onGroupClicked: (GroupResponse) -> Unit,
-    onRetryLoadGroups: () -> Unit
+    uiState: GroupDetailUiState,
+    onOpinionClick: (MediaOpinion) -> Unit
 ) {
     Box(
         modifier = Modifier
@@ -162,16 +152,13 @@ private fun GroupsContent(
             uiState.isLoading -> {
                 CircularProgressIndicator()
             }
-            uiState.groups.isEmpty() -> {
-                EmptyGroupsView(
-                    modifier = Modifier.fillMaxSize(),
-                    onRetryClick = onRetryLoadGroups
-                )
+            uiState.opinions.isEmpty() -> {
+                EmptyOpinionsView()
             }
             else -> {
-                GroupsList(
-                    groups = uiState.groups,
-                    onGroupClicked = onGroupClicked
+                OpinionsList(
+                    opinions = uiState.opinions,
+                    onOpinionClick = onOpinionClick
                 )
             }
         }
@@ -179,78 +166,37 @@ private fun GroupsContent(
 }
 
 @Composable
-private fun GroupsList(
-    groups: List<GroupResponse>,
-    onGroupClicked: (GroupResponse) -> Unit
+private fun OpinionsList(
+    opinions: List<MediaOpinion>,
+    onOpinionClick: (MediaOpinion) -> Unit
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(vertical = 8.dp)
+        contentPadding = PaddingValues(vertical = 8.dp, horizontal = 16.dp)
     ) {
-        items(groups) { group ->
-            GroupItem(
-                name = group.name,
-                memberCount = group.members.size,
-                onClick = { onGroupClicked(group) }
+        items(opinions) { opinion ->
+            MediaOpinionCard(
+                opinion = opinion,
+                onClick = { onOpinionClick(opinion) },
+                modifier = Modifier.padding(vertical = 8.dp)
             )
         }
     }
 }
 
 @Composable
-private fun EmptyGroupsView(
-    modifier: Modifier = Modifier,
-    onRetryClick: () -> Unit
-) {
+private fun EmptyOpinionsView() {
     Column(
-        modifier = modifier.padding(16.dp),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
-    ) {
-        Text(
-            text = stringResource(Res.string.no_groups),
-            style = MaterialTheme.typography.titleLarge,
-            textAlign = TextAlign.Center
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-            text = stringResource(Res.string.create_your_first_group),
-            style = MaterialTheme.typography.bodyMedium,
-            textAlign = TextAlign.Center
-        )
-    }
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-private fun GroupItem(
-    name: String,
-    memberCount: Int,
-    onClick: () -> Unit
-) {
-    Card(
-        onClick = onClick,
         modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-        ),
-        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
+            .fillMaxSize()
+            .padding(16.dp),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Column(
+        Text(
+            text = stringResource(Res.string.without_comment),
+            style = MaterialTheme.typography.bodyLarge,
+            textAlign = TextAlign.Center,
             modifier = Modifier.padding(16.dp)
-        ) {
-            Text(
-                text = name,
-                style = MaterialTheme.typography.titleMedium
-            )
-            Spacer(modifier = Modifier.height(4.dp))
-            Text(
-                text = stringResource(Res.string.group_members, memberCount),
-                style = MaterialTheme.typography.bodySmall
-            )
-        }
+        )
     }
 }

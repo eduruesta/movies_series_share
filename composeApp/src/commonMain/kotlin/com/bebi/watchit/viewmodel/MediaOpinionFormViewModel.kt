@@ -81,6 +81,12 @@ class MediaOpinionFormViewModel(
     var showSearchResults by mutableStateOf(false)
         private set
 
+    private var pendingGroupId: String? = null
+
+    fun setGroupIdForNextSave(groupId: String?) {
+        pendingGroupId = groupId
+    }
+
     /**
      * Realiza una búsqueda de películas/series por título
      */
@@ -212,7 +218,7 @@ class MediaOpinionFormViewModel(
     /**
      * Guarda la opinión
      */
-    fun saveOpinion() {
+    fun saveOpinion(groupId: String? = null) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isSaving = true)
             val randomId = kotlin.random.Random.nextLong(1_000_000, Long.MAX_VALUE)
@@ -222,6 +228,8 @@ class MediaOpinionFormViewModel(
             } else {
                 listOf(comments)
             }
+
+            val finalGroupId = groupId ?: pendingGroupId
 
             val opinion = MediaOpinion(
                 id = randomId,
@@ -235,7 +243,8 @@ class MediaOpinionFormViewModel(
                 ratingCount = 1,
                 averageRating = rating,
                 year = year,
-                backdropUrl = backdropUrl
+                backdropUrl = backdropUrl,
+                groupId = finalGroupId
             )
 
             repository.saveOpinion(opinion)
@@ -243,6 +252,8 @@ class MediaOpinionFormViewModel(
                 saved = true,
                 isSaving = false
             )
+            
+            pendingGroupId = null
         }
     }
 

@@ -313,8 +313,10 @@ class MediaListScreen : Screen {
                                                 } else {
                                                     uiState.opinions
                                                 }
+
+                                                val isNotGroupOpinion = displayedOpinions.filter { it.groupId == null }
                                                 
-                                                itemsIndexed(displayedOpinions) { index, opinion ->
+                                                itemsIndexed(isNotGroupOpinion) { index, opinion ->
                                                     MediaOpinionItem(
                                                         opinion = opinion,
                                                         onClick = {

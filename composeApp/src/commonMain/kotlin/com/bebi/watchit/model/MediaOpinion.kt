@@ -53,5 +53,10 @@ data class MediaOpinion(
      * Calificación promedio de los usuarios (1-10)
      */
     @ColumnInfo(name = "average_rating")
-    val averageRating: Float = 0f
+    val averageRating: Float = 0f,
+    /**
+     * ID del grupo al que pertenece esta opinión
+     */
+    @ColumnInfo(name = "group_id")
+    val groupId: String? = null
 ) : JavaSerializable

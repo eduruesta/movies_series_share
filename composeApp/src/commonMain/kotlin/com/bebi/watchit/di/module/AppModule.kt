@@ -39,6 +39,7 @@ import com.bebi.watchit.data.repository.GroupsRepository
 import com.bebi.watchit.data.repository.GroupsRepositoryImpl
 import com.bebi.watchit.viewmodel.GroupCriticsViewModel
 import com.bebi.watchit.viewmodel.GroupsViewModel
+import com.bebi.watchit.viewmodel.GroupDetailViewModel
 
 /**
  * Common Koin module for the application
@@ -115,6 +116,7 @@ val viewModelModule = module {
     viewModelOf(::MediaDetailViewModel)
     viewModelOf(::MediaOpinionFormViewModel)
     viewModelOf(::SavedRecommendationViewModel)
+    viewModelOf(::GroupDetailViewModel)
 
     // ViewModels para las pantallas de TMDB - ahora necesitan MediaOpinionRepository
     factory { TopSeriesViewModel(get(), get()) }

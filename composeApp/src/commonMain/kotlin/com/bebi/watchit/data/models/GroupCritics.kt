@@ -1,5 +1,6 @@
 package com.bebi.watchit.data.models
 
+import com.bebi.watchit.data.JavaSerializable
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -11,7 +12,7 @@ data class CriticsResponse(
     val author: String,
     val groupId: String? = null,
     val createdAt: Long? = null
-)
+): JavaSerializable
 
 @Serializable
 data class CriticsRequest(
@@ -19,4 +20,4 @@ data class CriticsRequest(
     val review: String,
     val score: Double,
     val author: String
-)
+): JavaSerializable

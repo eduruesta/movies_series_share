@@ -1,6 +1,5 @@
 package com.bebi.watchit.ui.screens
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -15,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
@@ -30,7 +28,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
@@ -47,7 +44,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -74,21 +70,17 @@ import moviesseriesshare.composeapp.generated.resources.rating_field
 import moviesseriesshare.composeapp.generated.resources.save_button
 import moviesseriesshare.composeapp.generated.resources.search_error
 import moviesseriesshare.composeapp.generated.resources.search_no_results
-import moviesseriesshare.composeapp.generated.resources.search_online
 import moviesseriesshare.composeapp.generated.resources.search_results_count
 import moviesseriesshare.composeapp.generated.resources.search_selected
-import moviesseriesshare.composeapp.generated.resources.select_from_gallery
 import moviesseriesshare.composeapp.generated.resources.synopsis_field
 import moviesseriesshare.composeapp.generated.resources.title_field
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import placeholder
 
 /**
  * Screen for creating or editing a media opinion
  */
-@Serializable
-class OpinionFormScreen : Screen {
+data class OpinionFormScreen(val id: String? = null) : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
@@ -229,7 +221,7 @@ class OpinionFormScreen : Screen {
                         text = stringResource(Res.string.image_field),
                         style = MaterialTheme.typography.bodyLarge
                     )
-                    
+
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
@@ -256,7 +248,7 @@ class OpinionFormScreen : Screen {
                                 contentScale = ContentScale.Crop
                             )
                         }
-                        
+
                         OutlinedTextField(
                             value = viewModel.platform,
                             onValueChange = { viewModel.updatePlatform(it) },
@@ -302,7 +294,7 @@ class OpinionFormScreen : Screen {
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Button(
-                        onClick = { viewModel.saveOpinion() },
+                        onClick = { viewModel.saveOpinion(groupId = id) },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = viewModel.title.isNotBlank()
                     ) {

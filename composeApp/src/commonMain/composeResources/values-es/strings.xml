@@ -103,6 +103,9 @@
     <string name="group_invite_code">Código de Invitación</string>
     <string name="share_invite_code">Comparte este código con amigos para invitarlos a tu grupo</string>
     <string name="code_copied_to_clipboard">Código copiado al portapapeles</string>
+    <string name="group_invitation_code">Código de Invitación</string>
+    <string name="join_group_description">Ingresá el código para unirte al grupo</string>
+    <string name="accept">Aceptar</string>
 
     <!-- Settings -->
     <string name="settings">Configuración</string>

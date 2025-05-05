@@ -1,5 +1,6 @@
 package com.bebi.watchit.ui.screens
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -48,7 +49,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -63,7 +66,9 @@ import com.bebi.watchit.viewmodel.GroupsViewModel
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.FirebaseUser
 import dev.gitlive.firebase.auth.auth
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.accept
 import moviesseriesshare.composeapp.generated.resources.back_button
@@ -89,12 +94,11 @@ class GroupsScreen : Screen {
         val snackbarHostState = remember { SnackbarHostState() }
         var userEmail by remember { mutableStateOf("") }
         var userName by remember { mutableStateOf("") }
-
         var password by remember { mutableStateOf("") }
+        var isRegistrationMode by remember { mutableStateOf(false) }
         val coroutineScope = rememberCoroutineScope()
         val auth = remember { Firebase.auth }
         var firebaseUser: FirebaseUser? by remember { mutableStateOf(auth.currentUser) }
-
 
         val viewModel =
             koinInject<GroupsViewModel> { parametersOf(firebaseUser?.email ?: "Unknown email") }
@@ -179,117 +183,127 @@ class GroupsScreen : Screen {
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = "Logueate para poder crear y unirte a grupos con tus conocidos",
-                            style = MaterialTheme.typography.titleMedium,
-                            textAlign = TextAlign.Center,
-                            color = MaterialTheme.colorScheme.onBackground,
-                            modifier = Modifier.padding(bottom = 32.dp)
+                            text = if (isRegistrationMode) "Crear nueva cuenta" else "Iniciar sesión",
+                            style = MaterialTheme.typography.titleLarge,
+                            fontWeight = FontWeight.Bold
                         )
 
-                        Card(
-                            modifier = Modifier.fillMaxWidth(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surface
-                            ),
-                            elevation = CardDefaults.cardElevation(
-                                defaultElevation = 4.dp
+                        Spacer(modifier = Modifier.height(24.dp))
+
+                        if (isRegistrationMode) {
+                            OutlinedTextField(
+                                value = userName,
+                                onValueChange = { userName = it },
+                                label = { Text("Nombre de usuario") },
+                                modifier = Modifier.fillMaxWidth(),
+                                leadingIcon = {
+                                    Icon(
+                                        imageVector = Icons.Default.Person,
+                                        contentDescription = null
+                                    )
+                                },
+                                singleLine = true
                             )
-                        ) {
-                            Column(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(16.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                OutlinedTextField(
-                                    value = userName,
-                                    onValueChange = { userName = it },
-                                    label = { Text("Nombre de Usuario") },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    leadingIcon = {
-                                        Icon(
-                                            imageVector = Icons.Default.Person,
-                                            contentDescription = null
-                                        )
-                                    },
-                                    keyboardOptions = KeyboardOptions(
-                                        keyboardType = KeyboardType.Email
-                                    ),
-                                    singleLine = true
+
+                            Spacer(modifier = Modifier.height(16.dp))
+                        }
+
+                        OutlinedTextField(
+                            value = userEmail,
+                            onValueChange = { userEmail = it },
+                            label = { Text("Email") },
+                            modifier = Modifier.fillMaxWidth(),
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = Icons.Default.Email,
+                                    contentDescription = null
                                 )
+                            },
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Email
+                            ),
+                            singleLine = true
+                        )
 
-                                Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(16.dp))
 
-
-                                OutlinedTextField(
-                                    value = userEmail,
-                                    onValueChange = { userEmail = it },
-                                    label = { Text("Email") },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    leadingIcon = {
-                                        Icon(
-                                            imageVector = Icons.Default.Email,
-                                            contentDescription = null
-                                        )
-                                    },
-                                    keyboardOptions = KeyboardOptions(
-                                        keyboardType = KeyboardType.Email
-                                    ),
-                                    singleLine = true
+                        OutlinedTextField(
+                            value = password,
+                            onValueChange = { password = it },
+                            label = { Text("Contraseña") },
+                            modifier = Modifier.fillMaxWidth(),
+                            keyboardOptions = KeyboardOptions(
+                                keyboardType = KeyboardType.Password
+                            ),
+                            visualTransformation = PasswordVisualTransformation(),
+                            leadingIcon = {
+                                Icon(
+                                    imageVector = passwordIcon,
+                                    contentDescription = null
                                 )
+                            },
+                            singleLine = true
+                        )
 
-                                Spacer(modifier = Modifier.height(16.dp))
+                        Spacer(modifier = Modifier.height(24.dp))
 
-                                OutlinedTextField(
-                                    value = password,
-                                    onValueChange = { password = it },
-                                    label = { Text("Contraseña") },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    keyboardOptions = KeyboardOptions(
-                                        keyboardType = KeyboardType.Password
-                                    ),
-                                    leadingIcon = {
-                                        Icon(
-                                            imageVector = passwordIcon,
-                                            contentDescription = null
-                                        )
-                                    },
-                                    singleLine = true
-                                )
+                        Button(
+                            onClick = {
+                                val isFormValid = if (isRegistrationMode) {
+                                    password.isNotBlank() && userEmail.isNotBlank() && userName.isNotBlank()
+                                } else {
+                                    password.isNotBlank() && userEmail.isNotBlank()
+                                }
 
-                                Spacer(modifier = Modifier.height(24.dp))
-
-                                Button(
-                                    onClick = {
-                                        if (password.isNotBlank() && userEmail.isNotBlank() && userName.isNotBlank()) {
-                                            coroutineScope.launch {
-                                                try {
-                                                    val userCredential =
-                                                        auth.createUserWithEmailAndPassword(
-                                                            email = userEmail,
-                                                            password = "password"
-                                                        )
-
-                                                    userCredential.user?.updateProfile(displayName = userName)
-
-                                                } catch (e: Exception) {
-                                                    auth.signInWithEmailAndPassword(
+                                if (isFormValid) {
+                                    coroutineScope.launch {
+                                        try {
+                                            if (isRegistrationMode) {
+                                                val userCredential =
+                                                    auth.createUserWithEmailAndPassword(
                                                         email = userEmail,
                                                         password = password
                                                     )
-                                                }
+
+                                                userCredential.user?.updateProfile(
+                                                    displayName = userName
+                                                )
+                                            } else {
+                                                auth.signInWithEmailAndPassword(
+                                                    email = userEmail,
+                                                    password = password
+                                                )
                                             }
-                                            firebaseUser = auth.currentUser
-                                        } else {
-                                            // Mostrar un mensaje de error
+
+                                            withContext(Dispatchers.Main) {
+                                                firebaseUser = auth.currentUser
+                                            }
+                                        } catch (e: Exception) {
+                                            withContext(Dispatchers.Main) {
+                                                snackbarHostState.showSnackbar(
+                                                    "El email o la contraseña ingresada no existe"
+                                                )
+                                            }
                                         }
-                                    },
-                                    modifier = Modifier.fillMaxWidth()
-                                ) {
-                                    Text("Iniciar sesión")
+                                    }
+                                } else {
+                                    coroutineScope.launch {
+                                        snackbarHostState.showSnackbar("Por favor, completa todos los campos")
+                                    }
                                 }
-                            }
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Text(if (isRegistrationMode) "Registrarse" else "Iniciar sesión")
                         }
+
+                        Spacer(modifier = Modifier.height(16.dp))
+
+                        Text(
+                            text = if (isRegistrationMode) "¿Ya tienes cuenta? Inicia sesión" else "¿No tienes cuenta? Regístrate",
+                            modifier = Modifier.clickable { isRegistrationMode = !isRegistrationMode },
+                            color = MaterialTheme.colorScheme.primary
+                        )
                     }
                 }
             }

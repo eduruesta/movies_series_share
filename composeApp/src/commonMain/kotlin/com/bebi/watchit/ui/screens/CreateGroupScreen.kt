@@ -79,11 +79,12 @@ class CreateGroupScreen : Screen {
         val viewModel = koinInject<GroupsViewModel> { parametersOf(currentUsername) }
         
         var createdGroup by remember { mutableStateOf<GroupResponse?>(null) }
+        var hasAttemptedCreation by remember { mutableStateOf(false) }
         
         val uiState by viewModel.uiState.collectAsState()
         
         LaunchedEffect(uiState.groups) {
-            if (uiState.groups.isNotEmpty() && !uiState.isLoading) {
+            if (uiState.groups.isNotEmpty() && !uiState.isLoading && hasAttemptedCreation) {
                 val lastCreatedGroup = uiState.groups.lastOrNull()
                 if (lastCreatedGroup != null && createdGroup == null) {
                     createdGroup = lastCreatedGroup
@@ -94,6 +95,7 @@ class CreateGroupScreen : Screen {
         CreateGroupContent(
             onBackPressed = { navigator.pop() },
             onCreateGroup = { name, description ->
+                hasAttemptedCreation = true
                 viewModel.createGroup(name, description)
             },
             isLoading = uiState.isLoading,
@@ -125,7 +127,6 @@ private fun CreateGroupContent(
         }
     }
     
-    // Validaciones
     val isNameValid = groupName.isNotBlank()
 
     Scaffold(
@@ -163,7 +164,6 @@ private fun CreateGroupContent(
                     CircularProgressIndicator()
                 }
             } else if (createdGroup != null) {
-                // Mostrar pantalla de grupo creado con código
                 Column(
                     modifier = Modifier
                         .fillMaxSize()

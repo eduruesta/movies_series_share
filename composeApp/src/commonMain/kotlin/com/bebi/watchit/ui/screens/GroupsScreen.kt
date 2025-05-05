@@ -119,12 +119,9 @@ class GroupsScreen : Screen {
                 JoinGroupBottomSheet(
                     onDismiss = { showJoinGroupSheet = false },
                     onJoin = { invitationCode ->
-                        // Aquí se implementará la lógica para unirse al grupo
                         coroutineScope.launch {
-                            // Simular unirse al grupo
                             showJoinGroupSheet = false
                             snackbarHostState.showSnackbar("Unido al grupo con código: $invitationCode")
-                            // Eventualmente esto llamaría a viewModel.joinGroup(invitationCode)
                         }
                     }
                 )

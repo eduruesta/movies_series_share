@@ -58,6 +58,10 @@ kotlin {
             implementation(libs.kotlinx.datetime)
             implementation(libs.remember.settings)
 
+            implementation("io.github.mirzemehdi:kmpauth-google:2.3.1") //Google One Tap Sign-In
+            implementation("io.github.mirzemehdi:kmpauth-firebase:2.3.1") //Integrated Authentications with Firebase
+            implementation("io.github.mirzemehdi:kmpauth-uihelper:2.3.1") //UiHelper SignIn buttons (AppleSignIn, GoogleSignInButton)
+            implementation("dev.gitlive:firebase-auth:2.1.0")
 
 
             // Voyager Navigation

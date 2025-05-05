@@ -12,9 +12,12 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
@@ -45,6 +48,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -53,8 +57,12 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.bebi.watchit.data.models.GroupResponse
 import com.bebi.watchit.ui.components.groupAdd
+import com.bebi.watchit.ui.components.passwordIcon
 import com.bebi.watchit.viewmodel.GroupsUiState
 import com.bebi.watchit.viewmodel.GroupsViewModel
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.auth.FirebaseUser
+import dev.gitlive.firebase.auth.auth
 import kotlinx.coroutines.launch
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.accept
@@ -79,52 +87,210 @@ class GroupsScreen : Screen {
         val navigator = LocalNavigator.currentOrThrow
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         val snackbarHostState = remember { SnackbarHostState() }
+        var userEmail by remember { mutableStateOf("") }
+        var userName by remember { mutableStateOf("") }
+
+        var password by remember { mutableStateOf("") }
         val coroutineScope = rememberCoroutineScope()
+        val auth = remember { Firebase.auth }
+        var firebaseUser: FirebaseUser? by remember { mutableStateOf(auth.currentUser) }
 
-        val viewModel = koinInject<GroupsViewModel> { parametersOf("username") }
+
+        val viewModel =
+            koinInject<GroupsViewModel> { parametersOf(firebaseUser?.email ?: "Unknown email") }
         val uiState by viewModel.uiState.collectAsState()
-
         var showJoinGroupSheet by remember { mutableStateOf(false) }
 
-        Scaffold(
-            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-            snackbarHost = { SnackbarHost(snackbarHostState) },
-            topBar = {
-                GroupsTopBar(
-                    onBackClicked = { navigator.pop() },
-                    scrollBehavior = scrollBehavior,
-                    onJoinGroupClicked = { showJoinGroupSheet = true },
+        if (firebaseUser != null) {
+            Scaffold(
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+                snackbarHost = { SnackbarHost(snackbarHostState) },
+                topBar = {
+                    GroupsTopBar(
+                        onBackClicked = { navigator.pop() },
+                        scrollBehavior = scrollBehavior,
+                        onJoinGroupClicked = { showJoinGroupSheet = true },
+                    )
+                },
+                floatingActionButton = {
+                    FloatingActionButton(
+                        onClick = { navigator.push(CreateGroupScreen()) },
+                        containerColor = MaterialTheme.colorScheme.primaryContainer
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = stringResource(Res.string.create_group)
+                        )
+                    }
+                }
+            ) { paddingValues ->
+                GroupsContent(
+                    paddingValues = paddingValues,
+                    uiState = uiState,
+                    onGroupClicked = { group -> navigator.push(GroupOpinionList(group)) },
+                    onRetryLoadGroups = { viewModel.loadGroups() },
+                    firebaseUserId = firebaseUser!!.uid ?: "Unknown ID"
                 )
-            },
-            floatingActionButton = {
-                FloatingActionButton(
-                    onClick = { navigator.push(CreateGroupScreen()) },
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = stringResource(Res.string.create_group)
+
+                if (showJoinGroupSheet) {
+                    JoinGroupBottomSheet(
+                        onDismiss = { showJoinGroupSheet = false },
+                        onJoin = { invitationCode ->
+                            coroutineScope.launch {
+                                showJoinGroupSheet = false
+                                snackbarHostState.showSnackbar("Unido al grupo con código: $invitationCode")
+                            }
+                        }
                     )
                 }
             }
-        ) { paddingValues ->
-            GroupsContent(
-                paddingValues = paddingValues,
-                uiState = uiState,
-                onGroupClicked = { group -> navigator.push(GroupOpinionList(group)) },
-                onRetryLoadGroups = { viewModel.loadGroups() }
-            )
+        } else {
+            //LoginScreen()
+            Scaffold(
+                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+                snackbarHost = { SnackbarHost(snackbarHostState) },
+                topBar = {
+                    TopAppBar(
+                        title = { Text(stringResource(Res.string.my_groups)) },
+                        navigationIcon = {
+                            IconButton(onClick = { navigator.pop() }) {
+                                Icon(
+                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    contentDescription = stringResource(Res.string.back_button)
+                                )
+                            }
+                        },
+                        scrollBehavior = scrollBehavior,
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        )
+                    )
+                },
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(16.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Text(
+                            text = "Logueate para poder crear y unirte a grupos con tus conocidos",
+                            style = MaterialTheme.typography.titleMedium,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onBackground,
+                            modifier = Modifier.padding(bottom = 32.dp)
+                        )
 
-            if (showJoinGroupSheet) {
-                JoinGroupBottomSheet(
-                    onDismiss = { showJoinGroupSheet = false },
-                    onJoin = { invitationCode ->
-                        coroutineScope.launch {
-                            showJoinGroupSheet = false
-                            snackbarHostState.showSnackbar("Unido al grupo con código: $invitationCode")
+                        Card(
+                            modifier = Modifier.fillMaxWidth(),
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface
+                            ),
+                            elevation = CardDefaults.cardElevation(
+                                defaultElevation = 4.dp
+                            )
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(16.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
+                                OutlinedTextField(
+                                    value = userName,
+                                    onValueChange = { userName = it },
+                                    label = { Text("Nombre de Usuario") },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = Icons.Default.Person,
+                                            contentDescription = null
+                                        )
+                                    },
+                                    keyboardOptions = KeyboardOptions(
+                                        keyboardType = KeyboardType.Email
+                                    ),
+                                    singleLine = true
+                                )
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
+
+                                OutlinedTextField(
+                                    value = userEmail,
+                                    onValueChange = { userEmail = it },
+                                    label = { Text("Email") },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = Icons.Default.Email,
+                                            contentDescription = null
+                                        )
+                                    },
+                                    keyboardOptions = KeyboardOptions(
+                                        keyboardType = KeyboardType.Email
+                                    ),
+                                    singleLine = true
+                                )
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                OutlinedTextField(
+                                    value = password,
+                                    onValueChange = { password = it },
+                                    label = { Text("Contraseña") },
+                                    modifier = Modifier.fillMaxWidth(),
+                                    keyboardOptions = KeyboardOptions(
+                                        keyboardType = KeyboardType.Password
+                                    ),
+                                    leadingIcon = {
+                                        Icon(
+                                            imageVector = passwordIcon,
+                                            contentDescription = null
+                                        )
+                                    },
+                                    singleLine = true
+                                )
+
+                                Spacer(modifier = Modifier.height(24.dp))
+
+                                Button(
+                                    onClick = {
+                                        if (password.isNotBlank() && userEmail.isNotBlank() && userName.isNotBlank()) {
+                                            coroutineScope.launch {
+                                                try {
+                                                    auth.createUserWithEmailAndPassword(
+                                                        email = userEmail,
+                                                        password = "password"
+                                                    )
+                                                } catch (e: Exception) {
+                                                    auth.signInWithEmailAndPassword(
+                                                        email = userEmail,
+                                                        password = password
+                                                    )
+
+                                                }
+
+                                            }
+                                            firebaseUser = auth.currentUser
+                                        } else {
+                                            // Mostrar un mensaje de error
+                                        }
+                                    },
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Text("Iniciar sesión")
+                                }
+                            }
                         }
                     }
-                )
+                }
             }
         }
     }
@@ -236,7 +402,8 @@ private fun GroupsContent(
     paddingValues: PaddingValues,
     uiState: GroupsUiState,
     onGroupClicked: (GroupResponse) -> Unit,
-    onRetryLoadGroups: () -> Unit
+    onRetryLoadGroups: () -> Unit,
+    firebaseUserId: String
 ) {
     Box(
         modifier = Modifier
@@ -244,6 +411,7 @@ private fun GroupsContent(
             .padding(paddingValues),
         contentAlignment = Alignment.Center
     ) {
+        Text(firebaseUserId)
         when {
             uiState.isLoading -> {
                 CircularProgressIndicator()
@@ -348,6 +516,107 @@ private fun GroupItem(
                 text = stringResource(Res.string.group_members, memberCount),
                 style = MaterialTheme.typography.bodySmall
             )
+        }
+    }
+}
+
+@Composable
+private fun LoginScreen(
+) {
+    var userEmail by remember { mutableStateOf("") }
+    var password by remember { mutableStateOf("") }
+    val coroutineScope = rememberCoroutineScope()
+    val auth = remember { Firebase.auth }
+
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = "Logueate para poder crear y unirte a grupos con tus conocidos",
+                style = MaterialTheme.typography.titleMedium,
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.onBackground,
+                modifier = Modifier.padding(bottom = 32.dp)
+            )
+
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(
+                    containerColor = MaterialTheme.colorScheme.surface
+                ),
+                elevation = CardDefaults.cardElevation(
+                    defaultElevation = 4.dp
+                )
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    OutlinedTextField(
+                        value = userEmail,
+                        onValueChange = { userEmail = it },
+                        label = { Text("Email") },
+                        modifier = Modifier.fillMaxWidth(),
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Default.Email,
+                                contentDescription = null
+                            )
+                        },
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Email
+                        ),
+                        singleLine = true
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    OutlinedTextField(
+                        value = password,
+                        onValueChange = { password = it },
+                        label = { Text("Contraseña") },
+                        modifier = Modifier.fillMaxWidth(),
+                        keyboardOptions = KeyboardOptions(
+                            keyboardType = KeyboardType.Password
+                        ),
+                        singleLine = true
+                    )
+
+                    Spacer(modifier = Modifier.height(24.dp))
+
+                    Button(
+                        onClick = {
+                            coroutineScope.launch {
+                                try {
+                                    auth.createUserWithEmailAndPassword(
+                                        email = userEmail,
+                                        password = "password"
+                                    )
+                                } catch (e: Exception) {
+                                    auth.signInWithEmailAndPassword(
+                                        email = userEmail,
+                                        password = password
+                                    )
+
+                                }
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Iniciar sesión")
+                    }
+                }
+            }
         }
     }
 }

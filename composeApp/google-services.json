@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "764447091440",
+    "firebase_url": "https://que-queres-ver-default-rtdb.firebaseio.com",
     "project_id": "que-queres-ver",
     "storage_bucket": "que-queres-ver.firebasestorage.app"
   },
@@ -12,7 +13,20 @@
           "package_name": "com.bebi.app.watchit"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "764447091440-5qelijplcc0bpojjf38u5d937r44ddqn.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.bebi.app.watchit",
+            "certificate_hash": "79e6b843ea9b14c38f96a487ed7114e962212ccf"
+          }
+        },
+        {
+          "client_id": "764447091440-2vhhg98b1rvi2tib84but0e7qa0l5fce.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBFMlxdPkL3n3ePRWWhOy6goc9p3XFYqww"
@@ -20,7 +34,19 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "764447091440-2vhhg98b1rvi2tib84but0e7qa0l5fce.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "764447091440-e9tq87aq13j23v7o394mv6rio13iudo9.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.bebi.app.watchit"
+              }
+            }
+          ]
         }
       }
     }

@@ -12,6 +12,9 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -30,6 +33,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -41,14 +45,25 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.bebi.watchit.data.domain.Localization
 import com.bebi.watchit.data.myLang
 import com.bebi.watchit.theme.LocalThemeIsDark
+import com.bebi.watchit.ui.components.logout
 import dev.burnoo.compose.remembersetting.rememberStringSetting
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.auth.FirebaseUser
+import dev.gitlive.firebase.auth.auth
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.appearance
 import moviesseriesshare.composeapp.generated.resources.back_button
+import moviesseriesshare.composeapp.generated.resources.cancel
+import moviesseriesshare.composeapp.generated.resources.confirm
 import moviesseriesshare.composeapp.generated.resources.dark_mode
 import moviesseriesshare.composeapp.generated.resources.english
 import moviesseriesshare.composeapp.generated.resources.language
+import moviesseriesshare.composeapp.generated.resources.logout
+import moviesseriesshare.composeapp.generated.resources.logout_confirmation
 import moviesseriesshare.composeapp.generated.resources.select_language
 import moviesseriesshare.composeapp.generated.resources.settings
 import moviesseriesshare.composeapp.generated.resources.spanish
@@ -64,6 +79,10 @@ class SettingsScreen : Screen {
         var isLoading by remember { mutableStateOf(false) }
         var refreshTrigger by remember { mutableStateOf(0) }
         var currentLanguage by remember { mutableStateOf(myLang ?: "en") }
+        val auth = remember { Firebase.auth }
+        val scope = rememberCoroutineScope()
+        var firebaseUser: FirebaseUser? by remember { mutableStateOf(auth.currentUser) }
+
 
         androidx.compose.runtime.key(refreshTrigger) {
             Scaffold(
@@ -109,6 +128,22 @@ class SettingsScreen : Screen {
                                     refreshTrigger++
                                 }
                             )
+                            
+                            if (firebaseUser != null) {
+                                Spacer(modifier = Modifier.height(24.dp))
+                                
+                                LogoutSection(
+                                    onLogout = {
+                                        scope.launch {
+                                            auth.signOut()
+                                            withContext(Dispatchers.Main) {
+                                                firebaseUser = auth.currentUser
+                                            }
+                                            navigator.pop()
+                                        }
+                                    }
+                                )
+                            }
                         }
                     }
 
@@ -139,7 +174,7 @@ private fun ThemeSection() {
     )
 
     Spacer(modifier = Modifier.height(16.dp))
-    
+
     Card(
         modifier = Modifier.fillMaxWidth(),
         colors = CardDefaults.cardColors(
@@ -177,12 +212,12 @@ private fun LanguageSection(
 ) {
     val languages = listOf("en" to Res.string.english, "es" to Res.string.spanish)
     val localization = koinInject<Localization>()
-    
+
     var languageIso by rememberStringSetting(
         key = "savedLanguageIso",
         defaultValue = currentLanguage
     )
-    
+
     LaunchedEffect(currentLanguage) {
         if (currentLanguage != languageIso) {
             languageIso = currentLanguage
@@ -251,5 +286,92 @@ private fun LanguageSection(
                 }
             }
         }
+    }
+}
+
+@Composable
+private fun LogoutSection(
+    onLogout: () -> Unit
+) {
+    var showLogoutDialog by remember { mutableStateOf(false) }
+
+    Text(
+        text = stringResource(Res.string.logout),
+        style = MaterialTheme.typography.titleLarge
+    )
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.errorContainer,
+            contentColor = MaterialTheme.colorScheme.onErrorContainer
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 4.dp
+        )
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .selectable(
+                    selected = false,
+                    onClick = { showLogoutDialog = true },
+                    role = Role.Button
+                ),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Icon(
+                imageVector = logout,
+                contentDescription = stringResource(Res.string.logout)
+            )
+
+            Spacer(modifier = Modifier.width(16.dp))
+
+            Text(
+                text = stringResource(Res.string.logout),
+                style = MaterialTheme.typography.bodyLarge,
+                modifier = Modifier.weight(1f)
+            )
+        }
+    }
+
+    if (showLogoutDialog) {
+        AlertDialog(
+            onDismissRequest = { showLogoutDialog = false },
+            title = {
+                Text(stringResource(Res.string.logout))
+            },
+            text = {
+                Text(stringResource(Res.string.logout_confirmation))
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showLogoutDialog = false
+                        onLogout()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error,
+                        contentColor = MaterialTheme.colorScheme.onError
+                    )
+                ) {
+                    Text(stringResource(Res.string.confirm))
+                }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { showLogoutDialog = false },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
+                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                ) {
+                    Text(stringResource(Res.string.cancel))
+                }
+            }
+        )
     }
 }

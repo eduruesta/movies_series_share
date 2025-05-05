@@ -127,6 +127,10 @@
     <string name="select_language">Seleccionar idioma</string>
     <string name="english">Inglés</string>
     <string name="spanish">Español</string>
+    <string name="dark_theme">Tema oscuro</string>
+    <string name="logout">Cerrar sesión</string>
+    <string name="logout_confirmation">¿Estás seguro que deseas cerrar sesión?</string>
+    <string name="confirm">Confirmar</string>
 
     <string name="empty_recommendations_message">Todavía no tienes recomendaciones guardadas. Agrega recomendaciones desde la pantalla principal para verlas aquí.</string>
 

@@ -107,6 +107,18 @@
     <string name="join_group_description">Ingresá el código para unirte al grupo</string>
     <string name="accept">Aceptar</string>
 
+    <!-- Auth Strings -->
+    <string name="create_account">Crear nueva cuenta</string>
+    <string name="login">Iniciar sesión</string>
+    <string name="username">Nombre de usuario</string>
+    <string name="email">Email</string>
+    <string name="password">Contraseña</string>
+    <string name="register">Registrarse</string>
+    <string name="already_have_account">¿Ya tienes cuenta? Inicia sesión</string>
+    <string name="dont_have_account">¿No tienes cuenta? Regístrate</string>
+    <string name="auth_error">El email o la contraseña ingresada no existe</string>
+    <string name="complete_fields">Por favor, completa todos los campos</string>
+
     <!-- Settings -->
     <string name="settings">Configuración</string>
     <string name="appearance">Apariencia</string>

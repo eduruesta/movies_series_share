@@ -71,16 +71,26 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.accept
+import moviesseriesshare.composeapp.generated.resources.already_have_account
+import moviesseriesshare.composeapp.generated.resources.auth_error
 import moviesseriesshare.composeapp.generated.resources.back_button
 import moviesseriesshare.composeapp.generated.resources.cancel
+import moviesseriesshare.composeapp.generated.resources.complete_fields
+import moviesseriesshare.composeapp.generated.resources.create_account
 import moviesseriesshare.composeapp.generated.resources.create_group
 import moviesseriesshare.composeapp.generated.resources.create_your_first_group
+import moviesseriesshare.composeapp.generated.resources.dont_have_account
+import moviesseriesshare.composeapp.generated.resources.email
 import moviesseriesshare.composeapp.generated.resources.group_invitation_code
 import moviesseriesshare.composeapp.generated.resources.group_members
 import moviesseriesshare.composeapp.generated.resources.join_group
 import moviesseriesshare.composeapp.generated.resources.join_group_description
+import moviesseriesshare.composeapp.generated.resources.login
 import moviesseriesshare.composeapp.generated.resources.my_groups
 import moviesseriesshare.composeapp.generated.resources.no_groups
+import moviesseriesshare.composeapp.generated.resources.password
+import moviesseriesshare.composeapp.generated.resources.register
+import moviesseriesshare.composeapp.generated.resources.username
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
@@ -104,6 +114,9 @@ class GroupsScreen : Screen {
             koinInject<GroupsViewModel> { parametersOf(firebaseUser?.email ?: "Unknown email") }
         val uiState by viewModel.uiState.collectAsState()
         var showJoinGroupSheet by remember { mutableStateOf(false) }
+
+        val authErrorText = stringResource(Res.string.auth_error)
+        val completeFieldsText = stringResource(Res.string.complete_fields)
 
         if (firebaseUser != null) {
             Scaffold(
@@ -183,7 +196,9 @@ class GroupsScreen : Screen {
                         verticalArrangement = Arrangement.Center
                     ) {
                         Text(
-                            text = if (isRegistrationMode) "Crear nueva cuenta" else "Iniciar sesión",
+                            text = if (isRegistrationMode) stringResource(Res.string.create_account) else stringResource(
+                                Res.string.login
+                            ),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
                         )
@@ -194,7 +209,7 @@ class GroupsScreen : Screen {
                             OutlinedTextField(
                                 value = userName,
                                 onValueChange = { userName = it },
-                                label = { Text("Nombre de usuario") },
+                                label = { Text(stringResource(Res.string.username)) },
                                 modifier = Modifier.fillMaxWidth(),
                                 leadingIcon = {
                                     Icon(
@@ -211,7 +226,7 @@ class GroupsScreen : Screen {
                         OutlinedTextField(
                             value = userEmail,
                             onValueChange = { userEmail = it },
-                            label = { Text("Email") },
+                            label = { Text(stringResource(Res.string.email)) },
                             modifier = Modifier.fillMaxWidth(),
                             leadingIcon = {
                                 Icon(
@@ -230,7 +245,7 @@ class GroupsScreen : Screen {
                         OutlinedTextField(
                             value = password,
                             onValueChange = { password = it },
-                            label = { Text("Contraseña") },
+                            label = { Text(stringResource(Res.string.password)) },
                             modifier = Modifier.fillMaxWidth(),
                             keyboardOptions = KeyboardOptions(
                                 keyboardType = KeyboardType.Password
@@ -280,28 +295,34 @@ class GroupsScreen : Screen {
                                             }
                                         } catch (e: Exception) {
                                             withContext(Dispatchers.Main) {
-                                                snackbarHostState.showSnackbar(
-                                                    "El email o la contraseña ingresada no existe"
-                                                )
+                                                snackbarHostState.showSnackbar(authErrorText)
                                             }
                                         }
                                     }
                                 } else {
                                     coroutineScope.launch {
-                                        snackbarHostState.showSnackbar("Por favor, completa todos los campos")
+                                        snackbarHostState.showSnackbar(completeFieldsText)
                                     }
                                 }
                             },
                             modifier = Modifier.fillMaxWidth()
                         ) {
-                            Text(if (isRegistrationMode) "Registrarse" else "Iniciar sesión")
+                            Text(
+                                if (isRegistrationMode) stringResource(Res.string.register) else stringResource(
+                                    Res.string.login
+                                )
+                            )
                         }
 
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Text(
-                            text = if (isRegistrationMode) "¿Ya tienes cuenta? Inicia sesión" else "¿No tienes cuenta? Regístrate",
-                            modifier = Modifier.clickable { isRegistrationMode = !isRegistrationMode },
+                            text = if (isRegistrationMode) stringResource(Res.string.already_have_account) else stringResource(
+                                Res.string.dont_have_account
+                            ),
+                            modifier = Modifier.clickable {
+                                isRegistrationMode = !isRegistrationMode
+                            },
                             color = MaterialTheme.colorScheme.primary
                         )
                     }
@@ -493,7 +514,6 @@ private fun EmptyGroupsView(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun GroupItem(
     name: String,

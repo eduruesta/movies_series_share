@@ -118,6 +118,7 @@
     <string name="dont_have_account">¿No tienes cuenta? Regístrate</string>
     <string name="auth_error">El email o la contraseña ingresada no existe</string>
     <string name="complete_fields">Por favor, completa todos los campos</string>
+    <string name="auth_subtitle">Regístrate y empieza a compartir películas y series con tus amigos</string>
 
     <!-- Settings -->
     <string name="settings">Configuración</string>

@@ -73,6 +73,7 @@ import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.accept
 import moviesseriesshare.composeapp.generated.resources.already_have_account
 import moviesseriesshare.composeapp.generated.resources.auth_error
+import moviesseriesshare.composeapp.generated.resources.auth_subtitle
 import moviesseriesshare.composeapp.generated.resources.back_button
 import moviesseriesshare.composeapp.generated.resources.cancel
 import moviesseriesshare.composeapp.generated.resources.complete_fields
@@ -201,6 +202,15 @@ class GroupsScreen : Screen {
                             ),
                             style = MaterialTheme.typography.titleLarge,
                             fontWeight = FontWeight.Bold
+                        )
+
+                        Spacer(modifier = Modifier.height(8.dp))
+
+                        Text(
+                            text = stringResource(Res.string.auth_subtitle),
+                            style = MaterialTheme.typography.bodyMedium,
+                            textAlign = TextAlign.Center,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
 
                         Spacer(modifier = Modifier.height(24.dp))

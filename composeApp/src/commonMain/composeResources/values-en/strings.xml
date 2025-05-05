@@ -119,6 +119,7 @@
     <string name="dont_have_account">Don't have an account? Register</string>
     <string name="auth_error">Email or password is incorrect</string>
     <string name="complete_fields">Please complete all fields</string>
+    <string name="auth_subtitle">Register and start sharing movies and TV shows with your friends</string>
 
     <!-- Settings -->
     <string name="settings">Settings</string>

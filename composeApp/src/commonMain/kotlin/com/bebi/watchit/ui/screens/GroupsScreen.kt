@@ -129,7 +129,7 @@ class GroupsScreen : Screen {
                     uiState = uiState,
                     onGroupClicked = { group -> navigator.push(GroupOpinionList(group)) },
                     onRetryLoadGroups = { viewModel.loadGroups() },
-                    firebaseUserId = firebaseUser!!.uid ?: "Unknown ID"
+                    firebaseUserId = firebaseUser?.displayName ?: "Usuario"
                 )
 
                 if (showJoinGroupSheet) {
@@ -145,7 +145,6 @@ class GroupsScreen : Screen {
                 }
             }
         } else {
-            //LoginScreen()
             Scaffold(
                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                 snackbarHost = { SnackbarHost(snackbarHostState) },
@@ -265,18 +264,20 @@ class GroupsScreen : Screen {
                                         if (password.isNotBlank() && userEmail.isNotBlank() && userName.isNotBlank()) {
                                             coroutineScope.launch {
                                                 try {
-                                                    auth.createUserWithEmailAndPassword(
-                                                        email = userEmail,
-                                                        password = "password"
-                                                    )
+                                                    val userCredential =
+                                                        auth.createUserWithEmailAndPassword(
+                                                            email = userEmail,
+                                                            password = "password"
+                                                        )
+
+                                                    userCredential.user?.updateProfile(displayName = userName)
+
                                                 } catch (e: Exception) {
                                                     auth.signInWithEmailAndPassword(
                                                         email = userEmail,
                                                         password = password
                                                     )
-
                                                 }
-
                                             }
                                             firebaseUser = auth.currentUser
                                         } else {
@@ -516,107 +517,6 @@ private fun GroupItem(
                 text = stringResource(Res.string.group_members, memberCount),
                 style = MaterialTheme.typography.bodySmall
             )
-        }
-    }
-}
-
-@Composable
-private fun LoginScreen(
-) {
-    var userEmail by remember { mutableStateOf("") }
-    var password by remember { mutableStateOf("") }
-    val coroutineScope = rememberCoroutineScope()
-    val auth = remember { Firebase.auth }
-
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = "Logueate para poder crear y unirte a grupos con tus conocidos",
-                style = MaterialTheme.typography.titleMedium,
-                textAlign = TextAlign.Center,
-                color = MaterialTheme.colorScheme.onBackground,
-                modifier = Modifier.padding(bottom = 32.dp)
-            )
-
-            Card(
-                modifier = Modifier.fillMaxWidth(),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.surface
-                ),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 4.dp
-                )
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    OutlinedTextField(
-                        value = userEmail,
-                        onValueChange = { userEmail = it },
-                        label = { Text("Email") },
-                        modifier = Modifier.fillMaxWidth(),
-                        leadingIcon = {
-                            Icon(
-                                imageVector = Icons.Default.Email,
-                                contentDescription = null
-                            )
-                        },
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Email
-                        ),
-                        singleLine = true
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    OutlinedTextField(
-                        value = password,
-                        onValueChange = { password = it },
-                        label = { Text("Contraseña") },
-                        modifier = Modifier.fillMaxWidth(),
-                        keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Password
-                        ),
-                        singleLine = true
-                    )
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    Button(
-                        onClick = {
-                            coroutineScope.launch {
-                                try {
-                                    auth.createUserWithEmailAndPassword(
-                                        email = userEmail,
-                                        password = "password"
-                                    )
-                                } catch (e: Exception) {
-                                    auth.signInWithEmailAndPassword(
-                                        email = userEmail,
-                                        password = password
-                                    )
-
-                                }
-                            }
-                        },
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        Text("Iniciar sesión")
-                    }
-                }
-            }
         }
     }
 }

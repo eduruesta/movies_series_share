@@ -24,6 +24,8 @@
     <string name="result_error">There was an error in the search, please try again</string>
     <string name="comment">Comment:</string>
     <string name="without_comment">No comment</string>
+    <string name="without_critics">There is not critics for now. Click on the plus button to be the first one</string>
+
     <string name="qualifying">Qualifying...</string>
     <string name="add_new_comment">Add comment</string>
     <string name="write_your_comment">Write your comment...</string>
@@ -107,6 +109,7 @@
     <string name="group_invitation_code">Invitation Code</string>
     <string name="join_group_description">Enter the invitation code to join the group</string>
     <string name="accept">Accept</string>
+    <string name="join_success_message">Join to the group with code: </string>
 
     <!-- Auth Strings -->
     <string name="create_account">Create new account</string>
@@ -132,5 +135,11 @@
     <string name="logout">Log out</string>
     <string name="logout_confirmation">Are you sure you want to log out?</string>
     <string name="confirm">Confirm</string>
+
+    <!-- Group Info Dialog -->
+    <string name="copy_code">Copy code</string>
+    <string name="members">Members</string>
+    <string name="leave_group">Leave group</string>
+    <string name="close">Close</string>
 
 </resources>

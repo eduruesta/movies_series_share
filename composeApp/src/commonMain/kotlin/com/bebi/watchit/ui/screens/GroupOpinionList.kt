@@ -1,6 +1,5 @@
 package com.bebi.watchit.ui.screens
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -29,6 +28,7 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -72,8 +72,13 @@ import kotlinx.coroutines.launch
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.add_new_comment
 import moviesseriesshare.composeapp.generated.resources.back_button
+import moviesseriesshare.composeapp.generated.resources.close
+import moviesseriesshare.composeapp.generated.resources.copy_code
 import moviesseriesshare.composeapp.generated.resources.group_invite_code
+import moviesseriesshare.composeapp.generated.resources.leave_group
+import moviesseriesshare.composeapp.generated.resources.members
 import moviesseriesshare.composeapp.generated.resources.without_comment
+import moviesseriesshare.composeapp.generated.resources.without_critics
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
@@ -97,7 +102,8 @@ class GroupOpinionList(private val group: GroupResponse) : Screen {
             onAddOpinionClick = {
                 opinionViewModel.setGroupIdForNextSave(group.id)
                 navigator.push(OpinionFormScreen(group.id))
-            }
+            },
+            groupInfo = group
         )
     }
 }
@@ -110,7 +116,8 @@ fun GroupOpinionListScreen(
     inviteCode: String,
     onBackPressed: () -> Unit,
     onOpinionClick: (MediaOpinion) -> Unit,
-    onAddOpinionClick: () -> Unit
+    onAddOpinionClick: () -> Unit,
+    groupInfo: GroupResponse
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -222,7 +229,8 @@ fun GroupOpinionListScreen(
             groupName = groupName,
             inviteCode = inviteCode,
             onDismiss = { showGroupInfoDialog = false },
-            clipboardManager = clipboardManager
+            clipboardManager = clipboardManager,
+            groupInfo = groupInfo
         )
     }
 }
@@ -232,7 +240,8 @@ private fun GroupInfoDialog(
     groupName: String,
     inviteCode: String,
     onDismiss: () -> Unit,
-    clipboardManager: ClipboardManager
+    clipboardManager: ClipboardManager,
+    groupInfo: GroupResponse
 ) {
     Dialog(onDismissRequest = onDismiss) {
         Surface(
@@ -291,7 +300,7 @@ private fun GroupInfoDialog(
                         ) {
                             Icon(
                                 imageVector = copyToClipboard,
-                                contentDescription = "Copiar código"
+                                contentDescription = stringResource(Res.string.copy_code)
                             )
                         }
                     }
@@ -300,7 +309,7 @@ private fun GroupInfoDialog(
                 Spacer(modifier = Modifier.height(16.dp))
 
                 Text(
-                    text = "Miembros",
+                    text = stringResource(Res.string.members),
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
@@ -319,9 +328,7 @@ private fun GroupInfoDialog(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(modifier = Modifier.padding(12.dp)) {
-                        val mockMembers = listOf("Usuario1", "Usuario2", "Usuario3")
-
-                        mockMembers.forEachIndexed { index, member ->
+                        groupInfo.members.forEachIndexed { index, member ->
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -351,8 +358,8 @@ private fun GroupInfoDialog(
                                 )
                             }
 
-                            if (index < mockMembers.size - 1) {
-                                Divider(
+                            if (index < groupInfo.members.size - 1) {
+                                HorizontalDivider(
                                     modifier = Modifier.padding(vertical = 4.dp),
                                     color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
                                 )
@@ -371,7 +378,7 @@ private fun GroupInfoDialog(
                     ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Salir del grupo")
+                    Text(stringResource(Res.string.leave_group))
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -380,7 +387,7 @@ private fun GroupInfoDialog(
                     onClick = onDismiss,
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Cerrar")
+                    Text(stringResource(Res.string.close))
                 }
             }
         }
@@ -397,7 +404,7 @@ private fun EmptyOpinionsMessage() {
         verticalArrangement = Arrangement.Center
     ) {
         Text(
-            text = stringResource(Res.string.without_comment),
+            text = stringResource(Res.string.without_critics),
             style = MaterialTheme.typography.bodyLarge,
             textAlign = TextAlign.Center,
             modifier = Modifier.padding(16.dp)

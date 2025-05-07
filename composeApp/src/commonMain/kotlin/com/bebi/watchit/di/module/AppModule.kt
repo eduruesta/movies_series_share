@@ -52,6 +52,7 @@ val appModule = module {
         get<DatabaseFactory>()
             .createAppDatabase()
             .setDriver(BundledSQLiteDriver())
+            .fallbackToDestructiveMigration(true)
             .build()
     }
     single { get<AppDatabase>().mediaOpinionDao }

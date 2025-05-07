@@ -34,7 +34,6 @@ class GroupDetailViewModel(
                         _uiState.update { it.copy(isLoading = false, error = e.message) }
                     }
                     .collectLatest { allOpinions ->
-                        // Filtrar las opiniones por el ID del grupo
                         val groupOpinions = allOpinions.filter { it.groupId == groupId }
                         _uiState.update {
                             it.copy(

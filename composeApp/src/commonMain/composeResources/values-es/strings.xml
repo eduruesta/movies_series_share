@@ -106,6 +106,8 @@
     <string name="group_invitation_code">Código de Invitación</string>
     <string name="join_group_description">Ingresá el código para unirte al grupo</string>
     <string name="accept">Aceptar</string>
+    <string name="join_success_message">Unido al grupo con código: </string>
+
 
     <!-- Auth Strings -->
     <string name="create_account">Crear nueva cuenta</string>
@@ -119,6 +121,8 @@
     <string name="auth_error">El email o la contraseña ingresada no existe</string>
     <string name="complete_fields">Por favor, completa todos los campos</string>
     <string name="auth_subtitle">Regístrate y empieza a compartir películas y series con tus amigos</string>
+    <string name="without_critics">Por ahora no hay críticas. Clickea en el botón de más para ser el primero.</string>
+
 
     <!-- Settings -->
     <string name="settings">Configuración</string>
@@ -131,6 +135,12 @@
     <string name="logout">Cerrar sesión</string>
     <string name="logout_confirmation">¿Estás seguro que deseas cerrar sesión?</string>
     <string name="confirm">Confirmar</string>
+    
+    <!-- Group Info Dialog -->
+    <string name="copy_code">Copiar código</string>
+    <string name="members">Miembros</string>
+    <string name="leave_group">Salir del grupo</string>
+    <string name="close">Cerrar</string>
 
     <string name="empty_recommendations_message">Todavía no tienes recomendaciones guardadas. Agrega recomendaciones desde la pantalla principal para verlas aquí.</string>
 

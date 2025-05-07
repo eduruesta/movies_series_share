@@ -69,14 +69,13 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 
-class CreateGroupScreen : Screen {
+data class CreateGroupScreen(val displayName: String?) : Screen {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         
-        val currentUsername = "Usuario"
-        
-        val viewModel = koinInject<GroupsViewModel> { parametersOf(currentUsername) }
+
+        val viewModel = koinInject<GroupsViewModel> { parametersOf(displayName) }
         
         var createdGroup by remember { mutableStateOf<GroupResponse?>(null) }
         var hasAttemptedCreation by remember { mutableStateOf(false) }
@@ -156,7 +155,6 @@ private fun CreateGroupContent(
                 .padding(paddingValues)
         ) {
             if (isLoading) {
-                // Pantalla de carga
                 Box(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center

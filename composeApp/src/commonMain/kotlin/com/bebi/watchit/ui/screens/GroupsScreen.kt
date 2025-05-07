@@ -92,6 +92,8 @@ import moviesseriesshare.composeapp.generated.resources.no_groups
 import moviesseriesshare.composeapp.generated.resources.password
 import moviesseriesshare.composeapp.generated.resources.register
 import moviesseriesshare.composeapp.generated.resources.username
+import moviesseriesshare.composeapp.generated.resources.join_success_message
+
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
@@ -118,6 +120,7 @@ class GroupsScreen : Screen {
 
         val authErrorText = stringResource(Res.string.auth_error)
         val completeFieldsText = stringResource(Res.string.complete_fields)
+        val joinGroupText = stringResource(Res.string.join_success_message)
 
         if (firebaseUser != null) {
             Scaffold(
@@ -132,7 +135,7 @@ class GroupsScreen : Screen {
                 },
                 floatingActionButton = {
                     FloatingActionButton(
-                        onClick = { navigator.push(CreateGroupScreen()) },
+                        onClick = { navigator.push(CreateGroupScreen(firebaseUser!!.displayName)) },
                         containerColor = MaterialTheme.colorScheme.primaryContainer
                     ) {
                         Icon(
@@ -147,7 +150,6 @@ class GroupsScreen : Screen {
                     uiState = uiState,
                     onGroupClicked = { group -> navigator.push(GroupOpinionList(group)) },
                     onRetryLoadGroups = { viewModel.loadGroups() },
-                    firebaseUserId = firebaseUser?.displayName ?: "Usuario"
                 )
 
                 if (showJoinGroupSheet) {
@@ -156,7 +158,7 @@ class GroupsScreen : Screen {
                         onJoin = { invitationCode ->
                             coroutineScope.launch {
                                 showJoinGroupSheet = false
-                                snackbarHostState.showSnackbar("Unido al grupo con código: $invitationCode")
+                                snackbarHostState.showSnackbar(joinGroupText + invitationCode)
                             }
                         }
                     )
@@ -449,7 +451,6 @@ private fun GroupsContent(
     uiState: GroupsUiState,
     onGroupClicked: (GroupResponse) -> Unit,
     onRetryLoadGroups: () -> Unit,
-    firebaseUserId: String
 ) {
     Box(
         modifier = Modifier
@@ -457,7 +458,6 @@ private fun GroupsContent(
             .padding(paddingValues),
         contentAlignment = Alignment.Center
     ) {
-        Text(firebaseUserId)
         when {
             uiState.isLoading -> {
                 CircularProgressIndicator()

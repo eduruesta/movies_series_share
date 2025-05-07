@@ -115,6 +115,82 @@ class GroupsViewModel(
     fun clearError() {
         _uiState.update { it.copy(error = null) }
     }
+    
+    fun deleteGroup(groupId: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            
+            groupsRepository.deleteGroup(groupId, currentUserId).fold(
+                onSuccess = { success ->
+                    if (success) {
+                        // Eliminar el grupo de la lista si se eliminó correctamente
+                        val updatedGroups = _uiState.value.groups.filter { it.id != groupId }
+                        _uiState.update { 
+                            it.copy(
+                                groups = updatedGroups,
+                                isLoading = false
+                            )
+                        }
+                    } else {
+                        _uiState.update { 
+                            it.copy(
+                                isLoading = false,
+                                error = "No se pudo eliminar el grupo"
+                            )
+                        }
+                    }
+                },
+                onFailure = { exception ->
+                    _uiState.update { 
+                        it.copy(
+                            isLoading = false,
+                            error = exception.message ?: "Error al eliminar el grupo"
+                        )
+                    }
+                }
+            )
+        }
+    }
+    
+    fun leaveGroup(groupId: String) {
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoading = true, error = null) }
+            
+            groupsRepository.leaveGroup(groupId, currentUserId).fold(
+                onSuccess = { success ->
+                    if (success) {
+                        // Eliminar el grupo de la lista si se salió correctamente
+                        val updatedGroups = _uiState.value.groups.filter { it.id != groupId }
+                        _uiState.update { 
+                            it.copy(
+                                groups = updatedGroups,
+                                isLoading = false
+                            )
+                        }
+                    } else {
+                        _uiState.update { 
+                            it.copy(
+                                isLoading = false,
+                                error = "No se pudo salir del grupo"
+                            )
+                        }
+                    }
+                },
+                onFailure = { exception ->
+                    _uiState.update { 
+                        it.copy(
+                            isLoading = false,
+                            error = exception.message ?: "Error al salir del grupo"
+                        )
+                    }
+                }
+            )
+        }
+    }
+    
+    fun isGroupOwner(group: GroupResponse): Boolean {
+        return group.createdBy == currentUserId
+    }
 }
 
 data class GroupsUiState(

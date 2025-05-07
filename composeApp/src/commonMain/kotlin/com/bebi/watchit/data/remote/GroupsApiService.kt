@@ -7,6 +7,7 @@ import com.bebi.watchit.data.models.GroupResponse
 import com.bebi.watchit.data.models.JoinGroupRequest
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
+import io.ktor.client.request.delete
 import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
@@ -35,6 +36,14 @@ class GroupsApiService(private val httpClient: HttpClient) {
     
     suspend fun getGroupById(groupId: String): GroupResponse {
         return httpClient.get("$baseUrl/groups/$groupId").body()
+    }
+    
+    suspend fun deleteGroup(groupId: String, userId: String): Boolean {
+        return httpClient.delete("$baseUrl/groups/$groupId?userId=$userId").body()
+    }
+    
+    suspend fun leaveGroup(groupId: String, userId: String): Boolean {
+        return httpClient.delete("$baseUrl/groups/$groupId/leave?userId=$userId").body()
     }
     
     suspend fun joinGroup(inviteCode: String, joinRequest: JoinGroupRequest): GroupResponse {

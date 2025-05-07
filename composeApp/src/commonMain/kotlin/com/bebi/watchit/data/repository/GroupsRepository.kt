@@ -18,6 +18,8 @@ interface GroupsRepository {
     suspend fun joinGroup(inviteCode: String, userId: String, userName: String, userEmail: String): Result<GroupResponse>
     suspend fun getGroupCritics(groupId: String): Result<List<CriticsResponse>>
     suspend fun createGroupCritic(groupId: String, title: String, review: String, score: Double, author: String): Result<CriticsResponse>
+    suspend fun deleteGroup(groupId: String, userId: String): Result<Boolean>
+    suspend fun leaveGroup(groupId: String, userId: String): Result<Boolean>
 }
 
 class GroupsRepositoryImpl(private val apiService: GroupsApiService) : GroupsRepository {
@@ -76,6 +78,22 @@ class GroupsRepositoryImpl(private val apiService: GroupsApiService) : GroupsRep
         try {
             val criticsRequest = CriticsRequest(title, review, score, author)
             Result.success(apiService.createGroupCritic(groupId, criticsRequest))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    override suspend fun deleteGroup(groupId: String, userId: String): Result<Boolean> = withContext(Dispatchers.IO) {
+        try {
+            Result.success(apiService.deleteGroup(groupId, userId))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    override suspend fun leaveGroup(groupId: String, userId: String): Result<Boolean> = withContext(Dispatchers.IO) {
+        try {
+            Result.success(apiService.leaveGroup(groupId, userId))
         } catch (e: Exception) {
             Result.failure(e)
         }

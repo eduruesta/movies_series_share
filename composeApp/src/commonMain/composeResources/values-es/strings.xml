@@ -108,6 +108,19 @@
     <string name="accept">Aceptar</string>
     <string name="join_success_message">Unido al grupo con código: </string>
 
+    <!-- Group Info Dialog -->
+    <string name="copy_code">Copiar código</string>
+    <string name="members">Miembros</string>
+    <string name="leave_group">Salir del grupo</string>
+    <string name="close">Cerrar</string>
+    <string name="delete_group">Eliminar grupo</string>
+    <string name="delete_group_confirmation">¿Estás seguro de que quieres eliminar este grupo?</string>
+    <string name="delete_button">Eliminar</string>
+    <string name="cancel_button">Cancelar</string>
+    <string name="leave_group_title">Abandonar grupo</string>
+    <string name="leave_group_confirmation">¿Estás seguro de que quieres abandonar este grupo?</string>
+    <string name="leave_group_owner_message">Como creador del grupo, al abandonarlo se transferirá la propiedad a otro miembro, o se eliminará el grupo si eres el único miembro.</string>
+    <string name="leave_button">Abandonar</string>
 
     <!-- Auth Strings -->
     <string name="create_account">Crear nueva cuenta</string>
@@ -123,7 +136,6 @@
     <string name="auth_subtitle">Regístrate y empieza a compartir películas y series con tus amigos</string>
     <string name="without_critics">Por ahora no hay críticas. Clickea en el botón de más para ser el primero.</string>
 
-
     <!-- Settings -->
     <string name="settings">Configuración</string>
     <string name="appearance">Apariencia</string>
@@ -135,12 +147,6 @@
     <string name="logout">Cerrar sesión</string>
     <string name="logout_confirmation">¿Estás seguro que deseas cerrar sesión?</string>
     <string name="confirm">Confirmar</string>
-    
-    <!-- Group Info Dialog -->
-    <string name="copy_code">Copiar código</string>
-    <string name="members">Miembros</string>
-    <string name="leave_group">Salir del grupo</string>
-    <string name="close">Cerrar</string>
 
     <string name="empty_recommendations_message">Todavía no tienes recomendaciones guardadas. Agrega recomendaciones desde la pantalla principal para verlas aquí.</string>
 

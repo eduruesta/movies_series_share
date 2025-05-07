@@ -19,13 +19,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
@@ -67,7 +68,11 @@ import com.bebi.watchit.ui.components.RatingBottomSheet
 import com.bebi.watchit.ui.components.copyToClipboard
 import com.bebi.watchit.viewmodel.GroupDetailUiState
 import com.bebi.watchit.viewmodel.GroupDetailViewModel
+import com.bebi.watchit.viewmodel.GroupsViewModel
 import com.bebi.watchit.viewmodel.MediaOpinionFormViewModel
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.auth.FirebaseUser
+import dev.gitlive.firebase.auth.auth
 import kotlinx.coroutines.launch
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.add_new_comment
@@ -77,8 +82,16 @@ import moviesseriesshare.composeapp.generated.resources.copy_code
 import moviesseriesshare.composeapp.generated.resources.group_invite_code
 import moviesseriesshare.composeapp.generated.resources.leave_group
 import moviesseriesshare.composeapp.generated.resources.members
-import moviesseriesshare.composeapp.generated.resources.without_comment
 import moviesseriesshare.composeapp.generated.resources.without_critics
+import moviesseriesshare.composeapp.generated.resources.delete_group
+import moviesseriesshare.composeapp.generated.resources.delete_group_confirmation
+import moviesseriesshare.composeapp.generated.resources.delete_button
+import moviesseriesshare.composeapp.generated.resources.cancel_button
+import moviesseriesshare.composeapp.generated.resources.leave_group_title
+import moviesseriesshare.composeapp.generated.resources.leave_group_confirmation
+import moviesseriesshare.composeapp.generated.resources.leave_group_owner_message
+import moviesseriesshare.composeapp.generated.resources.leave_button
+
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
@@ -87,9 +100,18 @@ class GroupOpinionList(private val group: GroupResponse) : Screen {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
+        val auth = remember { Firebase.auth }
+        val firebaseUser: FirebaseUser? by remember { mutableStateOf(auth.currentUser) }
 
         val viewModel = koinInject<GroupDetailViewModel> { parametersOf(group.id) }
         val opinionViewModel = koinInject<MediaOpinionFormViewModel>()
+        val groupsViewModel = koinInject<GroupsViewModel> {
+            parametersOf(
+                firebaseUser?.uid ?: "",
+                firebaseUser?.displayName ?: "Usuario",
+                firebaseUser?.email ?: ""
+            )
+        }
 
         val uiState by viewModel.uiState.collectAsState()
 
@@ -103,7 +125,16 @@ class GroupOpinionList(private val group: GroupResponse) : Screen {
                 opinionViewModel.setGroupIdForNextSave(group.id)
                 navigator.push(OpinionFormScreen(group.id))
             },
-            groupInfo = group
+            groupInfo = group,
+            groupsViewModel = groupsViewModel,
+            onLeaveGroup = {
+                groupsViewModel.leaveGroup(group.id)
+                navigator.pop()
+            },
+            onDeleteGroup = {
+                groupsViewModel.deleteGroup(group.id)
+                navigator.pop()
+            }
         )
     }
 }
@@ -117,7 +148,10 @@ fun GroupOpinionListScreen(
     onBackPressed: () -> Unit,
     onOpinionClick: (MediaOpinion) -> Unit,
     onAddOpinionClick: () -> Unit,
-    groupInfo: GroupResponse
+    groupInfo: GroupResponse,
+    groupsViewModel: GroupsViewModel,
+    onLeaveGroup: () -> Unit,
+    onDeleteGroup: () -> Unit
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -225,12 +259,16 @@ fun GroupOpinionListScreen(
     }
 
     if (showGroupInfoDialog) {
+        val isOwner = groupsViewModel.isGroupOwner(groupInfo)
         GroupInfoDialog(
             groupName = groupName,
             inviteCode = inviteCode,
             onDismiss = { showGroupInfoDialog = false },
             clipboardManager = clipboardManager,
-            groupInfo = groupInfo
+            groupInfo = groupInfo,
+            isOwner = isOwner,
+            onLeaveGroup = onLeaveGroup,
+            onDeleteGroup = onDeleteGroup
         )
     }
 }
@@ -241,8 +279,14 @@ private fun GroupInfoDialog(
     inviteCode: String,
     onDismiss: () -> Unit,
     clipboardManager: ClipboardManager,
-    groupInfo: GroupResponse
+    groupInfo: GroupResponse,
+    isOwner: Boolean,
+    onLeaveGroup: () -> Unit = {},
+    onDeleteGroup: () -> Unit = {}
 ) {
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
+    var showLeaveConfirmation by remember { mutableStateOf(false) }
+
     Dialog(onDismissRequest = onDismiss) {
         Surface(
             shape = RoundedCornerShape(16.dp),
@@ -371,7 +415,7 @@ private fun GroupInfoDialog(
                 Spacer(modifier = Modifier.height(24.dp))
 
                 Button(
-                    onClick = { },
+                    onClick = { showLeaveConfirmation = true },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.errorContainer,
                         contentColor = MaterialTheme.colorScheme.onErrorContainer
@@ -379,6 +423,31 @@ private fun GroupInfoDialog(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text(stringResource(Res.string.leave_group))
+                }
+
+                if (isOwner) {
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Button(
+                        onClick = { showDeleteConfirmation = true },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = null
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(stringResource(Res.string.delete_group))
+                        }
+                    }
                 }
 
                 Spacer(modifier = Modifier.height(8.dp))
@@ -391,6 +460,66 @@ private fun GroupInfoDialog(
                 }
             }
         }
+    }
+
+    if (showDeleteConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmation = false },
+            title = { Text(stringResource(Res.string.delete_group)) },
+            text = {
+                Text(stringResource(Res.string.delete_group_confirmation))
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showDeleteConfirmation = false
+                        onDismiss()
+                        onDeleteGroup()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.error
+                    )
+                ) {
+                    Text(stringResource(Res.string.delete_button))
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showDeleteConfirmation = false }) {
+                    Text(stringResource(Res.string.cancel_button))
+                }
+            }
+        )
+    }
+
+    if (showLeaveConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showLeaveConfirmation = false },
+            title = { Text(stringResource(Res.string.leave_group_title)) },
+            text = { 
+                Text(if (isOwner) 
+                    stringResource(Res.string.leave_group_owner_message)
+                    else stringResource(Res.string.leave_group_confirmation))
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        showLeaveConfirmation = false
+                        onDismiss()
+                        onLeaveGroup()
+                    },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer
+                    )
+                ) {
+                    Text(stringResource(Res.string.leave_button))
+                }
+            },
+            dismissButton = {
+                OutlinedButton(onClick = { showLeaveConfirmation = false }) {
+                    Text(stringResource(Res.string.cancel_button))
+                }
+            }
+        )
     }
 }
 

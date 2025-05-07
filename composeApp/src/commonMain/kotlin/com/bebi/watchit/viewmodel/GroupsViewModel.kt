@@ -12,7 +12,9 @@ import kotlinx.coroutines.launch
 
 class GroupsViewModel(
     private val groupsRepository: GroupsRepository,
-    private val currentUserId: String
+    private val currentUserId: String,
+    private val userName: String = "Usuario",
+    private val userEmail: String = ""
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(GroupsUiState())
@@ -26,7 +28,7 @@ class GroupsViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
             
-            groupsRepository.getGroups().fold(
+            groupsRepository.getGroupsByMemberId(currentUserId).fold(
                 onSuccess = { groups ->
                     _uiState.update { 
                         it.copy(
@@ -51,7 +53,7 @@ class GroupsViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
-            groupsRepository.createGroup(name, description, currentUserId).fold(
+            groupsRepository.createGroup(name, description, currentUserId, userName, userEmail).fold(
                 onSuccess = { newGroup ->
                     val updatedGroups = _uiState.value.groups + newGroup
                     _uiState.update { 
@@ -77,7 +79,7 @@ class GroupsViewModel(
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
 
-            groupsRepository.joinGroup(inviteCode, currentUserId).fold(
+            groupsRepository.joinGroup(inviteCode, currentUserId, userName, userEmail).fold(
                 onSuccess = { updatedGroup ->
                     // Actualizar la lista de grupos con el grupo actualizado
                     val updatedGroups = _uiState.value.groups.map { 

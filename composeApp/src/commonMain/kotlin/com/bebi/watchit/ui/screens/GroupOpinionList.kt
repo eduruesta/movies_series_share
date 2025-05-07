@@ -353,7 +353,7 @@ private fun GroupInfoDialog(
                                 Spacer(modifier = Modifier.width(12.dp))
 
                                 Text(
-                                    text = member,
+                                    text = member.name,
                                     style = MaterialTheme.typography.bodyLarge
                                 )
                             }

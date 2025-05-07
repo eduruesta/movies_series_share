@@ -6,11 +6,17 @@ import com.bebi.watchit.data.database.AppDatabase
 import com.bebi.watchit.data.database.DatabaseFactory
 import com.bebi.watchit.data.remote.AppService
 import com.bebi.watchit.data.remote.CriticsApiService
+import com.bebi.watchit.data.remote.GroupsApiService
+import com.bebi.watchit.data.repository.GroupsRepository
+import com.bebi.watchit.data.repository.GroupsRepositoryImpl
 import com.bebi.watchit.data.repository.HybridMediaOpinionRepository
 import com.bebi.watchit.data.repository.MediaOpinionRepository
 import com.bebi.watchit.data.repository.RoomMediaOpinionRepository
 import com.bebi.watchit.data.repository.SavedRecommendationRepository
 import com.bebi.watchit.data.repository.TmdbRepository
+import com.bebi.watchit.viewmodel.GroupCriticsViewModel
+import com.bebi.watchit.viewmodel.GroupDetailViewModel
+import com.bebi.watchit.viewmodel.GroupsViewModel
 import com.bebi.watchit.viewmodel.MediaDetailViewModel
 import com.bebi.watchit.viewmodel.MediaOpinionFormViewModel
 import com.bebi.watchit.viewmodel.MediaOpinionViewModel
@@ -34,12 +40,6 @@ import org.koin.core.module.dsl.viewModelOf
 import org.koin.core.qualifier.named
 import org.koin.dsl.KoinAppDeclaration
 import org.koin.dsl.module
-import com.bebi.watchit.data.remote.GroupsApiService
-import com.bebi.watchit.data.repository.GroupsRepository
-import com.bebi.watchit.data.repository.GroupsRepositoryImpl
-import com.bebi.watchit.viewmodel.GroupCriticsViewModel
-import com.bebi.watchit.viewmodel.GroupsViewModel
-import com.bebi.watchit.viewmodel.GroupDetailViewModel
 
 /**
  * Common Koin module for the application
@@ -119,16 +119,17 @@ val viewModelModule = module {
     viewModelOf(::SavedRecommendationViewModel)
     viewModelOf(::GroupDetailViewModel)
 
-    // ViewModels para las pantallas de TMDB - ahora necesitan MediaOpinionRepository
     factory { TopSeriesViewModel(get(), get()) }
     factory { TrendingSeriesViewModel(get(), get()) }
     factory { UpcomingMoviesViewModel(get(), get()) }
     factory { TopMoviesViewModel(get(), get()) }
     factory { TrendingMoviesViewModel(get(), get()) }
-    factory { (username: String) ->
+    factory {
         GroupsViewModel(
             groupsRepository = get(),
-            currentUserId = username
+            currentUserId = get(),
+            userName = get(),
+            userEmail = get()
         )
     }
 

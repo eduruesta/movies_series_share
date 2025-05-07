@@ -53,6 +53,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.bebi.watchit.data.models.GroupResponse
 import com.bebi.watchit.viewmodel.GroupsViewModel
+import kotlinx.coroutines.delay
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.back_button
 import moviesseriesshare.composeapp.generated.resources.cancel
@@ -69,65 +70,98 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 
-data class CreateGroupScreen(val displayUserId: String?) : Screen {
+data class CreateGroupScreen(
+    val userId: String,
+    val userName: String = "Usuario",
+    val userEmail: String = ""
+) : Screen {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
-        
+        val snackbarHostState = remember { SnackbarHostState() }
 
-        val viewModel = koinInject<GroupsViewModel> { parametersOf(displayUserId) }
+        val viewModel = koinInject<GroupsViewModel> { parametersOf(userId, userName, userEmail) }
         
         var createdGroup by remember { mutableStateOf<GroupResponse?>(null) }
         var hasAttemptedCreation by remember { mutableStateOf(false) }
-        
+
+        var groupName by remember { mutableStateOf("") }
+        var groupDescription by remember { mutableStateOf("") }
+        var isLoading by remember { mutableStateOf(false) }
+
         val uiState by viewModel.uiState.collectAsState()
-        
-        LaunchedEffect(uiState.groups) {
-            if (uiState.groups.isNotEmpty() && !uiState.isLoading && hasAttemptedCreation) {
-                val lastCreatedGroup = uiState.groups.lastOrNull()
-                if (lastCreatedGroup != null && createdGroup == null) {
-                    createdGroup = lastCreatedGroup
+
+        LaunchedEffect(uiState.groups, uiState.isLoading) {
+            if (!uiState.isLoading && hasAttemptedCreation) {
+                isLoading = false
+                if (uiState.groups.isNotEmpty() && createdGroup == null) {
+                    val lastCreatedGroup = uiState.groups.lastOrNull()
+                    if (lastCreatedGroup != null) {
+                        createdGroup = lastCreatedGroup
+                        delay(800)
+                        navigator.pop()
+                    }
                 }
             }
         }
-        
+
         CreateGroupContent(
-            onBackPressed = { navigator.pop() },
-            onCreateGroup = { name, description ->
-                hasAttemptedCreation = true
-                viewModel.createGroup(name, description)
+            groupName = groupName,
+            onGroupNameChange = { groupName = it },
+            groupDescription = groupDescription,
+            onGroupDescriptionChange = { groupDescription = it },
+            onCreateGroup = {
+                if (groupName.isEmpty()) {
+                    hasAttemptedCreation = true
+                } else {
+                    isLoading = true
+                    hasAttemptedCreation = true
+                    viewModel.createGroup(groupName, groupDescription)
+                }
             },
-            isLoading = uiState.isLoading,
+            onBackPressed = { navigator.pop() },
+            showNameError = hasAttemptedCreation && groupName.isEmpty(),
+            isLoading = isLoading,
             createdGroup = createdGroup,
-            error = uiState.error
+            error = uiState.error,
+            snackbarHostState = snackbarHostState
         )
+
+        LaunchedEffect(uiState.error) {
+            if (uiState.error != null) {
+                snackbarHostState.showSnackbar(uiState.error?: "Error")
+                isLoading = false
+            }
+        }
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CreateGroupContent(
+    groupName: String,
+    onGroupNameChange: (String) -> Unit,
+    groupDescription: String,
+    onGroupDescriptionChange: (String) -> Unit,
+    onCreateGroup: () -> Unit,
     onBackPressed: () -> Unit,
-    onCreateGroup: (name: String, description: String) -> Unit,
+    showNameError: Boolean,
     isLoading: Boolean,
     createdGroup: GroupResponse?,
-    error: String?
+    error: String?,
+    snackbarHostState: SnackbarHostState
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    val snackbarHostState = remember { SnackbarHostState() }
     val clipboardManager = LocalClipboardManager.current
-    
-    var groupName by remember { mutableStateOf("") }
-    var groupDescription by remember { mutableStateOf("") }
     
     LaunchedEffect(error) {
         if (error != null) {
-            snackbarHostState.showSnackbar(message = error)
+            snackbarHostState.showSnackbar(error)
         }
     }
     
     val isNameValid = groupName.isNotBlank()
-
+    
     Scaffold(
         topBar = {
             TopAppBar(
@@ -274,10 +308,10 @@ private fun CreateGroupContent(
                 ) {
                     OutlinedTextField(
                         value = groupName,
-                        onValueChange = { groupName = it },
+                        onValueChange = onGroupNameChange,
                         label = { Text(stringResource(Res.string.group_name)) },
                         placeholder = { Text(stringResource(Res.string.name)) },
-                        isError = groupName.isNotBlank() && !isNameValid,
+                        isError = showNameError,
                         modifier = Modifier.fillMaxWidth(),
                         keyboardOptions = KeyboardOptions(
                             capitalization = KeyboardCapitalization.Words,
@@ -289,7 +323,7 @@ private fun CreateGroupContent(
                     
                     OutlinedTextField(
                         value = groupDescription,
-                        onValueChange = { groupDescription = it },
+                        onValueChange = onGroupDescriptionChange,
                         label = { Text(stringResource(Res.string.group_description)) },
                         placeholder = { Text(stringResource(Res.string.description)) },
                         modifier = Modifier.fillMaxWidth(),
@@ -301,7 +335,7 @@ private fun CreateGroupContent(
                         keyboardActions = KeyboardActions(
                             onDone = {
                                 if (isNameValid) {
-                                    onCreateGroup(groupName, groupDescription)
+                                    onCreateGroup()
                                 }
                             }
                         ),
@@ -311,9 +345,7 @@ private fun CreateGroupContent(
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Button(
-                        onClick = {
-                            onCreateGroup(groupName, groupDescription)
-                        },
+                        onClick = onCreateGroup,
                         enabled = isNameValid,
                         modifier = Modifier.fillMaxWidth()
                     ) {

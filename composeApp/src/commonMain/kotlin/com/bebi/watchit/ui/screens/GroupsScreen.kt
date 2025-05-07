@@ -113,8 +113,13 @@ class GroupsScreen : Screen {
         val auth = remember { Firebase.auth }
         var firebaseUser: FirebaseUser? by remember { mutableStateOf(auth.currentUser) }
 
-        val viewModel =
-            koinInject<GroupsViewModel> { parametersOf(firebaseUser?.email ?: "Unknown email") }
+        val viewModel = koinInject<GroupsViewModel> {
+            parametersOf(
+                firebaseUser?.uid ?: "", 
+                firebaseUser?.displayName ?: "Usuario",
+                firebaseUser?.email ?: ""
+            )
+        }
         val uiState by viewModel.uiState.collectAsState()
         var showJoinGroupSheet by remember { mutableStateOf(false) }
 
@@ -134,14 +139,22 @@ class GroupsScreen : Screen {
                     )
                 },
                 floatingActionButton = {
-                    FloatingActionButton(
-                        onClick = { navigator.push(CreateGroupScreen(firebaseUser!!.uid)) },
-                        containerColor = MaterialTheme.colorScheme.primaryContainer
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = stringResource(Res.string.create_group)
-                        )
+                    firebaseUser?.let { user ->
+                        FloatingActionButton(
+                            onClick = { 
+                                navigator.push(CreateGroupScreen(
+                                    userId = user.uid,
+                                    userName = user.displayName ?: "Usuario",
+                                    userEmail = user.email ?: ""
+                                )) 
+                            },
+                            containerColor = MaterialTheme.colorScheme.primaryContainer
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Add,
+                                contentDescription = stringResource(Res.string.create_group)
+                            )
+                        }
                     }
                 }
             ) { paddingValues ->
@@ -158,7 +171,9 @@ class GroupsScreen : Screen {
                         onJoin = { invitationCode ->
                             coroutineScope.launch {
                                 showJoinGroupSheet = false
-                                snackbarHostState.showSnackbar(joinGroupText + invitationCode)
+                                viewModel.joinGroup(invitationCode)
+                                snackbarHostState.showSnackbar(joinGroupText)
+                                viewModel.loadGroups()
                             }
                         }
                     )

@@ -10,7 +10,8 @@ data class GroupResponse(
     val description: String,
     val createdBy: String,
     val createdAt: Long,
-    val members: List<String>,
+    val members: List<UserResponse>,
+    val memberCount: Int,
     val inviteCode: String
 ): JavaSerializable
 
@@ -18,10 +19,14 @@ data class GroupResponse(
 data class GroupRequest(
     val name: String,
     val description: String,
-    val createdBy: String
+    val createdBy: String,
+    val creatorName: String,
+    val creatorEmail: String
 ): JavaSerializable
 
 @Serializable
 data class JoinGroupRequest(
-    val memberName: String
+    val userId: String,
+    val userName: String,
+    val userEmail: String
 ): JavaSerializable

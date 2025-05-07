@@ -22,6 +22,10 @@ class GroupsApiService(private val httpClient: HttpClient) {
         return httpClient.get("$baseUrl/groups").body()
     }
     
+    suspend fun getGroupsByMemberId(memberId: String): List<GroupResponse> {
+        return httpClient.get("$baseUrl/groups/by-member/$memberId").body()
+    }
+    
     suspend fun createGroup(groupRequest: GroupRequest): GroupResponse {
         return httpClient.post("$baseUrl/groups") {
             contentType(ContentType.Application.Json)

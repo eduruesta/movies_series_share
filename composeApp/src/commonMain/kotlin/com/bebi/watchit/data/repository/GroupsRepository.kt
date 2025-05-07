@@ -12,9 +12,10 @@ import kotlinx.coroutines.withContext
 
 interface GroupsRepository {
     suspend fun getGroups(): Result<List<GroupResponse>>
-    suspend fun createGroup(name: String, description: String, creatorName: String): Result<GroupResponse>
+    suspend fun getGroupsByMemberId(memberId: String): Result<List<GroupResponse>>
+    suspend fun createGroup(name: String, description: String, userId: String, userName: String, userEmail: String): Result<GroupResponse>
     suspend fun getGroupById(groupId: String): Result<GroupResponse>
-    suspend fun joinGroup(inviteCode: String, memberName: String): Result<GroupResponse>
+    suspend fun joinGroup(inviteCode: String, userId: String, userName: String, userEmail: String): Result<GroupResponse>
     suspend fun getGroupCritics(groupId: String): Result<List<CriticsResponse>>
     suspend fun createGroupCritic(groupId: String, title: String, review: String, score: Double, author: String): Result<CriticsResponse>
 }
@@ -29,9 +30,17 @@ class GroupsRepositoryImpl(private val apiService: GroupsApiService) : GroupsRep
         }
     }
     
-    override suspend fun createGroup(name: String, description: String, creatorName: String): Result<GroupResponse> = withContext(Dispatchers.IO) {
+    override suspend fun getGroupsByMemberId(memberId: String): Result<List<GroupResponse>> = withContext(Dispatchers.IO) {
         try {
-            val groupRequest = GroupRequest(name, description, creatorName)
+            Result.success(apiService.getGroupsByMemberId(memberId))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    override suspend fun createGroup(name: String, description: String, userId: String, userName: String, userEmail: String): Result<GroupResponse> = withContext(Dispatchers.IO) {
+        try {
+            val groupRequest = GroupRequest(name, description, userId, userName, userEmail)
             Result.success(apiService.createGroup(groupRequest))
         } catch (e: Exception) {
             Result.failure(e)
@@ -46,9 +55,9 @@ class GroupsRepositoryImpl(private val apiService: GroupsApiService) : GroupsRep
         }
     }
     
-    override suspend fun joinGroup(inviteCode: String, memberName: String): Result<GroupResponse> = withContext(Dispatchers.IO) {
+    override suspend fun joinGroup(inviteCode: String, userId: String, userName: String, userEmail: String): Result<GroupResponse> = withContext(Dispatchers.IO) {
         try {
-            val joinRequest = JoinGroupRequest(memberName)
+            val joinRequest = JoinGroupRequest(userId, userName, userEmail)
             Result.success(apiService.joinGroup(inviteCode, joinRequest))
         } catch (e: Exception) {
             Result.failure(e)

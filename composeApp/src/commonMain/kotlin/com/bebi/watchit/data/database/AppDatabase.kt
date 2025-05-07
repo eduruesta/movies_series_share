@@ -14,7 +14,7 @@ import com.bebi.watchit.model.SavedRecommendation
         MediaOpinion::class,
         SavedRecommendation::class
     ],
-    version = 3,
+    version = 4,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

@@ -69,13 +69,13 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 
-data class CreateGroupScreen(val displayName: String?) : Screen {
+data class CreateGroupScreen(val displayUserId: String?) : Screen {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         
 
-        val viewModel = koinInject<GroupsViewModel> { parametersOf(displayName) }
+        val viewModel = koinInject<GroupsViewModel> { parametersOf(displayUserId) }
         
         var createdGroup by remember { mutableStateOf<GroupResponse?>(null) }
         var hasAttemptedCreation by remember { mutableStateOf(false) }

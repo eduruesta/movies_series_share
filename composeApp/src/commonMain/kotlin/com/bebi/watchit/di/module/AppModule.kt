@@ -128,7 +128,7 @@ val viewModelModule = module {
     factory { (username: String) ->
         GroupsViewModel(
             groupsRepository = get(),
-            currentUsername = username
+            currentUserId = username
         )
     }
 

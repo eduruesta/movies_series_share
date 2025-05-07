@@ -135,7 +135,7 @@ class GroupsScreen : Screen {
                 },
                 floatingActionButton = {
                     FloatingActionButton(
-                        onClick = { navigator.push(CreateGroupScreen(firebaseUser!!.displayName)) },
+                        onClick = { navigator.push(CreateGroupScreen(firebaseUser!!.uid)) },
                         containerColor = MaterialTheme.colorScheme.primaryContainer
                     ) {
                         Icon(

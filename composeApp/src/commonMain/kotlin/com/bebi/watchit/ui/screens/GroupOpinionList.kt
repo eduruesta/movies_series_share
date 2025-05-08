@@ -70,6 +70,7 @@ import com.bebi.watchit.viewmodel.GroupDetailUiState
 import com.bebi.watchit.viewmodel.GroupDetailViewModel
 import com.bebi.watchit.viewmodel.GroupsViewModel
 import com.bebi.watchit.viewmodel.MediaOpinionFormViewModel
+import com.bebi.watchit.viewmodel.MediaOpinionViewModel
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.FirebaseUser
 import dev.gitlive.firebase.auth.auth
@@ -77,21 +78,20 @@ import kotlinx.coroutines.launch
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.add_new_comment
 import moviesseriesshare.composeapp.generated.resources.back_button
+import moviesseriesshare.composeapp.generated.resources.cancel_button
 import moviesseriesshare.composeapp.generated.resources.close
 import moviesseriesshare.composeapp.generated.resources.copy_code
-import moviesseriesshare.composeapp.generated.resources.group_invite_code
-import moviesseriesshare.composeapp.generated.resources.leave_group
-import moviesseriesshare.composeapp.generated.resources.members
-import moviesseriesshare.composeapp.generated.resources.without_critics
+import moviesseriesshare.composeapp.generated.resources.delete_button
 import moviesseriesshare.composeapp.generated.resources.delete_group
 import moviesseriesshare.composeapp.generated.resources.delete_group_confirmation
-import moviesseriesshare.composeapp.generated.resources.delete_button
-import moviesseriesshare.composeapp.generated.resources.cancel_button
-import moviesseriesshare.composeapp.generated.resources.leave_group_title
+import moviesseriesshare.composeapp.generated.resources.group_invite_code
+import moviesseriesshare.composeapp.generated.resources.leave_button
+import moviesseriesshare.composeapp.generated.resources.leave_group
 import moviesseriesshare.composeapp.generated.resources.leave_group_confirmation
 import moviesseriesshare.composeapp.generated.resources.leave_group_owner_message
-import moviesseriesshare.composeapp.generated.resources.leave_button
-
+import moviesseriesshare.composeapp.generated.resources.leave_group_title
+import moviesseriesshare.composeapp.generated.resources.members
+import moviesseriesshare.composeapp.generated.resources.without_critics
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
@@ -105,6 +105,7 @@ class GroupOpinionList(private val group: GroupResponse) : Screen {
 
         val viewModel = koinInject<GroupDetailViewModel> { parametersOf(group.id) }
         val opinionViewModel = koinInject<MediaOpinionFormViewModel>()
+        val mediaOpinionViewModel = koinInject<MediaOpinionViewModel>()
         val groupsViewModel = koinInject<GroupsViewModel> {
             parametersOf(
                 firebaseUser?.uid ?: "",
@@ -134,7 +135,9 @@ class GroupOpinionList(private val group: GroupResponse) : Screen {
             onDeleteGroup = {
                 groupsViewModel.deleteGroup(group.id)
                 navigator.pop()
-            }
+            },
+            mediaOpinionViewModel = mediaOpinionViewModel,
+            viewModel = viewModel
         )
     }
 }
@@ -151,7 +154,9 @@ fun GroupOpinionListScreen(
     groupInfo: GroupResponse,
     groupsViewModel: GroupsViewModel,
     onLeaveGroup: () -> Unit,
-    onDeleteGroup: () -> Unit
+    onDeleteGroup: () -> Unit,
+    mediaOpinionViewModel: MediaOpinionViewModel,
+    viewModel: GroupDetailViewModel
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -249,11 +254,25 @@ fun GroupOpinionListScreen(
     }
 
     if (showRatingSheet && selectedOpinion != null) {
+        var isLoading by remember { mutableStateOf(false) }
+
         RatingBottomSheet(
             opinion = selectedOpinion!!,
             onDismiss = { showRatingSheet = false },
-            onRatingSubmit = { _, _ ->
-                showRatingSheet = false
+            isLoading = isLoading,
+            onRatingSubmit = { opinion, rating ->
+                isLoading = true
+                mediaOpinionViewModel.submitRating(opinion, rating) { success ->
+                    isLoading = false
+                    if (success) {
+                        viewModel.refreshOpinions()
+                        showRatingSheet = false
+                    } else {
+                        scope.launch {
+                            snackbarHostState.showSnackbar("No se pudo actualizar la calificación")
+                        }
+                    }
+                }
             }
         )
     }
@@ -495,10 +514,12 @@ private fun GroupInfoDialog(
         AlertDialog(
             onDismissRequest = { showLeaveConfirmation = false },
             title = { Text(stringResource(Res.string.leave_group_title)) },
-            text = { 
-                Text(if (isOwner) 
-                    stringResource(Res.string.leave_group_owner_message)
-                    else stringResource(Res.string.leave_group_confirmation))
+            text = {
+                Text(
+                    if (isOwner)
+                        stringResource(Res.string.leave_group_owner_message)
+                    else stringResource(Res.string.leave_group_confirmation)
+                )
             },
             confirmButton = {
                 Button(

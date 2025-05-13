@@ -6,6 +6,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.*
+import dev.burnoo.compose.remembersetting.rememberStringSetting
 
 private val LightColorScheme = lightColorScheme(
     primary = PrimaryLight,
@@ -90,11 +91,29 @@ internal fun AppTheme(
     content: @Composable () -> Unit
 ) {
     val systemIsDark = isSystemInDarkTheme()
-    val isDarkState = remember(systemIsDark) { mutableStateOf(systemIsDark) }
+    
+    // Load the saved dark mode setting or default to system preference
+    var savedIsDarkMode by rememberStringSetting(
+        key = "savedIsDarkMode",
+        defaultValue = systemIsDark.toString()
+    )
+    
+    // Initialize state with the saved preference
+    val initialDarkMode = savedIsDarkMode.toBoolean()
+    val isDarkState = remember { mutableStateOf(initialDarkMode) }
+    
     CompositionLocalProvider(
         LocalThemeIsDark provides isDarkState
     ) {
         val isDark by isDarkState
+        
+        // Save preference when it changes
+        LaunchedEffect(isDark) {
+            if (isDark.toString() != savedIsDarkMode) {
+                savedIsDarkMode = isDark.toString()
+            }
+        }
+        
         SystemAppearance(!isDark)
         MaterialTheme(
             colorScheme = if (isDark) DarkColorScheme else LightColorScheme,

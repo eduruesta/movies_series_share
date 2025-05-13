@@ -166,7 +166,21 @@ class SettingsScreen : Screen {
 @Composable
 private fun ThemeSection() {
     val isDarkTheme = LocalThemeIsDark.current
-    val isDark by isDarkTheme
+    var isDark by isDarkTheme
+    
+    // Add persistent setting for dark mode
+    var savedIsDark by rememberStringSetting(
+        key = "savedIsDarkMode",
+        defaultValue = isDark.toString()
+    )
+    
+    // Apply saved setting when component is launched
+    LaunchedEffect(Unit) {
+        val darkModeSetting = savedIsDark.toBoolean()
+        if (isDark != darkModeSetting) {
+            isDarkTheme.value = darkModeSetting
+        }
+    }
 
     Text(
         text = stringResource(Res.string.appearance),
@@ -199,7 +213,10 @@ private fun ThemeSection() {
 
             Switch(
                 checked = isDark,
-                onCheckedChange = { isDarkTheme.value = it }
+                onCheckedChange = { 
+                    isDarkTheme.value = it
+                    savedIsDark = it.toString()
+                }
             )
         }
     }

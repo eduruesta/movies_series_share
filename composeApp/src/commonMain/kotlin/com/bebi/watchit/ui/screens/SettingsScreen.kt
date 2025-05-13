@@ -166,7 +166,7 @@ class SettingsScreen : Screen {
 @Composable
 private fun ThemeSection() {
     val isDarkTheme = LocalThemeIsDark.current
-    var isDark by isDarkTheme
+    val isDark by isDarkTheme
     
     // Add persistent setting for dark mode
     var savedIsDark by rememberStringSetting(

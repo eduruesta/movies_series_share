@@ -59,6 +59,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.bebi.watchit.data.models.GroupResponse
+import com.bebi.watchit.ui.components.GoogleSignIn
 import com.bebi.watchit.ui.components.groupAdd
 import com.bebi.watchit.ui.components.passwordIcon
 import com.bebi.watchit.viewmodel.GroupsUiState
@@ -115,7 +116,7 @@ class GroupsScreen : Screen {
 
         val viewModel = koinInject<GroupsViewModel> {
             parametersOf(
-                firebaseUser?.uid ?: "", 
+                firebaseUser?.uid ?: "",
                 firebaseUser?.displayName ?: "Usuario",
                 firebaseUser?.email ?: ""
             )
@@ -141,12 +142,14 @@ class GroupsScreen : Screen {
                 floatingActionButton = {
                     firebaseUser?.let { user ->
                         FloatingActionButton(
-                            onClick = { 
-                                navigator.push(CreateGroupScreen(
-                                    userId = user.uid,
-                                    userName = user.displayName ?: "Usuario",
-                                    userEmail = user.email ?: ""
-                                )) 
+                            onClick = {
+                                navigator.push(
+                                    CreateGroupScreen(
+                                        userId = user.uid,
+                                        userName = user.displayName ?: "Usuario",
+                                        userEmail = user.email ?: ""
+                                    )
+                                )
                             },
                             containerColor = MaterialTheme.colorScheme.primaryContainer
                         ) {
@@ -340,7 +343,17 @@ class GroupsScreen : Screen {
                                 )
                             )
                         }
+                        Spacer(modifier = Modifier.height(16.dp))
+                        val onFirebaseResult: (Result<FirebaseUser?>) -> Unit = { result ->
+                            if (result.isSuccess) {
+                                val firebase = result.getOrNull()
+                                firebaseUser = firebase
+                            } else {
+                                println("Error Result: ${result.exceptionOrNull()?.message}")
+                            }
 
+                        }
+                        GoogleSignIn(onFirebaseResult = onFirebaseResult)
                         Spacer(modifier = Modifier.height(16.dp))
 
                         Text(

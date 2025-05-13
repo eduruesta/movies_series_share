@@ -135,6 +135,7 @@
     <string name="logout">Log out</string>
     <string name="logout_confirmation">Are you sure you want to log out?</string>
     <string name="confirm">Confirm</string>
+    <string name="google_sign_in">Sign in with Google</string>
 
     <!-- Group Info Dialog -->
     <string name="copy_code">Copy code</string>

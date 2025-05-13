@@ -8,22 +8,22 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:764447091440:android:75264d2f845d0f77c6b035",
+        "mobilesdk_app_id": "1:764447091440:android:3cf348e7578a25dec6b035",
         "android_client_info": {
           "package_name": "com.bebi.app.watchit"
         }
       },
       "oauth_client": [
         {
-          "client_id": "764447091440-5qelijplcc0bpojjf38u5d937r44ddqn.apps.googleusercontent.com",
+          "client_id": "764447091440-n518vbrqnjrej9s6jvt2ai3em5f8441l.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.bebi.app.watchit",
-            "certificate_hash": "79e6b843ea9b14c38f96a487ed7114e962212ccf"
+            "certificate_hash": "8a2f62d2442a2ed966677faafec6c160483c2bfe"
           }
         },
         {
-          "client_id": "764447091440-2vhhg98b1rvi2tib84but0e7qa0l5fce.apps.googleusercontent.com",
+          "client_id": "764447091440-99gov71k6knn1l4h1n4dpm3n23io6uk2.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
@@ -36,11 +36,11 @@
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "764447091440-2vhhg98b1rvi2tib84but0e7qa0l5fce.apps.googleusercontent.com",
+              "client_id": "764447091440-99gov71k6knn1l4h1n4dpm3n23io6uk2.apps.googleusercontent.com",
               "client_type": 3
             },
             {
-              "client_id": "764447091440-e9tq87aq13j23v7o394mv6rio13iudo9.apps.googleusercontent.com",
+              "client_id": "764447091440-rr5o4ttvj758qg20ege8n2pu7phu2h1u.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
                 "bundle_id": "com.bebi.app.watchit"

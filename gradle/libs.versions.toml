@@ -1,5 +1,6 @@
 [versions]
 
+kmpauthFirebase = "2.3.1"
 kotlin = "2.1.20"
 compose = "1.8.0-beta01"
 agp = "8.6.0"
@@ -17,7 +18,7 @@ voyager = "1.1.0-beta03"
 koinComposeMultiplatform = "1.2.0-Beta4"
 androidx-sqliteBundled = "2.5.0-alpha11"
 firebase-gitlive-sdk = "2.1.0"
-gradlePlugins-google-services = "4.4.1"
+gradlePlugins-google-services = "4.4.2"
 firebase-android-bom = "32.8.1"
 kotlinxDatetime = "0.4.0"
 core-splashscreen = "1.0.1"
@@ -26,6 +27,9 @@ uiAndroid = "1.8.0"
 
 
 [libraries]
+kmpauth-firebase = { module = "io.github.mirzemehdi:kmpauth-firebase", version.ref = "kmpauthFirebase" }
+kmpauth-google = { module = "io.github.mirzemehdi:kmpauth-google", version.ref = "kmpauthFirebase" }
+kmpauth-uihelper = { module = "io.github.mirzemehdi:kmpauth-uihelper", version.ref = "kmpauthFirebase" }
 kotlinx-datetime = { module = "org.jetbrains.kotlinx:kotlinx-datetime", version.ref = "kotlinxDatetime" }
 androidx-activityCompose = { module = "androidx.activity:activity-compose", version.ref = "androidx-activityCompose" }
 androidx-lifeCycle-viewmodel-compose = { group = "org.jetbrains.androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "androidx-lifeCycle" }
@@ -67,6 +71,7 @@ firebase-android-crashlytics-ktx = { module = "com.google.firebase:firebase-anal
 #Gitlive
 gitlive-firebase-kotlin-analytics = { module = "dev.gitlive:firebase-analytics", version.ref = "firebase-gitlive-sdk" }
 gitlive-firebase-kotlin-database = { module = "dev.gitlive:firebase-database", version.ref = "firebase-gitlive-sdk" }
+firebase-gitlive-auth = { module = "dev.gitlive:firebase-auth", version.ref = "firebase-gitlive-sdk" }
 
 core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "core-splashscreen" }
 remember-settings = { module = "dev.burnoo:compose-remember-setting", version.ref = "settings" }

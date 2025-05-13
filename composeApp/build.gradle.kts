@@ -57,11 +57,14 @@ kotlin {
             implementation(libs.androidx.sqlite.bundled)
             implementation(libs.kotlinx.datetime)
             implementation(libs.remember.settings)
+            //implementation(libs.firebase.gitlive.auth)
+            //implementation("io.github.sunildhiman90:kmauth-google:0.0.4")
+            //implementation("io.github.sunildhiman90:kmauth-google-compose:0.0.4")
 
-            implementation("io.github.mirzemehdi:kmpauth-google:2.3.1") //Google One Tap Sign-In
-            implementation("io.github.mirzemehdi:kmpauth-firebase:2.3.1") //Integrated Authentications with Firebase
-            implementation("io.github.mirzemehdi:kmpauth-uihelper:2.3.1") //UiHelper SignIn buttons (AppleSignIn, GoogleSignInButton)
-            implementation("dev.gitlive:firebase-auth:2.1.0")
+            implementation(libs.kmpauth.firebase)
+            implementation(libs.kmpauth.uihelper)
+            implementation(libs.kmpauth.google)
+
 
 
             // Voyager Navigation
@@ -124,8 +127,10 @@ buildConfig {
     val properties = Properties()
     properties.load(project.rootProject.file("local.properties").reader())
     val apiKey = properties.getProperty("api_key")
+    val googleClientId = properties.getProperty("GOOGLE_WEB_CLIENT_ID")
 
     buildConfigField("api_key", apiKey)
+    buildConfigField("GOOGLE_WEB_CLIENT_ID", googleClientId)
 
 }
 

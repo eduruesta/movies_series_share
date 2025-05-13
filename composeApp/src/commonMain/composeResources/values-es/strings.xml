@@ -80,6 +80,8 @@
     <string name="top_movies">Top Películas</string>
     <string name="trending">Tendencias</string>
     <string name="upcoming">Proximamente</string>
+    <string name="google_sign_in">Iniciar sesión con Google</string>
+
 
     <!-- Search placeholders -->
     <string name="search_movies_series">Buscar películas y series...</string>

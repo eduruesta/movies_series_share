@@ -10,6 +10,7 @@ class MediaShareApplication : Application() {
     
     override fun onCreate() {
         super.onCreate()
+        AppInitializer.onApplicationStart()
         initKoin {
             androidLogger(Level.DEBUG)
             androidContext(this@MediaShareApplication)

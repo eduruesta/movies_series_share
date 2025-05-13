@@ -11,5 +11,19 @@
 	</array>
 	<key>UILaunchScreen</key>
 	<dict/>
+	<key>GIDServerClientID</key>
+    <string>764447091440-99gov71k6knn1l4h1n4dpm3n23io6uk2.apps.googleusercontent.com</string>
+    <key>GIDClientID</key>
+    <string>764447091440-rr5o4ttvj758qg20ege8n2pu7phu2h1u.apps.googleusercontent.com</string>
+
+    <key>CFBundleURLTypes</key>
+    <array>
+      <dict>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <string>com.googleusercontent.apps.764447091440-rr5o4ttvj758qg20ege8n2pu7phu2h1u</string>
+        </array>
+      </dict>
+    </array>
 </dict>
 </plist>

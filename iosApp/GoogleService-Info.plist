@@ -3,9 +3,11 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>764447091440-e9tq87aq13j23v7o394mv6rio13iudo9.apps.googleusercontent.com</string>
+	<string>764447091440-rr5o4ttvj758qg20ege8n2pu7phu2h1u.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.764447091440-e9tq87aq13j23v7o394mv6rio13iudo9</string>
+	<string>com.googleusercontent.apps.764447091440-rr5o4ttvj758qg20ege8n2pu7phu2h1u</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>764447091440-n518vbrqnjrej9s6jvt2ai3em5f8441l.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
 	<string>AIzaSyDWN6byylUkL4j3UIk8ih245RX5HURQTrI</string>
 	<key>GCM_SENDER_ID</key>
@@ -19,17 +21,17 @@
 	<key>STORAGE_BUCKET</key>
 	<string>que-queres-ver.firebasestorage.app</string>
 	<key>IS_ADS_ENABLED</key>
-	<false/>
+	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
-	<false/>
+	<false></false>
 	<key>IS_APPINVITE_ENABLED</key>
-	<true/>
+	<true></true>
 	<key>IS_GCM_ENABLED</key>
-	<true/>
+	<true></true>
 	<key>IS_SIGNIN_ENABLED</key>
-	<true/>
+	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:764447091440:ios:24f9cd4fce94ba73c6b035</string>
+	<string>1:764447091440:ios:f75a43c89665a04ec6b035</string>
 	<key>DATABASE_URL</key>
 	<string>https://que-queres-ver-default-rtdb.firebaseio.com</string>
 </dict>

@@ -79,7 +79,7 @@
     <string name="top_series">Top Series</string>
     <string name="top_movies">Top Películas</string>
     <string name="trending">Tendencias</string>
-    <string name="upcoming">Proximamente</string>
+    <string name="upcoming">Próximamente</string>
     <string name="google_sign_in">Iniciar sesión con Google</string>
 
 
@@ -87,6 +87,14 @@
     <string name="search_movies_series">Buscar películas y series...</string>
     <string name="search_recommendations">Buscar recomendaciones...</string>
     <string name="search">Buscar...</string>
+
+    <!-- Home Screen -->
+    <string name="trending_movies">Películas en Tendencia</string>
+    <string name="trending_series">Series en Tendencia</string>
+    <string name="criticly_recommendations">Recomendaciones de Usuarios</string>
+    <string name="see_all">Ver todo</string>
+    <string name="upcoming_movies">Proximas Películas</string>
+
 
     <!-- Groups -->
     <string name="groups">Grupos</string>

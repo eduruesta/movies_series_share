@@ -89,6 +89,13 @@
 
     <string name="empty_recommendations_message">You don't have any saved recommendations yet. Add recommendations from the main screen to see them here.</string>
 
+    <!-- Home Screen -->
+    <string name="trending_movies">Trending Movies</string>
+    <string name="trending_series">Trending Tv Shows</string>
+    <string name="criticly_recommendations">Criticly User Recommendations</string>
+    <string name="see_all">See all</string>
+    <string name="upcoming_movies">Upcoming Movies</string>
+
     <!-- Groups -->
     <string name="groups">Groups</string>
     <string name="my_groups">My Groups</string>

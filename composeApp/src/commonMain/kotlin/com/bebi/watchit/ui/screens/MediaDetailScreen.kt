@@ -58,6 +58,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
 import com.bebi.watchit.model.MediaOpinion
 import com.bebi.watchit.ui.components.StarRating
+import com.bebi.watchit.ui.util.formatWithOneDecimal
 import com.bebi.watchit.viewmodel.MediaDetailError
 import com.bebi.watchit.viewmodel.MediaDetailViewModel
 import kotlinx.serialization.Serializable

@@ -38,7 +38,7 @@ import androidx.compose.ui.unit.dp
 import coil3.compose.AsyncImage
 import com.bebi.watchit.model.MediaOpinion
 import com.bebi.watchit.model.SavedRecommendation
-import com.bebi.watchit.ui.screens.formatWithOneDecimal
+import com.bebi.watchit.ui.util.formatWithOneDecimal
 import com.bebi.watchit.viewmodel.RecommendationMessage
 import com.bebi.watchit.viewmodel.SavedRecommendationViewModel
 import moviesseriesshare.composeapp.generated.resources.Res

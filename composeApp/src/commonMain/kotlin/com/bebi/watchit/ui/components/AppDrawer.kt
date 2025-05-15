@@ -50,7 +50,6 @@ import org.jetbrains.compose.resources.stringResource
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppDrawerContent(
-    onNavigateToMediaList: () -> Unit,
     onNavigateToRecommendations: () -> Unit,
     onNavigateToTopSeries: () -> Unit,
     onNavigateToTrendingSeries: () -> Unit,
@@ -84,21 +83,6 @@ fun AppDrawerContent(
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Spacer(modifier = Modifier.height(4.dp))
-
-            NavigationDrawerItem(
-                icon = {
-                    Icon(
-                        Icons.Default.Home, contentDescription = null,
-                        tint = MaterialTheme.colorScheme.primary
-                    )
-                },
-                label = { Text(stringResource(Res.string.media_list_title)) },
-                selected = false,
-                onClick = {
-                    onNavigateToMediaList()
-                },
-                modifier = Modifier.padding(NavigationDrawerItemDefaults.ItemPadding),
-            )
 
             NavigationDrawerItem(
                 icon = {

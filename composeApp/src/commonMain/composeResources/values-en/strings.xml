@@ -95,6 +95,8 @@
     <string name="criticly_recommendations">Criticly User Recommendations</string>
     <string name="see_all">See all</string>
     <string name="upcoming_movies">Upcoming Movies</string>
+    <string name="group_recommendations">Groups recommendations</string>
+
 
     <!-- Groups -->
     <string name="groups">Groups</string>

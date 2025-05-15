@@ -23,9 +23,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -38,7 +36,6 @@ import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -46,7 +43,6 @@ import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -55,20 +51,16 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
-import com.bebi.watchit.data.repository.MediaOpinionRepository
-import com.bebi.watchit.data.repository.TmdbRepository
 import com.bebi.watchit.model.MediaOpinion
 import com.bebi.watchit.ui.components.AppDrawerContent
 import com.bebi.watchit.viewmodel.MediaOpinionViewModel
@@ -80,16 +72,16 @@ import com.bebi.watchit.viewmodel.UpcomingMoviesViewModel
 import kotlinx.coroutines.launch
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.app_name
-import moviesseriesshare.composeapp.generated.resources.criticly_recommendations
 import moviesseriesshare.composeapp.generated.resources.see_all
 import moviesseriesshare.composeapp.generated.resources.top_movies
 import moviesseriesshare.composeapp.generated.resources.top_series
 import moviesseriesshare.composeapp.generated.resources.trending_movies
 import moviesseriesshare.composeapp.generated.resources.trending_series
 import moviesseriesshare.composeapp.generated.resources.upcoming_movies
+import moviesseriesshare.composeapp.generated.resources.group_recommendations
+
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
-import placeholder
 
 /**
  * Pantalla de inicio con diseño tipo streaming
@@ -100,7 +92,7 @@ class HomeScreen : Screen {
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val snackbarHostState = remember { SnackbarHostState() }
-        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+        val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         val scope = rememberCoroutineScope()
 
         // ViewModels
@@ -165,12 +157,6 @@ class HomeScreen : Screen {
             drawerState = drawerState,
             drawerContent = {
                 AppDrawerContent(
-                    onNavigateToMediaList = {
-                        scope.launch {
-                            drawerState.close()
-                            navigator.push(MediaListScreen())
-                        }
-                    },
                     onNavigateToRecommendations = {
                         scope.launch {
                             drawerState.close()
@@ -269,14 +255,14 @@ class HomeScreen : Screen {
                                         }
                                     },
                                     colors = TopAppBarDefaults.topAppBarColors(
-                                        containerColor = MaterialTheme.colorScheme.surface,
-                                        titleContentColor = MaterialTheme.colorScheme.onSurface
+                                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
                                     ),
                                     scrollBehavior = scrollBehavior
                                 )
                             },
                             snackbarHost = { SnackbarHost(snackbarHostState) },
-                            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+                            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                         ) { paddingValues ->
                             LazyColumn(
                                 modifier = Modifier
@@ -288,7 +274,7 @@ class HomeScreen : Screen {
                                     item {
                                         Spacer(modifier = Modifier.height(16.dp))
                                         MediaCarouselSection(
-                                            title = "Recomendaciones de tus grupos",
+                                            title = stringResource(Res.string.group_recommendations),
                                             items = userOpinionsState.groupCritics,
                                             isLoading = userOpinionsState.isLoadingGroupCritics,
                                             onItemClick = { media ->
@@ -484,48 +470,13 @@ fun MediaPosterCard(
         shape = RoundedCornerShape(8.dp),
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
-        Column {
-            AsyncImage(
-                model = media.posterUrl,
-                contentDescription = media.title,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .aspectRatio(2f / 3f)
-                    .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)),
-                contentScale = ContentScale.Crop,
-            )
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp)
-            ) {
-                Text(
-                    text = media.title,
-                    style = MaterialTheme.typography.bodySmall,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-
-                if (media.rating > 0) {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.padding(top = 4.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = null,
-                            tint = Color(0xFFFFD700),
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Spacer(modifier = Modifier.width(2.dp))
-                        Text(
-                            text = media.rating.toString(),
-                            style = MaterialTheme.typography.labelSmall
-                        )
-                    }
-                }
-            }
-        }
+        AsyncImage(
+            model = media.posterUrl,
+            contentDescription = media.title,
+            modifier = Modifier
+                .fillMaxWidth()
+                .aspectRatio(2f / 3f),
+            contentScale = ContentScale.Crop,
+        )
     }
 }

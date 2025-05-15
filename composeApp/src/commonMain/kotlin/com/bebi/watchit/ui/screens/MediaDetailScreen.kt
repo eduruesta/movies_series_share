@@ -2,6 +2,7 @@ package com.bebi.watchit.ui.screens
 
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,14 +15,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
@@ -34,6 +36,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -44,10 +48,10 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -57,10 +61,16 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
 import com.bebi.watchit.model.MediaOpinion
+import com.bebi.watchit.model.SavedRecommendation
 import com.bebi.watchit.ui.components.StarRating
+import com.bebi.watchit.ui.components.bookmark
+import com.bebi.watchit.ui.components.bookmarkCheck
 import com.bebi.watchit.ui.util.formatWithOneDecimal
 import com.bebi.watchit.viewmodel.MediaDetailError
 import com.bebi.watchit.viewmodel.MediaDetailViewModel
+import com.bebi.watchit.viewmodel.RecommendationMessage
+import com.bebi.watchit.viewmodel.SavedRecommendationViewModel
+import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.add_new_comment
@@ -68,12 +78,20 @@ import moviesseriesshare.composeapp.generated.resources.back
 import moviesseriesshare.composeapp.generated.resources.back_button
 import moviesseriesshare.composeapp.generated.resources.cancel
 import moviesseriesshare.composeapp.generated.resources.comment
+import moviesseriesshare.composeapp.generated.resources.delete_from_recommendations
 import moviesseriesshare.composeapp.generated.resources.error_loading_details
 import moviesseriesshare.composeapp.generated.resources.error_opinion_not_found
 import moviesseriesshare.composeapp.generated.resources.loading_details
 import moviesseriesshare.composeapp.generated.resources.loading_title
 import moviesseriesshare.composeapp.generated.resources.opinion_count
+import moviesseriesshare.composeapp.generated.resources.recommendation_already_saved
+import moviesseriesshare.composeapp.generated.resources.recommendation_not_saved
+import moviesseriesshare.composeapp.generated.resources.recommendation_remove_error
+import moviesseriesshare.composeapp.generated.resources.recommendation_removed
+import moviesseriesshare.composeapp.generated.resources.recommendation_save_error
+import moviesseriesshare.composeapp.generated.resources.recommendation_saved
 import moviesseriesshare.composeapp.generated.resources.save
+import moviesseriesshare.composeapp.generated.resources.save_to_recommendations
 import moviesseriesshare.composeapp.generated.resources.synopsis_field
 import moviesseriesshare.composeapp.generated.resources.without_comment
 import moviesseriesshare.composeapp.generated.resources.write_your_comment
@@ -116,24 +134,66 @@ data class MediaDetailScreen(
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val viewModel: MediaDetailViewModel = koinViewModel()
+        val savedViewModel: SavedRecommendationViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsState()
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         var isTmbdMediaOpinion by remember { mutableStateOf(false) }
-        var isFromSavedRecommendations by remember { mutableStateOf(false) }
         var showCommentDialog by remember { mutableStateOf(false) }
-        // Variable para determinar si debemos mostrar los comentarios
-        var shouldShowComments by remember { mutableStateOf(true) }
+
+        var isSaved by remember { mutableStateOf(false) }
+
+        var lastRecommendationMessage by remember { mutableStateOf<RecommendationMessage?>(null) }
+
+        val snackbarHostState = remember { SnackbarHostState() }
+        val coroutineScope = rememberCoroutineScope()
 
         LaunchedEffect(opinionId, tmdbMediaOpinion) {
             if (opinionId != null) {
                 viewModel.loadOpinionById(opinionId)
                 isTmbdMediaOpinion = false
-                // Determinar si viene de saved recommendations basado en el nombre de la clase
-                isFromSavedRecommendations = navigator.parent?.lastItem?.toString()?.contains("SavedRecommendationScreen") ?: false
+                savedViewModel.isRecommendationSaved(opinionId) { saved ->
+                    isSaved = saved
+                }
             } else if (tmdbMediaOpinion != null) {
                 viewModel.setTmdbMediaOpinion(tmdbMediaOpinion)
                 isTmbdMediaOpinion = true
-                isFromSavedRecommendations = false
+            }
+        }
+
+        lastRecommendationMessage?.let { message ->
+            val messageText = when (message) {
+                is RecommendationMessage.Removed -> stringResource(
+                    Res.string.recommendation_removed,
+                    message.title
+                )
+
+                RecommendationMessage.NotSaved -> stringResource(Res.string.recommendation_not_saved)
+                is RecommendationMessage.ErrorRemoving -> stringResource(
+                    Res.string.recommendation_remove_error,
+                    message.error
+                )
+
+                is RecommendationMessage.Saved -> stringResource(
+                    Res.string.recommendation_saved,
+                    message.title
+                )
+
+                is RecommendationMessage.AlreadySaved -> stringResource(
+                    Res.string.recommendation_already_saved,
+                    message.title
+                )
+
+                is RecommendationMessage.ErrorSaving -> stringResource(
+                    Res.string.recommendation_save_error,
+                    message.error
+                )
+            }
+
+            LaunchedEffect(messageText) {
+                coroutineScope.launch {
+                    snackbarHostState.showSnackbar(messageText)
+                }
+                lastRecommendationMessage = null
             }
         }
 
@@ -177,26 +237,24 @@ data class MediaDetailScreen(
                 TopAppBar(
                     title = {
                         Text(
-                            uiState.opinion?.title ?: stringResource(Res.string.loading_title)
+                            text = if (uiState.isLoading) stringResource(Res.string.loading_title) else uiState.opinion?.title
+                                ?: "",
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
                         )
                     },
                     navigationIcon = {
                         IconButton(onClick = { navigator.pop() }) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                imageVector = Icons.Default.ArrowBack,
                                 contentDescription = stringResource(Res.string.back_button)
                             )
                         }
                     },
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    ),
                     scrollBehavior = scrollBehavior
                 )
             },
-            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
-
+            snackbarHost = { SnackbarHost(snackbarHostState) }
         ) { paddingValues ->
             Box(
                 modifier = Modifier
@@ -300,14 +358,61 @@ data class MediaDetailScreen(
                                 )
 
                                 if (opinion.year.isNotEmpty()) {
-                                    FilledTonalButton(
-                                        onClick = { },
-                                        modifier = Modifier.height(32.dp).padding(start = 8.dp),
-                                        contentPadding = PaddingValues(horizontal = 8.dp)
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically
                                     ) {
-                                        Text(
-                                            extractYearFromDate(opinion.year),
-                                            style = MaterialTheme.typography.labelMedium
+                                        FilledTonalButton(
+                                            onClick = { },
+                                            modifier = Modifier.height(32.dp).padding(start = 8.dp),
+                                            contentPadding = PaddingValues(horizontal = 8.dp)
+                                        ) {
+                                            Text(
+                                                extractYearFromDate(opinion.year),
+                                                style = MaterialTheme.typography.labelMedium
+                                            )
+                                        }
+
+                                        Icon(
+                                            imageVector = if (isSaved) bookmarkCheck else bookmark,
+                                            contentDescription = if (isSaved)
+                                                stringResource(Res.string.delete_from_recommendations) else
+                                                stringResource(Res.string.save_to_recommendations),
+                                            tint = MaterialTheme.colorScheme.primary,
+                                            modifier = Modifier
+                                                .size(40.dp)
+                                                .padding(start = 8.dp)
+                                                .clickable {
+                                                    if (isSaved) {
+                                                        val recommendation = SavedRecommendation(
+                                                            opinionId = opinion.id,
+                                                            title = opinion.title,
+                                                            posterUrl = opinion.posterUrl,
+                                                            rating = opinion.averageRating,
+                                                            genre = opinion.genre,
+                                                            backdropUrl = opinion.backdropUrl,
+                                                            overview = opinion.synopsis
+                                                        )
+                                                        savedViewModel.removeRecommendation(
+                                                            recommendation = recommendation
+                                                        ) { message ->
+                                                            if (message is RecommendationMessage.Removed) {
+                                                                isSaved = false
+                                                            }
+                                                            lastRecommendationMessage = message
+                                                        }
+                                                    } else {
+                                                        savedViewModel.saveRecommendation(
+                                                            opinion = opinion
+                                                        ) { message ->
+                                                            if (message is RecommendationMessage.Saved ||
+                                                                message is RecommendationMessage.AlreadySaved
+                                                            ) {
+                                                                isSaved = true
+                                                            }
+                                                            lastRecommendationMessage = message
+                                                        }
+                                                    }
+                                                }
                                         )
                                     }
                                 }
@@ -376,11 +481,8 @@ data class MediaDetailScreen(
 
                             Spacer(modifier = Modifier.height(16.dp))
 
-                            // Lógica simplificada: mostrar comentarios solo si la opinión tiene groupId
-                            val opinion = uiState.opinion
-                            val shouldShowComments = opinion?.groupId != null
+                            val shouldShowComments = opinion.groupId != null
 
-                            // Solo mostrar los comentarios si la opinión pertenece a un grupo
                             if (shouldShowComments) {
                                 Text(
                                     text = stringResource(Res.string.comment),
@@ -390,7 +492,7 @@ data class MediaDetailScreen(
 
                                 Spacer(modifier = Modifier.height(8.dp))
 
-                                if (opinion?.comments?.isEmpty() == true) {
+                                if (opinion.comments.isEmpty()) {
                                     Text(
                                         text = stringResource(Res.string.without_comment),
                                         style = MaterialTheme.typography.bodyLarge
@@ -400,7 +502,7 @@ data class MediaDetailScreen(
                                         modifier = Modifier.fillMaxWidth(),
                                         verticalArrangement = Arrangement.spacedBy(8.dp)
                                     ) {
-                                        opinion?.comments?.forEachIndexed { index, comment ->
+                                        opinion.comments.forEachIndexed { index, comment ->
                                             val isEven = index % 2 == 0
                                             val backgroundColor = if (isEven)
                                                 MaterialTheme.colorScheme.primaryContainer
@@ -472,6 +574,14 @@ data class MediaDetailScreen(
                             }
                         }
                     }
+                }
+            }
+        }
+
+        LaunchedEffect(opinionId, uiState.opinion) {
+            if (opinionId != null) {
+                savedViewModel.isRecommendationSaved(opinionId) { saved ->
+                    isSaved = saved
                 }
             }
         }

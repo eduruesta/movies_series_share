@@ -141,6 +141,52 @@ class SavedRecommendationViewModel(
     }
 
     /**
+     * Elimina una recomendación guardada por su ID
+     */
+    fun removeSavedRecommendationById(
+        opinionId: Long,
+        callback: (RecommendationMessage) -> Unit
+    ) {
+        viewModelScope.launch {
+            try {
+                val result = repository.removeSavedRecommendation(opinionId)
+                if (result) {
+                    // Obtener las recomendaciones actualizadas
+                    val updatedRecommendations = repository.getAllSavedRecommendations().first()
+                    
+                    // Obtener el título para el mensaje (si está disponible)
+                    val title = _uiState.value.savedRecommendations
+                        .find { it.opinionId == opinionId }?.title ?: "Item"
+
+                    // Actualizar tanto la lista principal como la filtrada
+                    _uiState.update { currentState ->
+                        // Obtenemos la consulta actual
+                        val currentQuery = currentState.searchQuery
+                        // Filtramos las recomendaciones actualizadas si hay una consulta activa
+                        val updatedFiltered = if (currentQuery.isNotEmpty()) {
+                            filterRecommendations(updatedRecommendations, currentQuery)
+                        } else {
+                            updatedRecommendations
+                        }
+                        
+                        // Actualizamos ambas listas en un solo update
+                        currentState.copy(
+                            savedRecommendations = updatedRecommendations,
+                            filteredRecommendations = updatedFiltered
+                        )
+                    }
+                    
+                    callback(RecommendationMessage.Removed(title))
+                } else {
+                    callback(RecommendationMessage.ErrorRemoving("Unknown error"))
+                }
+            } catch (e: Exception) {
+                callback(RecommendationMessage.ErrorRemoving(e.message ?: "Unknown error"))
+            }
+        }
+    }
+
+    /**
      * Actualiza la consulta de búsqueda y filtra las recomendaciones
      */
     fun updateSearchQuery(query: String) {

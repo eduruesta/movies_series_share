@@ -159,5 +159,9 @@
     <string name="leave_group_confirmation">Are you sure you want to leave this group?</string>
     <string name="leave_group_owner_message">As the group owner, leaving will transfer ownership to another member, or delete the group if you are the only member.</string>
     <string name="leave_button">Leave</string>
+    
+    <!-- Save Recommendations -->
+    <string name="save_to_recommendations">Save to recommendations</string>
+    <string name="error_saving_recommendation">Error saving recommendation: %1$s</string>
 
 </resources>

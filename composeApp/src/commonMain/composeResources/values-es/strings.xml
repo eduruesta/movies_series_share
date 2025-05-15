@@ -161,4 +161,8 @@
 
     <string name="empty_recommendations_message">Todavía no tienes recomendaciones guardadas. Agrega recomendaciones desde la pantalla principal para verlas aquí.</string>
 
+    <!-- Save Recommendations -->
+    <string name="save_to_recommendations">Guardar en recomendaciones</string>
+    <string name="error_saving_recommendation">Error al guardar recomendación: %1$s</string>
+
 </resources>

@@ -153,28 +153,13 @@ class HomeScreen : Screen {
             }
         }
 
-        // Cargar datos al iniciar
         LaunchedEffect(Unit) {
-            // Cargar recomendaciones de usuarios
             mediaOpinionViewModel.loadOpinions()
-
-            // Cargar datos de TMDB
-            trendingMoviesViewModel.loadMediaList()
-            trendingSeriesViewModel.loadMediaList()
-            topMoviesViewModel.loadMediaList()
-            topSeriesViewModel.loadMediaList()
-            upcomingMoviesViewModel.loadMediaList()
         }
 
         val overlayAlpha = drawerProgress * 0.5f
         val contentOffset = drawerProgress * 200f
 
-        // Banner destacado (primera película en tendencia)
-        val featuredMovie by remember(trendingMoviesState.mediaItems) {
-            derivedStateOf {
-                trendingMoviesState.mediaItems.firstOrNull()
-            }
-        }
 
         ModalNavigationDrawer(
             drawerState = drawerState,
@@ -299,17 +284,6 @@ class HomeScreen : Screen {
                                     .padding(paddingValues),
                                 contentPadding = PaddingValues(bottom = 16.dp)
                             ) {
-                                // Banner destacado
-                                item {
-                                    FeaturedBanner(
-                                        featuredMedia = featuredMovie,
-                                        onClick = { media ->
-                                            navigator.push(MediaDetailScreen(tmdbMediaOpinion = media))
-                                        }
-                                    )
-                                }
-
-                                // Críticas de grupos (solo si hay datos)
                                 if (userOpinionsState.groupCritics.isNotEmpty()) {
                                     item {
                                         Spacer(modifier = Modifier.height(16.dp))
@@ -343,7 +317,6 @@ class HomeScreen : Screen {
                                     )
                                 }
 
-                                // Top películas
                                 item {
                                     Spacer(modifier = Modifier.height(16.dp))
                                     MediaCarouselSection(
@@ -359,7 +332,6 @@ class HomeScreen : Screen {
                                     )
                                 }
 
-                                // Próximas películas
                                 item {
                                     Spacer(modifier = Modifier.height(16.dp))
                                     MediaCarouselSection(
@@ -375,7 +347,6 @@ class HomeScreen : Screen {
                                     )
                                 }
 
-                                // Series en tendencia
                                 item {
                                     Spacer(modifier = Modifier.height(16.dp))
                                     MediaCarouselSection(
@@ -391,7 +362,6 @@ class HomeScreen : Screen {
                                     )
                                 }
 
-                                // Top series
                                 item {
                                     Spacer(modifier = Modifier.height(16.dp))
                                     MediaCarouselSection(
@@ -415,81 +385,6 @@ class HomeScreen : Screen {
     }
 }
 
-/**
- * Banner destacado con imagen de fondo y título
- */
-@Composable
-fun FeaturedBanner(
-    featuredMedia: MediaOpinion?,
-    onClick: (MediaOpinion) -> Unit
-) {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(240.dp)
-            .then(
-                if (featuredMedia != null) {
-                    Modifier.clickable { onClick(featuredMedia) }
-                } else {
-                    Modifier
-                }
-            )
-    ) {
-        if (featuredMedia != null) {
-            AsyncImage(
-                model = featuredMedia.posterUrl,
-                contentDescription = featuredMedia.title,
-                modifier = Modifier.fillMaxSize(),
-                contentScale = ContentScale.Crop
-            )
-
-            // Overlay gradiente para mejorar legibilidad del texto
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .background(
-                        brush = androidx.compose.ui.graphics.Brush.verticalGradient(
-                            colors = listOf(
-                                Color.Transparent,
-                                Color.Black.copy(alpha = 0.7f)
-                            )
-                        )
-                    )
-            )
-
-            Column(
-                modifier = Modifier
-                    .align(Alignment.BottomStart)
-                    .padding(16.dp)
-            ) {
-                Text(
-                    text = featuredMedia.title,
-                    style = MaterialTheme.typography.headlineMedium,
-                    color = Color.White,
-                    fontWeight = FontWeight.Bold
-                )
-
-                if (featuredMedia.genre.isNotEmpty()) {
-                    Text(
-                        text = featuredMedia.genre,
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = Color.White.copy(alpha = 0.7f)
-                    )
-                }
-            }
-        } else {
-            // Placeholder mientras carga
-            Surface(
-                color = MaterialTheme.colorScheme.surfaceVariant,
-                modifier = Modifier.fillMaxSize()
-            ) {
-                Box(contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator()
-                }
-            }
-        }
-    }
-}
 
 /**
  * Sección de carrusel horizontal con título y botón "Ver todos"

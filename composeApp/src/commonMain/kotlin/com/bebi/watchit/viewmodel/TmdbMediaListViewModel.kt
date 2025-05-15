@@ -30,6 +30,10 @@ abstract class TmdbMediaListViewModel(
     var genre by mutableStateOf("")
         private set
 
+    init {
+        loadMediaList() // Cargamos los datos automáticamente al inicializar el ViewModel
+    }
+
     protected abstract suspend fun loadMediaItems(): Result<List<TmdbMediaItem>>
 
     /**

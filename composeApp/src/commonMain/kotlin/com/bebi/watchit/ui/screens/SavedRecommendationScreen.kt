@@ -153,7 +153,9 @@ class SavedRecommendationScreen : Screen {
                                 SavedRecommendationItem(
                                     recommendation = savedRecommendation,
                                     onClick = {
-                                        navigator.push(MediaDetailScreen(savedRecommendation.opinionId))
+                                        // Asegurarnos de que el id sea pasado como Long
+                                        val opinionId: Long = savedRecommendation.opinionId
+                                        navigator.push(MediaDetailScreen(opinionId = opinionId))
                                     },
                                     onRemoveClick = {
                                         viewModel.removeRecommendation(

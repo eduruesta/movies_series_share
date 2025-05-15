@@ -119,15 +119,21 @@ data class MediaDetailScreen(
         val uiState by viewModel.uiState.collectAsState()
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         var isTmbdMediaOpinion by remember { mutableStateOf(false) }
+        var isFromSavedRecommendations by remember { mutableStateOf(false) }
         var showCommentDialog by remember { mutableStateOf(false) }
+        // Variable para determinar si debemos mostrar los comentarios
+        var shouldShowComments by remember { mutableStateOf(true) }
 
         LaunchedEffect(opinionId, tmdbMediaOpinion) {
             if (opinionId != null) {
                 viewModel.loadOpinionById(opinionId)
                 isTmbdMediaOpinion = false
+                // Determinar si viene de saved recommendations basado en el nombre de la clase
+                isFromSavedRecommendations = navigator.parent?.lastItem?.toString()?.contains("SavedRecommendationScreen") ?: false
             } else if (tmdbMediaOpinion != null) {
                 viewModel.setTmdbMediaOpinion(tmdbMediaOpinion)
                 isTmbdMediaOpinion = true
+                isFromSavedRecommendations = false
             }
         }
 
@@ -368,94 +374,101 @@ data class MediaDetailScreen(
                                 Spacer(modifier = Modifier.height(16.dp))
                             }
 
-                            Text(
-                                text = stringResource(Res.string.comment),
-                                style = MaterialTheme.typography.titleMedium,
-                                fontWeight = FontWeight.Bold
-                            )
+                            Spacer(modifier = Modifier.height(16.dp))
 
-                            Spacer(modifier = Modifier.height(8.dp))
+                            // Lógica simplificada: mostrar comentarios solo si la opinión tiene groupId
+                            val opinion = uiState.opinion
+                            val shouldShowComments = opinion?.groupId != null
 
-                            if (opinion.comments.isEmpty()) {
+                            // Solo mostrar los comentarios si la opinión pertenece a un grupo
+                            if (shouldShowComments) {
                                 Text(
-                                    text = stringResource(Res.string.without_comment),
-                                    style = MaterialTheme.typography.bodyLarge
+                                    text = stringResource(Res.string.comment),
+                                    style = MaterialTheme.typography.titleMedium,
+                                    fontWeight = FontWeight.Bold
                                 )
-                            } else {
-                                Column(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    opinion.comments.forEachIndexed { index, comment ->
-                                        val isEven = index % 2 == 0
-                                        val backgroundColor = if (isEven)
-                                            MaterialTheme.colorScheme.primaryContainer
-                                        else
-                                            MaterialTheme.colorScheme.secondaryContainer
 
-                                        val contentColor = if (isEven)
-                                            MaterialTheme.colorScheme.onPrimaryContainer
-                                        else
-                                            MaterialTheme.colorScheme.onSecondaryContainer
+                                Spacer(modifier = Modifier.height(8.dp))
 
-                                        val alignment = if (isEven)
-                                            Arrangement.Start
-                                        else
-                                            Arrangement.End
+                                if (opinion?.comments?.isEmpty() == true) {
+                                    Text(
+                                        text = stringResource(Res.string.without_comment),
+                                        style = MaterialTheme.typography.bodyLarge
+                                    )
+                                } else {
+                                    Column(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                                    ) {
+                                        opinion?.comments?.forEachIndexed { index, comment ->
+                                            val isEven = index % 2 == 0
+                                            val backgroundColor = if (isEven)
+                                                MaterialTheme.colorScheme.primaryContainer
+                                            else
+                                                MaterialTheme.colorScheme.secondaryContainer
 
-                                        Row(
-                                            modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = alignment
-                                        ) {
-                                            Card(
-                                                modifier = Modifier
-                                                    .widthIn(max = 280.dp)
-                                                    .padding(vertical = 4.dp),
-                                                colors = CardDefaults.cardColors(
-                                                    containerColor = backgroundColor,
-                                                    contentColor = contentColor
-                                                ),
-                                                shape = RoundedCornerShape(
-                                                    topStart = if (!isEven) 12.dp else 4.dp,
-                                                    topEnd = if (isEven) 12.dp else 4.dp,
-                                                    bottomStart = 12.dp,
-                                                    bottomEnd = 12.dp
-                                                )
+                                            val contentColor = if (isEven)
+                                                MaterialTheme.colorScheme.onPrimaryContainer
+                                            else
+                                                MaterialTheme.colorScheme.onSecondaryContainer
+
+                                            val alignment = if (isEven)
+                                                Arrangement.Start
+                                            else
+                                                Arrangement.End
+
+                                            Row(
+                                                modifier = Modifier.fillMaxWidth(),
+                                                horizontalArrangement = alignment
                                             ) {
-                                                Text(
-                                                    text = comment,
-                                                    style = MaterialTheme.typography.bodyMedium,
-                                                    modifier = Modifier.padding(12.dp)
-                                                )
+                                                Card(
+                                                    modifier = Modifier
+                                                        .widthIn(max = 280.dp)
+                                                        .padding(vertical = 4.dp),
+                                                    colors = CardDefaults.cardColors(
+                                                        containerColor = backgroundColor,
+                                                        contentColor = contentColor
+                                                    ),
+                                                    shape = RoundedCornerShape(
+                                                        topStart = if (!isEven) 12.dp else 4.dp,
+                                                        topEnd = if (isEven) 12.dp else 4.dp,
+                                                        bottomStart = 12.dp,
+                                                        bottomEnd = 12.dp
+                                                    )
+                                                ) {
+                                                    Text(
+                                                        text = comment,
+                                                        style = MaterialTheme.typography.bodyMedium,
+                                                        modifier = Modifier.padding(12.dp)
+                                                    )
+                                                }
                                             }
                                         }
                                     }
                                 }
-                            }
 
-                            if (uiState.commentError != null) {
-                                Text(
-                                    text = uiState.commentError.toString(),
-                                    color = MaterialTheme.colorScheme.error,
-                                    style = MaterialTheme.typography.bodySmall,
-                                    modifier = Modifier.padding(top = 8.dp)
-                                )
-                            }
+                                if (uiState.commentError != null) {
+                                    Text(
+                                        text = uiState.commentError.toString(),
+                                        color = MaterialTheme.colorScheme.error,
+                                        style = MaterialTheme.typography.bodySmall,
+                                        modifier = Modifier.padding(top = 8.dp)
+                                    )
+                                }
 
-                            Spacer(modifier = Modifier.height(24.dp))
+                                Spacer(modifier = Modifier.height(24.dp))
 
-                            // Siempre mostramos el botón de agregar comentarios, tanto para opiniones existentes
-                            // como para películas/series de TMDB
-                            Button(
-                                onClick = { showCommentDialog = true },
-                                modifier = Modifier.align(Alignment.CenterHorizontally)
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Add,
-                                    contentDescription = null,
-                                    modifier = Modifier.padding(end = 8.dp)
-                                )
-                                Text(stringResource(Res.string.add_new_comment))
+                                Button(
+                                    onClick = { showCommentDialog = true },
+                                    modifier = Modifier.align(Alignment.CenterHorizontally)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.Add,
+                                        contentDescription = null,
+                                        modifier = Modifier.padding(end = 8.dp)
+                                    )
+                                    Text(stringResource(Res.string.add_new_comment))
+                                }
                             }
                         }
                     }

@@ -6,6 +6,7 @@ import com.bebi.watchit.data.models.GroupRequest
 import com.bebi.watchit.data.models.GroupResponse
 import com.bebi.watchit.data.models.JoinGroupRequest
 import com.bebi.watchit.data.remote.GroupsApiService
+import com.bebi.watchit.model.MediaOpinion
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.IO
 import kotlinx.coroutines.withContext
@@ -20,6 +21,7 @@ interface GroupsRepository {
     suspend fun createGroupCritic(groupId: String, title: String, review: String, score: Double, author: String): Result<CriticsResponse>
     suspend fun deleteGroup(groupId: String, userId: String): Result<Boolean>
     suspend fun leaveGroup(groupId: String, userId: String): Result<Boolean>
+    suspend fun getMemberGroupCritics(memberId: String): Result<List<MediaOpinion>>
 }
 
 class GroupsRepositoryImpl(private val apiService: GroupsApiService) : GroupsRepository {
@@ -94,6 +96,14 @@ class GroupsRepositoryImpl(private val apiService: GroupsApiService) : GroupsRep
     override suspend fun leaveGroup(groupId: String, userId: String): Result<Boolean> = withContext(Dispatchers.IO) {
         try {
             Result.success(apiService.leaveGroup(groupId, userId))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    override suspend fun getMemberGroupCritics(memberId: String): Result<List<MediaOpinion>> = withContext(Dispatchers.IO) {
+        try {
+            Result.success(apiService.getMemberGroupCritics(memberId))
         } catch (e: Exception) {
             Result.failure(e)
         }

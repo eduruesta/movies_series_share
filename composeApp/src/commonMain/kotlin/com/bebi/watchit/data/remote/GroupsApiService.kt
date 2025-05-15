@@ -5,6 +5,7 @@ import com.bebi.watchit.data.models.CriticsResponse
 import com.bebi.watchit.data.models.GroupRequest
 import com.bebi.watchit.data.models.GroupResponse
 import com.bebi.watchit.data.models.JoinGroupRequest
+import com.bebi.watchit.model.MediaOpinion
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.delete
@@ -53,7 +54,6 @@ class GroupsApiService(private val httpClient: HttpClient) {
         }.body()
     }
     
-    // Críticas dentro de grupos
     suspend fun getGroupCritics(groupId: String): List<CriticsResponse> {
         return httpClient.get("$baseUrl/groups/$groupId/critics").body()
     }
@@ -63,5 +63,9 @@ class GroupsApiService(private val httpClient: HttpClient) {
             contentType(ContentType.Application.Json)
             setBody(criticsRequest)
         }.body()
+    }
+    
+    suspend fun getMemberGroupCritics(memberId: String): List<MediaOpinion> {
+        return httpClient.get("$baseUrl/groups/member/$memberId/critics").body()
     }
 }

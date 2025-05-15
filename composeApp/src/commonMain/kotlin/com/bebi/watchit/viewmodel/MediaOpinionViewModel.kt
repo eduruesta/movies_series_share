@@ -2,6 +2,7 @@ package com.bebi.watchit.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bebi.watchit.data.repository.GroupsRepository
 import com.bebi.watchit.data.repository.MediaOpinionRepository
 import com.bebi.watchit.model.MediaOpinion
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -14,7 +15,9 @@ import kotlinx.coroutines.launch
  * ViewModel for managing media opinions
  */
 class MediaOpinionViewModel(
-    private val repository: MediaOpinionRepository
+    private val repository: MediaOpinionRepository,
+    private val groupsRepository: GroupsRepository,
+    private val currentUserId: String = "user_default_id" // Este valor debería venir de una sesión real
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MediaOpinionUiState())
@@ -43,8 +46,48 @@ class MediaOpinionViewModel(
                         )
                     }
                 }
+                
+                // También cargamos las críticas de grupos donde el usuario es miembro
+                loadGroupCritics()
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message, isLoading = false) }
+            }
+        }
+    }
+    
+    /**
+     * Carga las críticas de todos los grupos en los que el usuario es miembro
+     */
+    private fun loadGroupCritics() {
+        viewModelScope.launch {
+            try {
+                _uiState.update { it.copy(isLoadingGroupCritics = true) }
+                
+                groupsRepository.getMemberGroupCritics(currentUserId).fold(
+                    onSuccess = { criticsResponses ->
+                        _uiState.update {
+                            it.copy(
+                                groupCritics = criticsResponses,
+                                isLoadingGroupCritics = false
+                            ) 
+                        }
+                    },
+                    onFailure = { exception ->
+                        _uiState.update { 
+                            it.copy(
+                                error = "Error al cargar críticas de grupos: ${exception.message}", 
+                                isLoadingGroupCritics = false
+                            ) 
+                        }
+                    }
+                )
+            } catch (e: Exception) {
+                _uiState.update { 
+                    it.copy(
+                        error = "Error al cargar críticas de grupos: ${e.message}",
+                        isLoadingGroupCritics = false
+                    ) 
+                }
             }
         }
     }
@@ -213,8 +256,10 @@ class MediaOpinionViewModel(
 data class MediaOpinionUiState(
     val opinions: List<MediaOpinion> = emptyList(),
     val filteredOpinions: List<MediaOpinion> = emptyList(),
+    val groupCritics: List<MediaOpinion> = emptyList(),
     val searchQuery: String = "",
     val isLoading: Boolean = false,
+    val isLoadingGroupCritics: Boolean = false,
     val isRating: Boolean = false,
     val error: String? = null
 )

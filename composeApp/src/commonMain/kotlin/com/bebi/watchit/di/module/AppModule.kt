@@ -113,7 +113,6 @@ val dataModule = module {
 }
 
 val viewModelModule = module {
-    viewModelOf(::MediaOpinionViewModel)
     viewModelOf(::MediaDetailViewModel)
     viewModelOf(::MediaOpinionFormViewModel)
     viewModelOf(::SavedRecommendationViewModel)
@@ -130,6 +129,13 @@ val viewModelModule = module {
             currentUserId = get(),
             userName = get(),
             userEmail = get()
+        )
+    }
+    factory {
+        MediaOpinionViewModel(
+            repository = get(),
+            groupsRepository = get(),
+            currentUserId = "user_default_id" // Usando un valor constante por ahora
         )
     }
 

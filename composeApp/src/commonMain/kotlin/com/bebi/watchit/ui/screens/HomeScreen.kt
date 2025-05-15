@@ -157,7 +157,7 @@ class HomeScreen : Screen {
         LaunchedEffect(Unit) {
             // Cargar recomendaciones de usuarios
             mediaOpinionViewModel.loadOpinions()
-            
+
             // Cargar datos de TMDB
             trendingMoviesViewModel.loadMediaList()
             trendingSeriesViewModel.loadMediaList()
@@ -309,20 +309,22 @@ class HomeScreen : Screen {
                                     )
                                 }
 
-                                // Recomendaciones de usuarios
-                                item {
-                                    Spacer(modifier = Modifier.height(16.dp))
-                                    MediaCarouselSection(
-                                        title = stringResource(Res.string.criticly_recommendations),
-                                        items = userOpinionsState.opinions.filter { it.groupId == null },
-                                        isLoading = userOpinionsState.isLoading,
-                                        onItemClick = { media ->
-                                            navigator.push(MediaDetailScreen(media.id))
-                                        },
-                                        onSeeAllClick = {
-                                            navigator.push(MediaListScreen())
-                                        }
-                                    )
+                                // Críticas de grupos (solo si hay datos)
+                                if (userOpinionsState.groupCritics.isNotEmpty()) {
+                                    item {
+                                        Spacer(modifier = Modifier.height(16.dp))
+                                        MediaCarouselSection(
+                                            title = "Recomendaciones de tus grupos",
+                                            items = userOpinionsState.groupCritics,
+                                            isLoading = userOpinionsState.isLoadingGroupCritics,
+                                            onItemClick = { media ->
+                                                navigator.push(MediaDetailScreen(media.id))
+                                            },
+                                            onSeeAllClick = {
+                                                navigator.push(GroupsScreen())
+                                            }
+                                        )
+                                    }
                                 }
 
                                 // Películas en tendencia
@@ -593,7 +595,7 @@ fun MediaPosterCard(
                 contentDescription = media.title,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .aspectRatio(2f/3f)
+                    .aspectRatio(2f / 3f)
                     .clip(RoundedCornerShape(topStart = 8.dp, topEnd = 8.dp)),
                 contentScale = ContentScale.Crop,
             )
@@ -609,7 +611,7 @@ fun MediaPosterCard(
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
                 )
-                
+
                 if (media.rating > 0) {
                     Row(
                         verticalAlignment = Alignment.CenterVertically,

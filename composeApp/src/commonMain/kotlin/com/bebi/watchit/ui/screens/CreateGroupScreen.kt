@@ -55,6 +55,7 @@ import com.bebi.watchit.data.models.GroupResponse
 import com.bebi.watchit.viewmodel.GroupsViewModel
 import kotlinx.coroutines.delay
 import moviesseriesshare.composeapp.generated.resources.Res
+import moviesseriesshare.composeapp.generated.resources.back
 import moviesseriesshare.composeapp.generated.resources.back_button
 import moviesseriesshare.composeapp.generated.resources.cancel
 import moviesseriesshare.composeapp.generated.resources.create_group
@@ -98,8 +99,6 @@ data class CreateGroupScreen(
                     val lastCreatedGroup = uiState.groups.lastOrNull()
                     if (lastCreatedGroup != null) {
                         createdGroup = lastCreatedGroup
-                        delay(800)
-                        navigator.pop()
                     }
                 }
             }
@@ -296,7 +295,7 @@ private fun CreateGroupContent(
                         onClick = onBackPressed,
                         modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(stringResource(Res.string.cancel))
+                        Text(stringResource(Res.string.back))
                     }
                 }
             } else {

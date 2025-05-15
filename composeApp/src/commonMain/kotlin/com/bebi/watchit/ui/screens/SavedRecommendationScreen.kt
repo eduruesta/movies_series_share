@@ -149,7 +149,10 @@ class SavedRecommendationScreen : Screen {
                                 uiState.savedRecommendations
                             }
                             
-                            itemsIndexed(displayedRecommendations) { index, savedRecommendation ->
+                            itemsIndexed(
+                                items = displayedRecommendations,
+                                key = { _, item -> item.opinionId } // Usar una clave estable para cada elemento
+                            ) { index, savedRecommendation ->
                                 SavedRecommendationItem(
                                     recommendation = savedRecommendation,
                                     onClick = {

@@ -112,7 +112,24 @@ class SavedRecommendationViewModel(
                 if (result) {
                     val updatedRecommendations = repository.getAllSavedRecommendations().first()
 
-                    _uiState.update { it.copy(savedRecommendations = updatedRecommendations) }
+                    // Actualizar tanto la lista principal como la filtrada
+                    _uiState.update { currentState ->
+                        // Obtenemos la consulta actual
+                        val currentQuery = currentState.searchQuery
+                        // Filtramos las recomendaciones actualizadas si hay una consulta activa
+                        val updatedFiltered = if (currentQuery.isNotEmpty()) {
+                            filterRecommendations(updatedRecommendations, currentQuery)
+                        } else {
+                            updatedRecommendations
+                        }
+                        
+                        // Actualizamos ambas listas en un solo update
+                        currentState.copy(
+                            savedRecommendations = updatedRecommendations,
+                            filteredRecommendations = updatedFiltered
+                        )
+                    }
+                    
                     callback(RecommendationMessage.Removed(recommendation.title))
                 } else {
                     callback(RecommendationMessage.ErrorRemoving("Unknown error"))

@@ -74,6 +74,9 @@ import com.bebi.watchit.viewmodel.MediaOpinionViewModel
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.FirebaseUser
 import dev.gitlive.firebase.auth.auth
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.add_new_comment
@@ -114,6 +117,7 @@ class GroupOpinionList(private val group: GroupResponse) : Screen {
             )
         }
 
+        val scope = rememberCoroutineScope()
         val uiState by viewModel.uiState.collectAsState()
 
         GroupOpinionListScreen(
@@ -129,12 +133,18 @@ class GroupOpinionList(private val group: GroupResponse) : Screen {
             groupInfo = group,
             groupsViewModel = groupsViewModel,
             onLeaveGroup = {
-                groupsViewModel.leaveGroup(group.id)
-                navigator.pop()
+                scope.launch {
+                    groupsViewModel.leaveGroup(group.id)
+                    delay(300)
+                    navigator.push(GroupsScreen())
+                }
             },
             onDeleteGroup = {
-                groupsViewModel.deleteGroup(group.id)
-                navigator.pop()
+                scope.launch {
+                    groupsViewModel.deleteGroup(group.id)
+                    delay(300)
+                    navigator.push(GroupsScreen())
+                }
             },
             mediaOpinionViewModel = mediaOpinionViewModel,
             viewModel = viewModel
@@ -491,9 +501,9 @@ private fun GroupInfoDialog(
             confirmButton = {
                 Button(
                     onClick = {
+                        onDeleteGroup()
                         showDeleteConfirmation = false
                         onDismiss()
-                        onDeleteGroup()
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.error
@@ -524,9 +534,9 @@ private fun GroupInfoDialog(
             confirmButton = {
                 Button(
                     onClick = {
+                        onLeaveGroup()
                         showLeaveConfirmation = false
                         onDismiss()
-                        onLeaveGroup()
                     },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.errorContainer

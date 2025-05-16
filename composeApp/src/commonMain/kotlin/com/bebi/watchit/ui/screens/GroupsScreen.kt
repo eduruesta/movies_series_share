@@ -40,6 +40,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -127,6 +128,11 @@ class GroupsScreen : Screen {
         val authErrorText = stringResource(Res.string.auth_error)
         val completeFieldsText = stringResource(Res.string.complete_fields)
         val joinGroupText = stringResource(Res.string.join_success_message)
+
+        LaunchedEffect(Unit) {
+            // Forzar una carga fresca de grupos cada vez que se crea la pantalla
+            viewModel.loadGroups()
+        }
 
         if (firebaseUser != null) {
             Scaffold(

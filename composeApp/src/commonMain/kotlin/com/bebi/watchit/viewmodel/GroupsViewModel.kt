@@ -19,11 +19,7 @@ class GroupsViewModel(
 
     private val _uiState = MutableStateFlow(GroupsUiState())
     val uiState: StateFlow<GroupsUiState> = _uiState.asStateFlow()
-
-    init {
-        loadGroups()
-    }
-
+    
     fun loadGroups() {
         viewModelScope.launch {
             _uiState.update { it.copy(isLoading = true, error = null) }
@@ -123,7 +119,6 @@ class GroupsViewModel(
             groupsRepository.deleteGroup(groupId, currentUserId).fold(
                 onSuccess = { success ->
                     if (success) {
-                        // Eliminar el grupo de la lista si se eliminó correctamente
                         val updatedGroups = _uiState.value.groups.filter { it.id != groupId }
                         _uiState.update { 
                             it.copy(
@@ -131,6 +126,9 @@ class GroupsViewModel(
                                 isLoading = false
                             )
                         }
+                        
+                        // Asegurarnos que la lista esté completamente actualizada
+                        loadGroups()
                     } else {
                         _uiState.update { 
                             it.copy(
@@ -159,7 +157,6 @@ class GroupsViewModel(
             groupsRepository.leaveGroup(groupId, currentUserId).fold(
                 onSuccess = { success ->
                     if (success) {
-                        // Eliminar el grupo de la lista si se salió correctamente
                         val updatedGroups = _uiState.value.groups.filter { it.id != groupId }
                         _uiState.update { 
                             it.copy(
@@ -167,6 +164,9 @@ class GroupsViewModel(
                                 isLoading = false
                             )
                         }
+                        
+                        // Asegurarnos que la lista esté completamente actualizada
+                        loadGroups()
                     } else {
                         _uiState.update { 
                             it.copy(

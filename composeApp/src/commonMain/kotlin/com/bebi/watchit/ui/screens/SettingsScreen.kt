@@ -12,6 +12,8 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Email
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -64,6 +66,7 @@ import moviesseriesshare.composeapp.generated.resources.english
 import moviesseriesshare.composeapp.generated.resources.language
 import moviesseriesshare.composeapp.generated.resources.logout
 import moviesseriesshare.composeapp.generated.resources.logout_confirmation
+import moviesseriesshare.composeapp.generated.resources.profile
 import moviesseriesshare.composeapp.generated.resources.select_language
 import moviesseriesshare.composeapp.generated.resources.settings
 import moviesseriesshare.composeapp.generated.resources.spanish
@@ -116,6 +119,15 @@ class SettingsScreen : Screen {
                                 .fillMaxSize()
                                 .padding(16.dp)
                         ) {
+                            if (firebaseUser != null) {
+                                ProfileSection(
+                                    email = firebaseUser?.email ?: "",
+                                    username = firebaseUser?.displayName ?: ""
+                                )
+                                
+                                Spacer(modifier = Modifier.height(24.dp))
+                            }
+                            
                             ThemeSection()
 
                             Spacer(modifier = Modifier.height(24.dp))
@@ -158,6 +170,72 @@ class SettingsScreen : Screen {
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+@Composable
+private fun ProfileSection(
+    email: String,
+    username: String
+) {
+    Text(
+        text = stringResource(Res.string.profile),
+        style = MaterialTheme.typography.titleLarge
+    )
+
+    Spacer(modifier = Modifier.height(16.dp))
+
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.primaryContainer,
+            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+        ),
+        elevation = CardDefaults.cardElevation(
+            defaultElevation = 4.dp
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp)
+        ) {
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Email,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                
+                Spacer(modifier = Modifier.width(16.dp))
+                
+                Text(
+                    text = email,
+                    style = MaterialTheme.typography.bodyLarge
+                )
+            }
+            
+            Spacer(modifier = Modifier.height(16.dp))
+            
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Person,
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onPrimaryContainer
+                )
+                
+                Spacer(modifier = Modifier.width(16.dp))
+                
+                Text(
+                    text = if (username.isNotEmpty()) username else email.substringBefore("@"),
+                    style = MaterialTheme.typography.bodyLarge
+                )
             }
         }
     }

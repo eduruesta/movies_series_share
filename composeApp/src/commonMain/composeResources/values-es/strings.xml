@@ -155,6 +155,7 @@
     <string name="english">Inglés</string>
     <string name="spanish">Español</string>
     <string name="dark_theme">Tema oscuro</string>
+    <string name="profile">Perfil</string>
     <string name="logout">Cerrar sesión</string>
     <string name="logout_confirmation">¿Estás seguro que deseas cerrar sesión?</string>
     <string name="confirm">Confirmar</string>

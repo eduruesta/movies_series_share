@@ -135,7 +135,7 @@ val viewModelModule = module {
         MediaOpinionViewModel(
             repository = get(),
             groupsRepository = get(),
-            currentUserId = "user_default_id" // Usando un valor constante por ahora
+            currentUserId = get()
         )
     }
 

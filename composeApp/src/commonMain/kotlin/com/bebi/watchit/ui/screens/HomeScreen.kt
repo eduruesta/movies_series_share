@@ -26,7 +26,6 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -70,19 +69,23 @@ import com.bebi.watchit.viewmodel.TopSeriesViewModel
 import com.bebi.watchit.viewmodel.TrendingMoviesViewModel
 import com.bebi.watchit.viewmodel.TrendingSeriesViewModel
 import com.bebi.watchit.viewmodel.UpcomingMoviesViewModel
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.auth.FirebaseUser
+import dev.gitlive.firebase.auth.auth
 import kotlinx.coroutines.launch
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.app_name
+import moviesseriesshare.composeapp.generated.resources.group_recommendations
 import moviesseriesshare.composeapp.generated.resources.see_all
 import moviesseriesshare.composeapp.generated.resources.top_movies
 import moviesseriesshare.composeapp.generated.resources.top_series
 import moviesseriesshare.composeapp.generated.resources.trending_movies
 import moviesseriesshare.composeapp.generated.resources.trending_series
 import moviesseriesshare.composeapp.generated.resources.upcoming_movies
-import moviesseriesshare.composeapp.generated.resources.group_recommendations
-
 import org.jetbrains.compose.resources.stringResource
+import org.koin.compose.koinInject
 import org.koin.compose.viewmodel.koinViewModel
+import org.koin.core.parameter.parametersOf
 
 /**
  * Pantalla de inicio con diseño tipo streaming
@@ -95,9 +98,14 @@ class HomeScreen : Screen {
         val snackbarHostState = remember { SnackbarHostState() }
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         val scope = rememberCoroutineScope()
+        
+        // Obtener el usuario autenticado
+        val auth = remember { Firebase.auth }
+        val firebaseUser: FirebaseUser? by remember { mutableStateOf(auth.currentUser) }
+        val userId = firebaseUser?.uid ?: "anonymous_user"
 
         // ViewModels
-        val mediaOpinionViewModel: MediaOpinionViewModel = koinViewModel()
+        val mediaOpinionViewModel: MediaOpinionViewModel = koinInject { parametersOf(userId) }
         val trendingMoviesViewModel: TrendingMoviesViewModel = koinViewModel()
         val trendingSeriesViewModel: TrendingSeriesViewModel = koinViewModel()
         val topMoviesViewModel: TopMoviesViewModel = koinViewModel()
@@ -383,7 +391,6 @@ class HomeScreen : Screen {
         )
     }
 }
-
 
 /**
  * Sección de carrusel horizontal con título y botón "Ver todos"

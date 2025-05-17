@@ -75,8 +75,6 @@ import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.FirebaseUser
 import dev.gitlive.firebase.auth.auth
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.add_new_comment
@@ -108,7 +106,8 @@ data class GroupOpinionList(private val group: GroupResponse) : Screen {
 
         val viewModel = koinInject<GroupDetailViewModel> { parametersOf(group.id) }
         val opinionViewModel = koinInject<MediaOpinionFormViewModel>()
-        val mediaOpinionViewModel = koinInject<MediaOpinionViewModel>()
+        val userId = firebaseUser?.uid ?: "anonymous_user"
+        val mediaOpinionViewModel: MediaOpinionViewModel = koinInject { parametersOf(userId) }
         val groupsViewModel = koinInject<GroupsViewModel> {
             parametersOf(
                 firebaseUser?.uid ?: "",

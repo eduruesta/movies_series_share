@@ -17,7 +17,7 @@ import kotlinx.coroutines.launch
 class MediaOpinionViewModel(
     private val repository: MediaOpinionRepository,
     private val groupsRepository: GroupsRepository,
-    private val currentUserId: String = "user_default_id" // Este valor debería venir de una sesión real
+    private val currentUserId: String
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MediaOpinionUiState())

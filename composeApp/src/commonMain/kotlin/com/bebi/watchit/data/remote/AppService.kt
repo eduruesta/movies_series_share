@@ -87,7 +87,7 @@ class AppService(
 
     private fun getLanguage(): String {
         return if (myLang == "es") {
-            "es-ES"
+            "es-AR"
         } else {
             "en-US"
         }

@@ -91,10 +91,8 @@ class MediaOpinionFormViewModel(
     fun setUsernameForNextSave(username: String) {
         // Guardar el username solo si no está vacío
         if (username.isNotEmpty()) {
-            println("DEBUG: Guardando username en el ViewModel: $username")
             pendingUsername = username
         } else {
-            println("DEBUG: Intento de guardar username vacío, usando valor por defecto")
             pendingUsername = "Usuario"
         }
     }

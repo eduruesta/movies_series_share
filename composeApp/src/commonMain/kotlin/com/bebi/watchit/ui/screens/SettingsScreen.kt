@@ -44,8 +44,6 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.bebi.watchit.data.domain.Localization
-import com.bebi.watchit.data.myLang
 import com.bebi.watchit.theme.LocalThemeIsDark
 import com.bebi.watchit.ui.components.logout
 import dev.burnoo.compose.remembersetting.rememberStringSetting
@@ -62,16 +60,11 @@ import moviesseriesshare.composeapp.generated.resources.back_button
 import moviesseriesshare.composeapp.generated.resources.cancel
 import moviesseriesshare.composeapp.generated.resources.confirm
 import moviesseriesshare.composeapp.generated.resources.dark_mode
-import moviesseriesshare.composeapp.generated.resources.english
-import moviesseriesshare.composeapp.generated.resources.language
 import moviesseriesshare.composeapp.generated.resources.logout
 import moviesseriesshare.composeapp.generated.resources.logout_confirmation
 import moviesseriesshare.composeapp.generated.resources.profile
-import moviesseriesshare.composeapp.generated.resources.select_language
 import moviesseriesshare.composeapp.generated.resources.settings
-import moviesseriesshare.composeapp.generated.resources.spanish
 import org.jetbrains.compose.resources.stringResource
-import org.koin.compose.koinInject
 
 class SettingsScreen : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
@@ -81,11 +74,9 @@ class SettingsScreen : Screen {
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         var isLoading by remember { mutableStateOf(false) }
         var refreshTrigger by remember { mutableStateOf(0) }
-        var currentLanguage by remember { mutableStateOf(myLang ?: "en") }
         val auth = remember { Firebase.auth }
         val scope = rememberCoroutineScope()
         var firebaseUser: FirebaseUser? by remember { mutableStateOf(auth.currentUser) }
-
 
         androidx.compose.runtime.key(refreshTrigger) {
             Scaffold(
@@ -129,17 +120,6 @@ class SettingsScreen : Screen {
                             }
                             
                             ThemeSection()
-
-                            Spacer(modifier = Modifier.height(24.dp))
-
-                            LanguageSection(
-                                currentLanguage = currentLanguage,
-                                onLanguageChanged = { newLang ->
-                                    currentLanguage = newLang
-                                    isLoading = true
-                                    refreshTrigger++
-                                }
-                            )
                             
                             if (firebaseUser != null) {
                                 Spacer(modifier = Modifier.height(24.dp))
@@ -296,90 +276,6 @@ private fun ThemeSection() {
                     savedIsDark = it.toString()
                 }
             )
-        }
-    }
-}
-
-@Composable
-private fun LanguageSection(
-    currentLanguage: String,
-    onLanguageChanged: (String) -> Unit
-) {
-    val languages = listOf("en" to Res.string.english, "es" to Res.string.spanish)
-    val localization = koinInject<Localization>()
-
-    var languageIso by rememberStringSetting(
-        key = "savedLanguageIso",
-        defaultValue = currentLanguage
-    )
-
-    LaunchedEffect(currentLanguage) {
-        if (currentLanguage != languageIso) {
-            languageIso = currentLanguage
-        }
-    }
-
-    Text(
-        text = stringResource(Res.string.language),
-        style = MaterialTheme.typography.titleLarge
-    )
-
-    Spacer(modifier = Modifier.height(8.dp))
-
-    Text(
-        text = stringResource(Res.string.select_language),
-        style = MaterialTheme.typography.bodyMedium,
-        color = MaterialTheme.colorScheme.onSurfaceVariant
-    )
-
-    Spacer(modifier = Modifier.height(16.dp))
-
-    Card(
-        modifier = Modifier.fillMaxWidth(),
-        colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.primaryContainer,
-            contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-        ),
-        elevation = CardDefaults.cardElevation(
-            defaultElevation = 4.dp
-        )
-    ) {
-        Column(modifier = Modifier.padding(vertical = 8.dp)) {
-            languages.forEach { (langCode, langNameRes) ->
-                Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .selectable(
-                            selected = langCode == currentLanguage,
-                            onClick = {
-                                if (langCode != currentLanguage) {
-                                    languageIso = langCode
-                                    localization.applyLanguage(langCode)
-                                    onLanguageChanged(langCode)
-                                }
-                            },
-                            role = Role.RadioButton
-                        )
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    RadioButton(
-                        selected = langCode == currentLanguage,
-                        onClick = {
-                            if (langCode != currentLanguage) {
-                                languageIso = langCode
-                                localization.applyLanguage(langCode)
-                                onLanguageChanged(langCode)
-                            }
-                        }
-                    )
-                    Spacer(modifier = Modifier.width(16.dp))
-                    Text(
-                        text = stringResource(langNameRes),
-                        style = MaterialTheme.typography.bodyLarge
-                    )
-                }
-            }
         }
     }
 }

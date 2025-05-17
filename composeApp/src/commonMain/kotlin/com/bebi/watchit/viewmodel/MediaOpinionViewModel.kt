@@ -47,7 +47,6 @@ class MediaOpinionViewModel(
                     }
                 }
                 
-                // También cargamos las críticas de grupos donde el usuario es miembro
                 loadGroupCritics()
             } catch (e: Exception) {
                 _uiState.update { it.copy(error = e.message, isLoading = false) }
@@ -58,7 +57,7 @@ class MediaOpinionViewModel(
     /**
      * Carga las críticas de todos los grupos en los que el usuario es miembro
      */
-    private fun loadGroupCritics() {
+    fun loadGroupCritics() {
         viewModelScope.launch {
             try {
                 _uiState.update { it.copy(isLoadingGroupCritics = true) }

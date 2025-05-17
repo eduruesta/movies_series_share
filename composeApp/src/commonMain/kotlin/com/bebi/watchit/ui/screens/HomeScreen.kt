@@ -63,6 +63,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
 import com.bebi.watchit.model.MediaOpinion
 import com.bebi.watchit.ui.components.AppDrawerContent
+import com.bebi.watchit.ui.components.SkeletonPosterCard
 import com.bebi.watchit.viewmodel.MediaOpinionViewModel
 import com.bebi.watchit.viewmodel.TopMoviesViewModel
 import com.bebi.watchit.viewmodel.TopSeriesViewModel
@@ -115,6 +116,23 @@ class HomeScreen : Screen {
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
         var drawerProgress by remember { mutableStateOf(0f) }
 
+        // Cargar los datos en paralelo
+        LaunchedEffect(Unit) {
+            // Lanzar todas las llamadas en paralelo usando coroutines
+            scope.launch {
+                val tasks = listOf(
+                    launch { trendingMoviesViewModel.loadMediaList() },
+                    launch { trendingSeriesViewModel.loadMediaList() },
+                    launch { topMoviesViewModel.loadMediaList() },
+                    launch { topSeriesViewModel.loadMediaList() },
+                    launch { upcomingMoviesViewModel.loadMediaList() },
+                    launch { mediaOpinionViewModel.loadGroupCritics() }
+                )
+                // Esperar a que todas las tareas terminen (opcional)
+                tasks.forEach { it.join() }
+            }
+        }
+
         // Efectos para la drawer animation
         LaunchedEffect(drawerState) {
             snapshotFlow { drawerState.currentValue }
@@ -145,13 +163,8 @@ class HomeScreen : Screen {
             }
         }
 
-        LaunchedEffect(Unit) {
-            mediaOpinionViewModel.loadOpinions()
-        }
-
         val overlayAlpha = drawerProgress * 0.5f
         val contentOffset = drawerProgress * 200f
-
 
         ModalNavigationDrawer(
             drawerState = drawerState,
@@ -418,13 +431,13 @@ fun MediaCarouselSection(
         Spacer(modifier = Modifier.height(8.dp))
 
         if (isLoading) {
-            Box(
-                modifier = Modifier
-                    .height(180.dp)
-                    .fillMaxWidth(),
-                contentAlignment = Alignment.Center
+            LazyRow(
+                contentPadding = PaddingValues(horizontal = 16.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                CircularProgressIndicator()
+                items(6) { // Mostrar 6 placeholders
+                    SkeletonPosterCard()
+                }
             }
         } else if (items.isEmpty()) {
             Box(

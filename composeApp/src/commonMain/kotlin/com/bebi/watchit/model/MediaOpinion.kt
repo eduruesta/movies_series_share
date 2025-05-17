@@ -58,5 +58,8 @@ data class MediaOpinion(
      * ID del grupo al que pertenece esta opinión
      */
     @ColumnInfo(name = "group_id")
-    val groupId: String? = null
+    val groupId: String? = null,
+
+    @ColumnInfo(name = "username")
+    val username: String? = null,
 ) : JavaSerializable

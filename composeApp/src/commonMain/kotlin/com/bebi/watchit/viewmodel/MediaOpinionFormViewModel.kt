@@ -82,9 +82,21 @@ class MediaOpinionFormViewModel(
         private set
 
     private var pendingGroupId: String? = null
+    private var pendingUsername: String? = null
 
     fun setGroupIdForNextSave(groupId: String?) {
         pendingGroupId = groupId
+    }
+
+    fun setUsernameForNextSave(username: String) {
+        // Guardar el username solo si no está vacío
+        if (username.isNotEmpty()) {
+            println("DEBUG: Guardando username en el ViewModel: $username")
+            pendingUsername = username
+        } else {
+            println("DEBUG: Intento de guardar username vacío, usando valor por defecto")
+            pendingUsername = "Usuario"
+        }
     }
 
     /**
@@ -231,6 +243,9 @@ class MediaOpinionFormViewModel(
 
             val finalGroupId = groupId ?: pendingGroupId
 
+            // Log para depuración
+            println("DEBUG: Guardando opinión con username: $pendingUsername")
+
             val opinion = MediaOpinion(
                 id = randomId,
                 title = title,
@@ -244,8 +259,12 @@ class MediaOpinionFormViewModel(
                 averageRating = rating,
                 year = year,
                 backdropUrl = backdropUrl,
-                groupId = finalGroupId
+                groupId = finalGroupId,
+                username = pendingUsername
             )
+
+            // Log para verificar que la opinión tiene el username configurado
+            println("DEBUG: Opinion creada con username: ${opinion.username}")
 
             repository.saveOpinion(opinion)
             _uiState.value = _uiState.value.copy(
@@ -254,6 +273,7 @@ class MediaOpinionFormViewModel(
             )
             
             pendingGroupId = null
+            pendingUsername = null
         }
     }
 

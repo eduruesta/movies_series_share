@@ -57,6 +57,8 @@ import com.bebi.watchit.ui.components.SearchResultsDropdown
 import com.bebi.watchit.ui.components.StarRating
 import com.bebi.watchit.viewmodel.MediaOpinionFormViewModel
 import com.bebi.watchit.viewmodel.MediaOpinionFormViewModel.SearchUiMessage
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.auth.auth
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import moviesseriesshare.composeapp.generated.resources.Res
@@ -91,6 +93,16 @@ data class OpinionFormScreen(val id: String? = null) : Screen {
         val snackbarHostState = remember { SnackbarHostState() }
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         val keyboardController = LocalSoftwareKeyboardController.current
+        
+        // Obtener el usuario actual para guardar su nombre
+        val auth = Firebase.auth
+        
+        // Guardar el nombre del usuario si está disponible
+        LaunchedEffect(auth.currentUser) {
+            val user = auth.currentUser
+            val username = user?.displayName ?: "Usuario"
+            viewModel.setUsernameForNextSave(username)
+        }
 
         LaunchedEffect(uiState.saved) {
             if (uiState.saved) {

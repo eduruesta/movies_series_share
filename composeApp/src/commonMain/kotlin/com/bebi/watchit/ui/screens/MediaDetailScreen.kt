@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.foundation.rememberScrollState
@@ -24,8 +25,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -371,7 +374,37 @@ data class MediaDetailScreen(
                                                 style = MaterialTheme.typography.labelMedium
                                             )
                                         }
+                                        
+                                        // Mostrar el nombre del usuario si está disponible
+                                        if (!opinion.username.isNullOrEmpty()) {
+                                            FilledTonalButton(
+                                                onClick = { },
+                                                modifier = Modifier.height(32.dp).padding(start = 8.dp),
+                                                contentPadding = PaddingValues(horizontal = 8.dp),
+                                                colors = ButtonDefaults.filledTonalButtonColors(
+                                                    containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                                                )
+                                            ) {
+                                                Row(
+                                                    verticalAlignment = Alignment.CenterVertically
+                                                ) {
+                                                    Icon(
+                                                        imageVector = Icons.Default.Person,
+                                                        contentDescription = null,
+                                                        tint = MaterialTheme.colorScheme.primary,
+                                                        modifier = Modifier.size(16.dp)
+                                                    )
+                                                    Spacer(modifier = Modifier.width(4.dp))
+                                                    Text(
+                                                        text = opinion.username,
+                                                        style = MaterialTheme.typography.labelMedium,
+                                                        color = MaterialTheme.colorScheme.primary
+                                                    )
+                                                }
+                                            }
+                                        }
 
+                                        // Icono de bookmark
                                         Icon(
                                             imageVector = if (isSaved) bookmarkCheck else bookmark,
                                             contentDescription = if (isSaved)
@@ -404,9 +437,7 @@ data class MediaDetailScreen(
                                                         savedViewModel.saveRecommendation(
                                                             opinion = opinion
                                                         ) { message ->
-                                                            if (message is RecommendationMessage.Saved ||
-                                                                message is RecommendationMessage.AlreadySaved
-                                                            ) {
+                                                            if (message is RecommendationMessage.Saved) {
                                                                 isSaved = true
                                                             }
                                                             lastRecommendationMessage = message

@@ -137,15 +137,15 @@ data class GroupOpinionList(private val group: GroupResponse) : Screen {
             onLeaveGroup = {
                 scope.launch {
                     groupsViewModel.leaveGroup(group.id)
-                    delay(300)
-                    navigator.push(GroupsScreen())
+                    delay(400)
+                    navigator.pop()
                 }
             },
             onDeleteGroup = {
                 scope.launch {
                     groupsViewModel.deleteGroup(group.id)
-                    delay(300)
-                    navigator.push(GroupsScreen())
+                    delay(400)
+                    navigator.pop()
                 }
             },
             mediaOpinionViewModel = mediaOpinionViewModel,

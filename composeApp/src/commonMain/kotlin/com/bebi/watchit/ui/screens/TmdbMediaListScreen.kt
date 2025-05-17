@@ -196,7 +196,8 @@ abstract class TmdbMediaListScreen : Screen {
                                                 message
                                             )
                                         }
-                                    }
+                                    },
+                                    isTmdbMedia = true
                                 )
 
                                 if (index < displayedItems.lastIndex) {

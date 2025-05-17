@@ -62,7 +62,8 @@ fun MediaOpinionItem(
     opinion: MediaOpinion,
     onClick: () -> Unit,
     onRateClick: () -> Unit,
-    onShowMessage: (String) -> Unit
+    onShowMessage: (String) -> Unit,
+    isTmdbMedia: Boolean = false
 ) {
     val savedViewModel = koinViewModel<SavedRecommendationViewModel>()
 
@@ -217,29 +218,32 @@ fun MediaOpinionItem(
                         style = MaterialTheme.typography.bodyMedium
                     )
 
-                    Spacer(modifier = Modifier.width(16.dp))
 
-                    Row(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(4.dp))
-                            .clickable { onRateClick() },
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Star,
-                            contentDescription = stringResource(Res.string.rate_action),
-                            tint = MaterialTheme.colorScheme.primary,
-                            modifier = Modifier.size(16.dp)
-                        )
-
-                        Spacer(modifier = Modifier.width(4.dp))
-
-                        Text(
-                            text = stringResource(Res.string.rate_action),
-                            style = MaterialTheme.typography.bodyMedium.copy(
-                                color = MaterialTheme.colorScheme.primary
+                    // Solo mostrar el botón de calificar si NO es un medio de TMDB
+                    if (!isTmdbMedia) {
+                        Spacer(modifier = Modifier.width(16.dp))
+                        Row(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .clickable { onRateClick() },
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Star,
+                                contentDescription = stringResource(Res.string.rate_action),
+                                tint = MaterialTheme.colorScheme.primary,
+                                modifier = Modifier.size(16.dp)
                             )
-                        )
+
+                            Spacer(modifier = Modifier.width(4.dp))
+
+                            Text(
+                                text = stringResource(Res.string.rate_action),
+                                style = MaterialTheme.typography.bodyMedium.copy(
+                                    color = MaterialTheme.colorScheme.primary
+                                )
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.width(16.dp))

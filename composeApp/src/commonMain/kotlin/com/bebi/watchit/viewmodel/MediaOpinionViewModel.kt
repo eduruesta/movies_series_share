@@ -223,14 +223,22 @@ class MediaOpinionViewModel(
      */
     fun updateSearchQuery(query: String) {
         _uiState.update { currentState ->
-            val filtered = if (query.isNotEmpty()) {
+            val filteredOpinions = if (query.isNotEmpty()) {
                 filterOpinions(currentState.opinions, query)
             } else {
                 currentState.opinions
             }
+            
+            val filteredGroupCritics = if (query.isNotEmpty()) {
+                filterOpinions(currentState.groupCritics, query)
+            } else {
+                currentState.groupCritics
+            }
+            
             currentState.copy(
                 searchQuery = query,
-                filteredOpinions = filtered
+                filteredOpinions = filteredOpinions,
+                filteredGroupCritics = filteredGroupCritics
             )
         }
     }
@@ -256,6 +264,7 @@ data class MediaOpinionUiState(
     val opinions: List<MediaOpinion> = emptyList(),
     val filteredOpinions: List<MediaOpinion> = emptyList(),
     val groupCritics: List<MediaOpinion> = emptyList(),
+    val filteredGroupCritics: List<MediaOpinion> = emptyList(),
     val searchQuery: String = "",
     val isLoading: Boolean = false,
     val isLoadingGroupCritics: Boolean = false,

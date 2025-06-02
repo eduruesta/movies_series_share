@@ -283,7 +283,7 @@ class HomeScreen : Screen {
                                 )
                             },
                             snackbarHost = { SnackbarHost(snackbarHostState) },
-                            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+                            modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
                         ) { paddingValues ->
                             LazyColumn(
                                 modifier = Modifier
@@ -302,7 +302,7 @@ class HomeScreen : Screen {
                                                 navigator.push(MediaDetailScreen(media.id))
                                             },
                                             onSeeAllClick = {
-                                                navigator.push(GroupsScreen())
+                                                navigator.push(AllGroupRecommendationsScreen())
                                             }
                                         )
                                     }

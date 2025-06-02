@@ -109,7 +109,7 @@ android {
         targetSdk = 35
 
         applicationId = "com.bebi.app.watchit"
-        versionCode = 2
+        versionCode = 3
         versionName = "1.0.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"

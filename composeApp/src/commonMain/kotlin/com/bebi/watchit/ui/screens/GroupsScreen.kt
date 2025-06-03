@@ -86,8 +86,10 @@ import moviesseriesshare.composeapp.generated.resources.dont_have_account
 import moviesseriesshare.composeapp.generated.resources.email
 import moviesseriesshare.composeapp.generated.resources.group_invitation_code
 import moviesseriesshare.composeapp.generated.resources.group_members
+import moviesseriesshare.composeapp.generated.resources.group_members_plural
 import moviesseriesshare.composeapp.generated.resources.join_group
 import moviesseriesshare.composeapp.generated.resources.join_group_description
+import moviesseriesshare.composeapp.generated.resources.join_success_message
 import moviesseriesshare.composeapp.generated.resources.login
 import moviesseriesshare.composeapp.generated.resources.my_groups
 import moviesseriesshare.composeapp.generated.resources.no_groups
@@ -592,7 +594,11 @@ private fun GroupItem(
             )
             Spacer(modifier = Modifier.height(4.dp))
             Text(
-                text = stringResource(Res.string.group_members, memberCount),
+                text = if (memberCount == 1) {
+                    stringResource(Res.string.group_members, memberCount)
+                } else {
+                    stringResource(Res.string.group_members_plural, memberCount)
+                },
                 style = MaterialTheme.typography.bodySmall
             )
         }

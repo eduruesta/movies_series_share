@@ -104,7 +104,8 @@
     <string name="join_group">Join Group</string>
     <string name="no_groups">You don't have any groups yet</string>
     <string name="create_your_first_group">Create your first group to share recommendations</string>
-    <string name="group_members">%1$d members</string>
+    <string name="group_members">%1$d member</string>
+    <string name="group_members_plural">%1$d members</string>
     <string name="create_group_button">Create Group</string>
     <string name="group_name">Group Name</string>
     <string name="group_description">Description</string>
@@ -112,7 +113,8 @@
     <string name="description">Description</string>
     <string name="group_created_success">Group created successfully!</string>
     <string name="group_invite_code">Invite Code</string>
-    <string name="share_invite_code">Share this code with friends to invite them to your group</string>
+    <string name="share_invite_code">Share invitation code</string>
+    <string name="invite_code_message">Use this code %1$s to join the group "%2$s" in Criticly</string>
     <string name="code_copied_to_clipboard">Code copied to clipboard</string>
     <string name="group_invitation_code">Invitation Code</string>
     <string name="join_group_description">Enter the invitation code to join the group</string>

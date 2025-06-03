@@ -90,6 +90,7 @@ import moviesseriesshare.composeapp.generated.resources.delete_button
 import moviesseriesshare.composeapp.generated.resources.delete_group
 import moviesseriesshare.composeapp.generated.resources.delete_group_confirmation
 import moviesseriesshare.composeapp.generated.resources.group_invite_code
+import moviesseriesshare.composeapp.generated.resources.invite_code_message
 import moviesseriesshare.composeapp.generated.resources.leave_button
 import moviesseriesshare.composeapp.generated.resources.leave_group
 import moviesseriesshare.composeapp.generated.resources.leave_group_confirmation
@@ -333,6 +334,11 @@ private fun GroupInfoBottomSheet(
     var showDeleteConfirmation by remember { mutableStateOf(false) }
     var showLeaveConfirmation by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
+    val member = stringResource(
+        Res.string.invite_code_message,
+        inviteCode,
+        groupInfo.name
+    )
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -398,7 +404,7 @@ private fun GroupInfoBottomSheet(
 
                     IconButton(
                         onClick = {
-                            clipboardManager.setText(AnnotatedString(inviteCode))
+                            clipboardManager.setText(AnnotatedString(member))
                         }
                     ) {
                         Icon(

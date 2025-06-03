@@ -104,7 +104,8 @@
     <string name="join_group">Unirse a Grupo</string>
     <string name="no_groups">No tienes grupos todavía</string>
     <string name="create_your_first_group">Crea tu primer grupo para compartir recomendaciones</string>
-    <string name="group_members">%1$d miembros</string>
+    <string name="group_members">%1$d miembro</string>
+    <string name="group_members_plural">%1$d miembros</string>
     <string name="create_group_button">Crear Grupo</string>
     <string name="group_name">Nombre del Grupo</string>
     <string name="group_description">Descripción</string>
@@ -112,7 +113,8 @@
     <string name="description">Descripción</string>
     <string name="group_created_success">¡Grupo creado exitosamente!</string>
     <string name="group_invite_code">Código de Invitación</string>
-    <string name="share_invite_code">Comparte este código con amigos para invitarlos a tu grupo</string>
+    <string name="share_invite_code">Compartir código de invitación</string>
+    <string name="invite_code_message">Usa este código %1$s para unirte al grupo "%2$s" en Criticly</string>
     <string name="code_copied_to_clipboard">Código copiado al portapapeles</string>
     <string name="group_invitation_code">Código de Invitación</string>
     <string name="join_group_description">Ingresá el código para unirte al grupo</string>

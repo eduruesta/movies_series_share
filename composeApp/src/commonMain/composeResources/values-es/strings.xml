@@ -166,4 +166,13 @@
     <string name="save_to_recommendations">Guardar en recomendaciones</string>
     <string name="error_saving_recommendation">Error al guardar recomendación: %1$s</string>
 
+    <!-- Error Screen Strings -->
+    <string name="search_title">Buscar</string>
+    <string name="search_hint">Buscar películas, series, etc.</string>
+    <string name="content_description_poster">Póster</string>
+    <string name="content_description_backdrop">Imagen de fondo</string>
+    <string name="content_description_rating">Puntuación</string>
+    <string name="connection_error">Se perdió la conexión con el servidor. Inténtalo de nuevo.</string>
+    <string name="retry">Reintentar</string>
+
 </resources>

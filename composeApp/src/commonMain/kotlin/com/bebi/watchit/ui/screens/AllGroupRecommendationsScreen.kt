@@ -39,6 +39,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.bebi.watchit.model.MediaOpinion
+import com.bebi.watchit.ui.components.ErrorScreen
 import com.bebi.watchit.ui.components.MediaOpinionItem
 import com.bebi.watchit.ui.components.RatingBottomSheet
 import com.bebi.watchit.ui.components.SearchTopAppBar
@@ -121,20 +122,11 @@ class AllGroupRecommendationsScreen : Screen {
                     }
                     
                     uiState.error != null -> {
-                        Column(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(16.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            verticalArrangement = Arrangement.Center
-                        ) {
-                            Text(
-                                text = uiState.error ?: "Error desconocido",
-                                style = MaterialTheme.typography.bodyLarge,
-                                textAlign = TextAlign.Center,
-                                color = Color.Red
-                            )
-                        }
+                        ErrorScreen(
+                            onRetry = {
+                                mediaOpinionViewModel.loadGroupCritics()
+                            }
+                        )
                     }
                     
                     uiState.groupCritics.isEmpty() -> {

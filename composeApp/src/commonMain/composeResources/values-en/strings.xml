@@ -97,7 +97,6 @@
     <string name="upcoming_movies">Upcoming Movies</string>
     <string name="group_recommendations">Groups recommendations</string>
 
-
     <!-- Groups -->
     <string name="groups">Groups</string>
     <string name="my_groups">My Groups</string>
@@ -160,9 +159,20 @@
     <string name="leave_group_confirmation">Are you sure you want to leave this group?</string>
     <string name="leave_group_owner_message">As the group owner, leaving will transfer ownership to another member, or delete the group if you are the only member.</string>
     <string name="leave_button">Leave</string>
-    
+
     <!-- Save Recommendations -->
     <string name="save_to_recommendations">Save to recommendations</string>
     <string name="error_saving_recommendation">Error saving recommendation: %1$s</string>
+
+    <string name="all_items">All</string>
+    <string name="search_title">Search</string>
+    <string name="search_hint">Search movies, TV shows, etc.</string>
+    <string name="content_description_poster">Poster</string>
+    <string name="content_description_backdrop">Backdrop</string>
+    <string name="content_description_rating">Rating</string>
+
+    <!-- Error Screen Strings -->
+    <string name="connection_error">Connection to the server was lost. Please try again.</string>
+    <string name="retry">Retry</string>
 
 </resources>

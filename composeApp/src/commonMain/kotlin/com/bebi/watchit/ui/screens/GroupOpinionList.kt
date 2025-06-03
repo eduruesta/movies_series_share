@@ -62,6 +62,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.bebi.watchit.data.models.GroupResponse
 import com.bebi.watchit.model.MediaOpinion
+import com.bebi.watchit.ui.components.ErrorScreen
 import com.bebi.watchit.ui.components.Info
 import com.bebi.watchit.ui.components.MediaOpinionItem
 import com.bebi.watchit.ui.components.RatingBottomSheet
@@ -231,6 +232,12 @@ fun GroupOpinionListScreen(
                 uiState.isLoading -> {
                     CircularProgressIndicator(
                         modifier = Modifier.align(Alignment.Center)
+                    )
+                }
+                
+                uiState.error != null -> {
+                    ErrorScreen(
+                        onRetry = { viewModel.refreshOpinions() }
                     )
                 }
 

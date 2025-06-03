@@ -255,6 +255,15 @@ class MediaOpinionViewModel(
                     opinion.genre.lowercase().contains(lowercaseQuery)
         }
     }
+
+    /**
+     * Limpia explícitamente el error en el estado
+     */
+    fun clearError() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(error = null) }
+        }
+    }
 }
 
 /**

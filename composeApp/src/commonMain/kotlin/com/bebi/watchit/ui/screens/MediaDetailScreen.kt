@@ -65,6 +65,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
 import com.bebi.watchit.model.MediaOpinion
 import com.bebi.watchit.model.SavedRecommendation
+import com.bebi.watchit.ui.components.ErrorScreen
 import com.bebi.watchit.ui.components.StarRating
 import com.bebi.watchit.ui.components.bookmark
 import com.bebi.watchit.ui.components.bookmarkCheck
@@ -275,27 +276,13 @@ data class MediaDetailScreen(
                         Text(stringResource(Res.string.loading_details))
                     }
                 } else if (uiState.error != null) {
-                    Column(
-                        modifier = Modifier.fillMaxSize().padding(16.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        val errorMessage = when (uiState.error) {
-                            MediaDetailError.NOT_FOUND -> stringResource(Res.string.error_opinion_not_found)
-                            MediaDetailError.GENERIC -> stringResource(Res.string.error_loading_details)
-                            else -> stringResource(Res.string.error_loading_details)
+                    ErrorScreen(
+                        onRetry = {
+                            if (opinionId != null) {
+                                viewModel.loadOpinionById(opinionId)
+                            }
                         }
-
-                        Text(
-                            errorMessage,
-                            color = MaterialTheme.colorScheme.error,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = { navigator.pop() }) {
-                            Text(stringResource(Res.string.back))
-                        }
-                    }
+                    )
                 } else if (uiState.opinion != null) {
                     val opinion = uiState.opinion!!
 

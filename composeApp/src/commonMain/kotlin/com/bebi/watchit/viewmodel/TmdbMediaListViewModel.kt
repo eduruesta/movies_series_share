@@ -148,6 +148,15 @@ abstract class TmdbMediaListViewModel(
     }
 
     /**
+     * Limpia explícitamente el error en el estado
+     */
+    fun clearError() {
+        viewModelScope.launch {
+            _uiState.update { it.copy(error = null) }
+        }
+    }
+
+    /**
      * Convierte un TmdbMediaItem a MediaOpinion para usar en la UI
      */
     private fun convertToMediaOpinion(item: TmdbMediaItem): MediaOpinion {

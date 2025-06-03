@@ -75,4 +75,29 @@ class CriticsApiService(private val httpClient: HttpClient) {
             Result.failure(e)
         }
     }
+    
+    /**
+     * Elimina una crítica por su ID
+     */
+    suspend fun deleteCritic(id: Long): Result<Boolean> = withContext(Dispatchers.IO) {
+        try {
+            httpClient.get("$baseUrl/delete/$id")
+            Result.success(true)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+    
+    /**
+     * Obtiene todas las críticas para un grupo específico
+     */
+    suspend fun getCriticsByGroupId(groupId: String): Result<List<MediaOpinion>> = withContext(Dispatchers.IO) {
+        try {
+            // Usando la nueva ruta específica del backend para obtener críticas por grupo
+            val response: List<MediaOpinion> = httpClient.get("https://movies-series-share-backend.onrender.com/groups/$groupId/critics").body()
+            Result.success(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

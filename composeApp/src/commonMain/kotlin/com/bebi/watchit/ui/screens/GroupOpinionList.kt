@@ -44,6 +44,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -119,6 +120,11 @@ data class GroupOpinionList(private val group: GroupResponse) : Screen {
 
         val scope = rememberCoroutineScope()
         val uiState by viewModel.uiState.collectAsState()
+        
+        // Forzar la actualización de las opiniones cada vez que se navega a esta pantalla
+        LaunchedEffect(Unit) {
+            viewModel.refreshOpinions()
+        }
 
         GroupOpinionListScreen(
             uiState = uiState,

@@ -140,4 +140,28 @@ class HybridMediaOpinionRepository(
     override suspend fun deleteOpinion(opinion: MediaOpinion) {
         localRepository.deleteOpinion(opinion)
     }
+    
+    /**
+     * Obtiene todas las opiniones de un grupo específico
+     */
+    override suspend fun getOpinionsByGroupId(groupId: String): Flow<List<MediaOpinion>> = flow {
+        val apiResult = apiService.getCriticsByGroupId(groupId)
+        
+        if (apiResult.isSuccess) {
+            val groupOpinions = apiResult.getOrNull() ?: emptyList()
+            emit(groupOpinions)
+            
+            groupOpinions.forEach { opinion ->
+                localRepository.saveOpinion(opinion)
+            }
+        } else {
+            localRepository.getOpinionsByGroupId(groupId).collect { groupOpinions ->
+                emit(groupOpinions)
+            }
+        }
+    }.catch { e ->
+        localRepository.getOpinionsByGroupId(groupId).collect { groupOpinions ->
+            emit(groupOpinions)
+        }
+    }
 }

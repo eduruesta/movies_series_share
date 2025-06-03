@@ -40,4 +40,11 @@ interface MediaOpinionRepository {
      * Elimina una opinión
      */
     suspend fun deleteOpinion(opinion: MediaOpinion)
+    
+    /**
+     * Obtiene todas las opiniones de un grupo específico
+     * @param groupId ID del grupo
+     * @return Flow con la lista de opiniones del grupo
+     */
+    suspend fun getOpinionsByGroupId(groupId: String): Flow<List<MediaOpinion>>
 }

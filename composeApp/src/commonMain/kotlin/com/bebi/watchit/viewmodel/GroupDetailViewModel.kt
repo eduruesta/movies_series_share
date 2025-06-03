@@ -29,12 +29,11 @@ class GroupDetailViewModel(
 
         viewModelScope.launch {
             try {
-                mediaOpinionRepository.getAllOpinions()
+                mediaOpinionRepository.getOpinionsByGroupId(groupId)
                     .catch { e ->
                         _uiState.update { it.copy(isLoading = false, error = e.message) }
                     }
-                    .collectLatest { allOpinions ->
-                        val groupOpinions = allOpinions.filter { it.groupId == groupId }
+                    .collectLatest { groupOpinions ->
                         _uiState.update {
                             it.copy(
                                 isLoading = false,

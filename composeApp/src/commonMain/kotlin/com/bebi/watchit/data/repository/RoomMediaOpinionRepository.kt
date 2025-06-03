@@ -38,4 +38,8 @@ class RoomMediaOpinionRepository(
     override suspend fun deleteOpinion(opinion: MediaOpinion) {
         mediaOpinionDao.deleteOpinion(opinion)
     }
+    
+    override suspend fun getOpinionsByGroupId(groupId: String): Flow<List<MediaOpinion>> {
+        return mediaOpinionDao.getOpinionsByGroupId(groupId)
+    }
 }

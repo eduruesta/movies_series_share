@@ -21,4 +21,7 @@ interface MediaOpinionDao {
     
     @Query("SELECT * FROM media_opinions WHERE id = :id")
     fun getOpinionById(id: Long): Flow<MediaOpinion?>
+    
+    @Query("SELECT * FROM media_opinions WHERE group_id = :groupId ORDER BY id DESC")
+    fun getOpinionsByGroupId(groupId: String): Flow<List<MediaOpinion>>
 }

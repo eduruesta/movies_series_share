@@ -70,7 +70,6 @@ import com.bebi.watchit.ui.components.StarRating
 import com.bebi.watchit.ui.components.bookmark
 import com.bebi.watchit.ui.components.bookmarkCheck
 import com.bebi.watchit.ui.util.formatWithOneDecimal
-import com.bebi.watchit.viewmodel.MediaDetailError
 import com.bebi.watchit.viewmodel.MediaDetailViewModel
 import com.bebi.watchit.viewmodel.RecommendationMessage
 import com.bebi.watchit.viewmodel.SavedRecommendationViewModel
@@ -78,13 +77,10 @@ import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.add_new_comment
-import moviesseriesshare.composeapp.generated.resources.back
 import moviesseriesshare.composeapp.generated.resources.back_button
 import moviesseriesshare.composeapp.generated.resources.cancel
 import moviesseriesshare.composeapp.generated.resources.comment
 import moviesseriesshare.composeapp.generated.resources.delete_from_recommendations
-import moviesseriesshare.composeapp.generated.resources.error_loading_details
-import moviesseriesshare.composeapp.generated.resources.error_opinion_not_found
 import moviesseriesshare.composeapp.generated.resources.loading_details
 import moviesseriesshare.composeapp.generated.resources.loading_title
 import moviesseriesshare.composeapp.generated.resources.opinion_count

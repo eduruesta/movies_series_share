@@ -6,8 +6,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bebi.watchit.data.remote.model.TmdbMediaItem
-import com.bebi.watchit.data.repository.TmdbRepository
 import com.bebi.watchit.data.repository.MediaOpinionRepository
+import com.bebi.watchit.data.repository.TmdbRepository
 import com.bebi.watchit.model.MediaOpinion
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll

@@ -5,10 +5,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bebi.watchit.data.dao.TmdbCacheDao
 import com.bebi.watchit.data.remote.model.TmdbMediaItem
 import com.bebi.watchit.data.repository.MediaOpinionRepository
 import com.bebi.watchit.data.repository.TmdbRepository
 import com.bebi.watchit.model.MediaOpinion
+import com.bebi.watchit.model.TmdbCachedMedia
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -22,13 +24,17 @@ import kotlinx.coroutines.launch
  */
 abstract class TmdbMediaListViewModel(
     protected val repository: TmdbRepository,
-    private val opinionRepository: MediaOpinionRepository
+    private val opinionRepository: MediaOpinionRepository,
+    private val tmdbCacheDao: TmdbCacheDao
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(TmdbMediaListUiState())
     val uiState: StateFlow<TmdbMediaListUiState> = _uiState.asStateFlow()
     var genre by mutableStateOf("")
         private set
+
+    // Categoría que identifica el tipo de datos que maneja este ViewModel
+    protected abstract val cacheCategory: String
 
     init {
         loadMediaList() // Cargamos los datos automáticamente al inicializar el ViewModel
@@ -55,6 +61,9 @@ abstract class TmdbMediaListViewModel(
                                 filteredMediaItems = mediaOpinions
                             )
                         }
+                        
+                        // Guardamos los datos en la caché
+                        saveToCache(items)
                         
                         val loadingTasks = mediaOpinions.map { opinion ->
                             async {
@@ -128,23 +137,126 @@ abstract class TmdbMediaListViewModel(
                         }
                     },
                     onFailure = { error ->
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                error = error.message ?: "Error al cargar los datos"
-                            )
-                        }
+                        // Intentamos cargar datos de la caché en caso de error
+                        loadFromCache()
                     }
                 )
             } catch (e: Exception) {
+                // Intentamos cargar datos de la caché en caso de error
+                loadFromCache()
+            }
+        }
+    }
+
+    /**
+     * Guarda los datos de TMDB en caché local
+     */
+    private fun saveToCache(items: List<TmdbMediaItem>) {
+        viewModelScope.launch {
+            try {
+                val cachedItems = items.map { item ->
+                    val posterFullUrl = item.posterPath?.let { repository.getFullPosterUrl(it) }
+                    val backdropFullUrl = item.backdropPath?.let { repository.getFullBackdropUrl(it) }
+                    
+                    TmdbCachedMedia(
+                        id = item.id.toLong(),
+                        mediaType = item.mediaType ?: "",
+                        title = item.displayTitle,
+                        overview = item.overview ?: "",
+                        posterPath = item.posterPath,
+                        backdropPath = item.backdropPath,
+                        fullPosterUrl = posterFullUrl,
+                        fullBackdropUrl = backdropFullUrl,
+                        releaseDate = item.releaseDate ?: item.firstAirDate ?: "",
+                        voteAverage = item.voteAverage ?: 0.0,
+                        genreIds = item.genreIds ?: emptyList(),
+                        category = cacheCategory
+                    )
+                }
+                
+                tmdbCacheDao.updateCategoryCache(cacheCategory, cachedItems)
+            } catch (e: Exception) {
+                // Solo registramos el error, no interrumpimos la UI
+                println("Error guardando en caché: ${e.message}")
+            }
+        }
+    }
+
+    /**
+     * Intenta cargar datos desde la caché local
+     */
+    private suspend fun loadFromCache() {
+        try {
+            // Verificamos si hay datos en caché
+            val hasCache = tmdbCacheDao.hasCacheForCategory(cacheCategory) > 0
+            
+            if (hasCache) {
+                // Cargar datos de caché
+                tmdbCacheDao.getCachedMediaByCategory(cacheCategory).collect { cachedItems ->
+                    if (cachedItems.isNotEmpty()) {
+                        val mediaOpinions = cachedItems.map { convertCachedMediaToOpinion(it) }
+                        
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                mediaItems = mediaOpinions,
+                                filteredMediaItems = if (it.searchQuery.isEmpty()) {
+                                    mediaOpinions
+                                } else {
+                                    mediaOpinions.filter { opinion ->
+                                        opinion.title.contains(it.searchQuery, ignoreCase = true) || 
+                                        opinion.synopsis.contains(it.searchQuery, ignoreCase = true)
+                                    }
+                                },
+                                error = null
+                            )
+                        }
+                    } else {
+                        // Si la colección está vacía, mostramos error
+                        _uiState.update {
+                            it.copy(
+                                isLoading = false,
+                                error = "No hay datos disponibles"
+                            )
+                        }
+                    }
+                }
+            } else {
+                // Si no hay caché, mostramos error
                 _uiState.update {
                     it.copy(
                         isLoading = false,
-                        error = e.message ?: "Error inesperado"
+                        error = "No hay conexión a internet y no hay datos guardados"
                     )
                 }
             }
+        } catch (e: Exception) {
+            // Si hay error al cargar la caché, mostramos error
+            _uiState.update {
+                it.copy(
+                    isLoading = false,
+                    error = "Error cargando datos: ${e.message}"
+                )
+            }
         }
+    }
+
+    /**
+     * Convierte un TmdbCachedMedia a MediaOpinion para usar en la UI
+     */
+    private fun convertCachedMediaToOpinion(cachedMedia: TmdbCachedMedia): MediaOpinion {
+        return MediaOpinion(
+            id = cachedMedia.id,
+            title = cachedMedia.title,
+            posterUrl = cachedMedia.fullPosterUrl ?: cachedMedia.posterPath?.let { repository.getFullPosterUrl(it) },
+            backdropUrl = cachedMedia.fullBackdropUrl ?: cachedMedia.backdropPath?.let { repository.getFullBackdropUrl(it) },
+            genre = "",
+            platform = "",
+            rating = cachedMedia.voteAverage.toFloat(),
+            averageRating = cachedMedia.voteAverage.toFloat(),
+            synopsis = cachedMedia.overview,
+            year = cachedMedia.releaseDate
+        )
     }
 
     /**
@@ -334,7 +446,10 @@ abstract class TmdbMediaListViewModel(
 /**
  * ViewModel para la pantalla de series mejor valoradas
  */
-class TopSeriesViewModel(repository: TmdbRepository, opinionRepository: MediaOpinionRepository) : TmdbMediaListViewModel(repository, opinionRepository) {
+class TopSeriesViewModel(repository: TmdbRepository, opinionRepository: MediaOpinionRepository, tmdbCacheDao: TmdbCacheDao) : TmdbMediaListViewModel(repository, opinionRepository, tmdbCacheDao) {
+    override val cacheCategory: String
+        get() = "top_series"
+
     override suspend fun loadMediaItems(): Result<List<TmdbMediaItem>> {
         return repository.getTopRatedTvShows()
     }
@@ -343,7 +458,10 @@ class TopSeriesViewModel(repository: TmdbRepository, opinionRepository: MediaOpi
 /**
  * ViewModel para la pantalla de series en tendencia
  */
-class TrendingSeriesViewModel(repository: TmdbRepository, opinionRepository: MediaOpinionRepository) : TmdbMediaListViewModel(repository, opinionRepository) {
+class TrendingSeriesViewModel(repository: TmdbRepository, opinionRepository: MediaOpinionRepository, tmdbCacheDao: TmdbCacheDao) : TmdbMediaListViewModel(repository, opinionRepository, tmdbCacheDao) {
+    override val cacheCategory: String
+        get() = "trending_series"
+
     override suspend fun loadMediaItems(): Result<List<TmdbMediaItem>> {
         return repository.getTrendingTvShows()
     }
@@ -352,7 +470,10 @@ class TrendingSeriesViewModel(repository: TmdbRepository, opinionRepository: Med
 /**
  * ViewModel para la pantalla de películas próximas a estrenarse
  */
-class UpcomingMoviesViewModel(repository: TmdbRepository, opinionRepository: MediaOpinionRepository) : TmdbMediaListViewModel(repository, opinionRepository) {
+class UpcomingMoviesViewModel(repository: TmdbRepository, opinionRepository: MediaOpinionRepository, tmdbCacheDao: TmdbCacheDao) : TmdbMediaListViewModel(repository, opinionRepository, tmdbCacheDao) {
+    override val cacheCategory: String
+        get() = "upcoming_movies"
+
     override suspend fun loadMediaItems(): Result<List<TmdbMediaItem>> {
         return repository.getUpcomingMovies()
     }
@@ -361,7 +482,10 @@ class UpcomingMoviesViewModel(repository: TmdbRepository, opinionRepository: Med
 /**
  * ViewModel para la pantalla de películas mejor valoradas
  */
-class TopMoviesViewModel(repository: TmdbRepository, opinionRepository: MediaOpinionRepository) : TmdbMediaListViewModel(repository, opinionRepository) {
+class TopMoviesViewModel(repository: TmdbRepository, opinionRepository: MediaOpinionRepository, tmdbCacheDao: TmdbCacheDao) : TmdbMediaListViewModel(repository, opinionRepository, tmdbCacheDao) {
+    override val cacheCategory: String
+        get() = "top_movies"
+
     override suspend fun loadMediaItems(): Result<List<TmdbMediaItem>> {
         return repository.getTopRatedMovies()
     }
@@ -370,7 +494,10 @@ class TopMoviesViewModel(repository: TmdbRepository, opinionRepository: MediaOpi
 /**
  * ViewModel para la pantalla de películas en tendencia
  */
-class TrendingMoviesViewModel(repository: TmdbRepository, opinionRepository: MediaOpinionRepository) : TmdbMediaListViewModel(repository, opinionRepository) {
+class TrendingMoviesViewModel(repository: TmdbRepository, opinionRepository: MediaOpinionRepository, tmdbCacheDao: TmdbCacheDao) : TmdbMediaListViewModel(repository, opinionRepository, tmdbCacheDao) {
+    override val cacheCategory: String
+        get() = "trending_movies"
+
     override suspend fun loadMediaItems(): Result<List<TmdbMediaItem>> {
         return repository.getTrendingMovies()
     }

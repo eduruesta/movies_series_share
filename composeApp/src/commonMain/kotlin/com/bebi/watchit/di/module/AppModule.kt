@@ -3,7 +3,10 @@ package com.bebi.watchit.di.module
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
 import com.bebi.app.watchit.BuildConfig
 import com.bebi.watchit.data.database.AppDatabase
+import com.bebi.watchit.data.database.AppDatabaseConstructor
 import com.bebi.watchit.data.database.DatabaseFactory
+import com.bebi.watchit.data.dao.TmdbCacheDao
+import com.bebi.watchit.data.dao.GroupCriticsCacheDao
 import com.bebi.watchit.data.remote.AppService
 import com.bebi.watchit.data.remote.CriticsApiService
 import com.bebi.watchit.data.remote.GroupsApiService
@@ -57,6 +60,10 @@ val appModule = module {
     }
     single { get<AppDatabase>().mediaOpinionDao }
     single { get<AppDatabase>().savedRecommendationDao }
+    single { get<AppDatabase>().tmdbCacheDao }
+    single { get<AppDatabase>().groupCriticsCacheDao }
+
+
 
     single<HttpClient> {
         HttpClient {
@@ -118,11 +125,11 @@ val viewModelModule = module {
     viewModelOf(::SavedRecommendationViewModel)
     viewModelOf(::GroupDetailViewModel)
 
-    factory { TopSeriesViewModel(get(), get()) }
-    factory { TrendingSeriesViewModel(get(), get()) }
-    factory { UpcomingMoviesViewModel(get(), get()) }
-    factory { TopMoviesViewModel(get(), get()) }
-    factory { TrendingMoviesViewModel(get(), get()) }
+    factory { TopSeriesViewModel(get(), get(), get()) }
+    factory { TrendingSeriesViewModel(get(), get(), get()) }
+    factory { UpcomingMoviesViewModel(get(), get(), get()) }
+    factory { TopMoviesViewModel(get(), get(), get()) }
+    factory { TrendingMoviesViewModel(get(), get(), get()) }
     factory {
         GroupsViewModel(
             groupsRepository = get(),
@@ -135,7 +142,8 @@ val viewModelModule = module {
         MediaOpinionViewModel(
             repository = get(),
             groupsRepository = get(),
-            currentUserId = get()
+            currentUserId = get(),
+            groupCriticsCacheDao = get()
         )
     }
 

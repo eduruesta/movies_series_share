@@ -2,8 +2,10 @@ package com.bebi.watchit.viewmodel
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.bebi.watchit.data.dao.GroupCriticsCacheDao
 import com.bebi.watchit.data.repository.GroupsRepository
 import com.bebi.watchit.data.repository.MediaOpinionRepository
+import com.bebi.watchit.model.GroupCriticCached
 import com.bebi.watchit.model.MediaOpinion
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -17,7 +19,8 @@ import kotlinx.coroutines.launch
 class MediaOpinionViewModel(
     private val repository: MediaOpinionRepository,
     private val groupsRepository: GroupsRepository,
-    private val currentUserId: String
+    private val currentUserId: String,
+    private val groupCriticsCacheDao: GroupCriticsCacheDao
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow(MediaOpinionUiState())
@@ -60,7 +63,7 @@ class MediaOpinionViewModel(
     fun loadGroupCritics() {
         viewModelScope.launch {
             try {
-                _uiState.update { it.copy(isLoadingGroupCritics = true) }
+                _uiState.update { it.copy(isLoadingGroupCritics = true, error = null) }
                 
                 groupsRepository.getMemberGroupCritics(currentUserId).fold(
                     onSuccess = { criticsResponses ->
@@ -70,23 +73,121 @@ class MediaOpinionViewModel(
                                 isLoadingGroupCritics = false
                             ) 
                         }
+                        
+                        // Guardar en caché
+                        saveCriticsToCache(criticsResponses)
                     },
                     onFailure = { exception ->
-                        _uiState.update { 
-                            it.copy(
-                                error = "Error al cargar críticas de grupos: ${exception.message}", 
-                                isLoadingGroupCritics = false
-                            ) 
-                        }
+                        // Intentar cargar desde la caché
+                        loadCriticsFromCache()
                     }
                 )
             } catch (e: Exception) {
-                _uiState.update { 
-                    it.copy(
-                        error = "Error al cargar críticas de grupos: ${e.message}",
-                        isLoadingGroupCritics = false
-                    ) 
+                // Intentar cargar desde la caché
+                loadCriticsFromCache()
+            }
+        }
+    }
+    
+    /**
+     * Guarda las críticas en la caché local
+     */
+    private fun saveCriticsToCache(critics: List<MediaOpinion>) {
+        viewModelScope.launch {
+            try {
+                val cachedCritics = critics.map { critic ->
+                    // Extraer la ruta parcial de las URLs completas
+                    val posterPath = critic.posterUrl?.let { url ->
+                        // Extraer la parte final de la URL (el path)
+                        url.substringAfterLast("/", "")
+                    }
+                    
+                    val backdropPath = critic.backdropUrl?.let { url ->
+                        // Extraer la parte final de la URL (el path)
+                        url.substringAfterLast("/", "")
+                    }
+                    
+                    GroupCriticCached(
+                        id = critic.id,
+                        title = critic.title,
+                        posterUrl = critic.posterUrl,
+                        backdropUrl = critic.backdropUrl,
+                        posterPath = posterPath,
+                        backdropPath = backdropPath,
+                        genre = critic.genre,
+                        platform = critic.platform,
+                        rating = critic.rating,
+                        averageRating = critic.averageRating,
+                        synopsis = critic.synopsis,
+                        year = critic.year,
+                        userId = currentUserId
+                    )
                 }
+                
+                groupCriticsCacheDao.updateUserCache(currentUserId, cachedCritics)
+            } catch (e: Exception) {
+                // Solo registramos el error, no afectamos la UI
+                println("Error al guardar críticas en caché: ${e.message}")
+            }
+        }
+    }
+    
+    /**
+     * Carga las críticas desde la caché local si están disponibles
+     */
+    private suspend fun loadCriticsFromCache() {
+        try {
+            val hasCache = groupCriticsCacheDao.hasCacheForUser(currentUserId) > 0
+            
+            if (hasCache) {
+                groupCriticsCacheDao.getCachedCriticsByUserId(currentUserId).collect { cachedCritics ->
+                    if (cachedCritics.isNotEmpty()) {
+                        val critics = cachedCritics.map { cached ->
+                            MediaOpinion(
+                                id = cached.id,
+                                title = cached.title,
+                                posterUrl = cached.posterUrl,
+                                backdropUrl = cached.backdropUrl,
+                                genre = cached.genre,
+                                platform = cached.platform,
+                                rating = cached.rating,
+                                averageRating = cached.averageRating,
+                                synopsis = cached.synopsis,
+                                year = cached.year
+                            )
+                        }
+                        
+                        _uiState.update {
+                            it.copy(
+                                groupCritics = critics,
+                                isLoadingGroupCritics = false,
+                                // No establecemos error si tenemos datos en caché
+                                error = null
+                            )
+                        }
+                    } else {
+                        _uiState.update {
+                            it.copy(
+                                isLoadingGroupCritics = false,
+                                error = "No hay recomendaciones de grupos disponibles"
+                            )
+                        }
+                    }
+                }
+            } else {
+                _uiState.update {
+                    it.copy(
+                        isLoadingGroupCritics = false,
+                        error = "No hay conexión a internet y no hay datos guardados"
+                    )
+                }
+            }
+        } catch (e: Exception) {
+            _uiState.update {
+                it.copy(
+                    isLoadingGroupCritics = false,
+                    error = "Error al cargar críticas de grupos: ${e.message}"
+                )
             }
         }
     }

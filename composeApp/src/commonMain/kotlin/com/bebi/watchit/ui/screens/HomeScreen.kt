@@ -235,11 +235,11 @@ class HomeScreen : Screen {
             ) { paddingValues ->
                 // Recalculamos hasError cada vez que cambia alguno de los estados
                 // Esto garantiza que el valor se actualice reactivamente
-                val hasError = mediaOpinionUiState.error != null ||
-                    trendingMoviesState.error != null ||
-                    trendingSeriesState.error != null ||
-                    topMoviesState.error != null ||
-                    topSeriesState.error != null ||
+                val hasError = mediaOpinionUiState.error != null &&
+                    trendingMoviesState.error != null &&
+                    trendingSeriesState.error != null &&
+                    topMoviesState.error != null &&
+                    topSeriesState.error != null &&
                     upcomingMoviesState.error != null
 
                 if (hasError) {
@@ -255,20 +255,22 @@ class HomeScreen : Screen {
                             .padding(paddingValues),
                         contentPadding = PaddingValues(bottom = 16.dp)
                     ) {
-                        // Group recommendations section - mostrar solo si hay datos o está cargando
-                        item {
-                            Spacer(modifier = Modifier.height(16.dp))
-                            MediaCarouselSection(
-                                title = stringResource(Res.string.group_recommendations),
-                                items = mediaOpinionUiState.groupCritics,
-                                isLoading = mediaOpinionUiState.isLoadingGroupCritics,
-                                onItemClick = { media ->
-                                    navigator.push(MediaDetailScreen(media.id))
-                                },
-                                onSeeAllClick = {
-                                    navigator.push(AllGroupRecommendationsScreen())
-                                }
-                            )
+                        // Group recommendations section - mostrar solo si hay datos y no está vacío
+                        if (mediaOpinionUiState.groupCritics.isNotEmpty()) {
+                            item {
+                                Spacer(modifier = Modifier.height(16.dp))
+                                MediaCarouselSection(
+                                    title = stringResource(Res.string.group_recommendations),
+                                    items = mediaOpinionUiState.groupCritics,
+                                    isLoading = mediaOpinionUiState.isLoadingGroupCritics,
+                                    onItemClick = { media ->
+                                        navigator.push(MediaDetailScreen(media.id))
+                                    },
+                                    onSeeAllClick = {
+                                        navigator.push(AllGroupRecommendationsScreen())
+                                    }
+                                )
+                            }
                         }
 
                         // Trending Movies section

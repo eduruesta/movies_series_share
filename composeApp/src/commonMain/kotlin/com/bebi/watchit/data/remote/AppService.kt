@@ -75,14 +75,19 @@ class AppService(
     }
 
     /**
-     * Get the full image URL from a poster path
+     * Construye la URL completa para una imagen de poster
      */
     fun getImageUrl(posterPath: String?): String? {
-        return posterPath?.let { "$imageBaseUrl$it" }
+        if (posterPath == null) return null
+        return "$imageBaseUrl$posterPath"
     }
-
+    
+    /**
+     * Construye la URL completa para una imagen de fondo
+     */
     fun getBackdropUrl(backdropPath: String?): String? {
-        return backdropPath?.let { "$backdropUrl$it" }
+        if (backdropPath == null) return null
+        return "$backdropUrl$backdropPath"
     }
 
     private fun getLanguage(): String {

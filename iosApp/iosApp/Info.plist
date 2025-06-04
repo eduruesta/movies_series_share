@@ -24,6 +24,16 @@
           <string>com.googleusercontent.apps.764447091440-rr5o4ttvj758qg20ege8n2pu7phu2h1u</string>
         </array>
       </dict>
+      <dict>
+        <key>CFBundleTypeRole</key>
+        <string>Editor</string>
+        <key>CFBundleURLName</key>
+        <string>com.bebi.watchit</string>
+        <key>CFBundleURLSchemes</key>
+        <array>
+          <string>criticly</string>
+        </array>
+      </dict>
     </array>
 </dict>
 </plist>

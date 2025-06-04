@@ -96,13 +96,11 @@ import moviesseriesshare.composeapp.generated.resources.no_groups
 import moviesseriesshare.composeapp.generated.resources.password
 import moviesseriesshare.composeapp.generated.resources.register
 import moviesseriesshare.composeapp.generated.resources.username
-import moviesseriesshare.composeapp.generated.resources.join_success_message
-
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 
-class GroupsScreen : Screen {
+class GroupsScreen(private val deepLinkInviteCode: String? = null) : Screen {
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
     override fun Content() {
@@ -125,7 +123,8 @@ class GroupsScreen : Screen {
             )
         }
         val uiState by viewModel.uiState.collectAsState()
-        var showJoinGroupSheet by remember { mutableStateOf(false) }
+        var showJoinGroupSheet by remember { mutableStateOf(deepLinkInviteCode != null) }
+        var prefilledCode by remember { mutableStateOf(deepLinkInviteCode ?: "") }
 
         val authErrorText = stringResource(Res.string.auth_error)
         val completeFieldsText = stringResource(Res.string.complete_fields)
@@ -186,7 +185,8 @@ class GroupsScreen : Screen {
                                 snackbarHostState.showSnackbar(joinGroupText)
                                 viewModel.loadGroups()
                             }
-                        }
+                        },
+                        prefilledCode = prefilledCode
                     )
                 }
             }
@@ -384,10 +384,11 @@ class GroupsScreen : Screen {
 @Composable
 private fun JoinGroupBottomSheet(
     onDismiss: () -> Unit,
-    onJoin: (String) -> Unit
+    onJoin: (String) -> Unit,
+    prefilledCode: String = ""
 ) {
     val sheetState = rememberModalBottomSheetState()
-    var invitationCode by remember { mutableStateOf("") }
+    var invitationCode by remember(prefilledCode) { mutableStateOf(prefilledCode) }
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,

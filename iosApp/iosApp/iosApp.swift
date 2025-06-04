@@ -25,6 +25,14 @@ class AppDelegate: NSObject, UIApplicationDelegate {
             return true
           }
 
+          // Manejar deep links de Criticly
+          if url.scheme == "criticly" {
+              print("Deep Link recibido: \(url.absoluteString)")
+              // Pasamos la URL completa a nuestra aplicación Kotlin
+              MainKt.processDeepLink(deepLink: url.absoluteString)
+              return true
+          }
+
           // Handle other custom URL types.
 
           // If not handled by this app, return false.

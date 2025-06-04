@@ -65,7 +65,7 @@ class AllGroupRecommendationsScreen : Screen {
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val snackbarHostState = remember { SnackbarHostState() }
-        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+        val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         val scope = rememberCoroutineScope()
         
         // Obtener el usuario autenticado

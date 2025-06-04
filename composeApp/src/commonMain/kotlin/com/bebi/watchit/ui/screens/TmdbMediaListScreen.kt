@@ -80,7 +80,7 @@ abstract class TmdbMediaListScreen : Screen {
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val snackbarHostState = remember { SnackbarHostState() }
-        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+        val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         val scope = rememberCoroutineScope()
 
         var showRatingSheet by remember { mutableStateOf(false) }

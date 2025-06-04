@@ -58,7 +58,7 @@ class SavedRecommendationScreen : Screen {
         val viewModel: SavedRecommendationViewModel = koinViewModel()
         val uiState by viewModel.uiState.collectAsState()
         val snackbarHostState = remember { SnackbarHostState() }
-        val scrollBehavior = TopAppBarDefaults.enterAlwaysScrollBehavior()
+        val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         
         LaunchedEffect(navigator) {
             viewModel.updateSearchQuery("")

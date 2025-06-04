@@ -115,6 +115,13 @@ class GroupsScreen(private val deepLinkInviteCode: String? = null) : Screen {
         val auth = remember { Firebase.auth }
         var firebaseUser: FirebaseUser? by remember { mutableStateOf(auth.currentUser) }
 
+        // Observamos cambios en el usuario y actualizamos el estado local
+        LaunchedEffect(Unit) {
+            auth.authStateChanged.collect { user ->
+                firebaseUser = user
+            }
+        }
+
         val viewModel = koinInject<GroupsViewModel> {
             parametersOf(
                 firebaseUser?.uid ?: "",
@@ -130,8 +137,14 @@ class GroupsScreen(private val deepLinkInviteCode: String? = null) : Screen {
         val completeFieldsText = stringResource(Res.string.complete_fields)
         val joinGroupText = stringResource(Res.string.join_success_message)
 
+        // Cargar grupos cuando cambia el usuario o cuando se monta la pantalla
+        LaunchedEffect(firebaseUser) {
+            if (firebaseUser != null) {
+                viewModel.loadGroups()
+            }
+        }
+
         LaunchedEffect(Unit) {
-            // Forzar una carga fresca de grupos cada vez que se crea la pantalla
             viewModel.loadGroups()
         }
 

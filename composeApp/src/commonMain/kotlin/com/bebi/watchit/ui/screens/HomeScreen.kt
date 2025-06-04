@@ -227,6 +227,10 @@ class HomeScreen : Screen {
                                 )
                             }
                         },
+                        colors = TopAppBarDefaults.topAppBarColors(
+                            containerColor = MaterialTheme.colorScheme.primaryContainer,
+                            titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                        ),
                         scrollBehavior = scrollBehavior
                     )
                 },
@@ -255,8 +259,8 @@ class HomeScreen : Screen {
                             .padding(paddingValues),
                         contentPadding = PaddingValues(bottom = 16.dp)
                     ) {
-                        // Group recommendations section - mostrar solo si hay datos y no está vacío
-                        if (mediaOpinionUiState.groupCritics.isNotEmpty()) {
+                        // Group recommendations section - mostrar solo si hay datos, no está vacío Y el usuario está autenticado
+                        if (user != null && mediaOpinionUiState.groupCritics.isNotEmpty()) {
                             item {
                                 Spacer(modifier = Modifier.height(16.dp))
                                 MediaCarouselSection(

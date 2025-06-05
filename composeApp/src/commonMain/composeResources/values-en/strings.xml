@@ -114,7 +114,7 @@
     <string name="group_created_success">Group created successfully!</string>
     <string name="group_invite_code">Invite Code</string>
     <string name="share_invite_code">Share invitation code</string>
-    <string name="invite_code_message">Use this code %1$s to join the group "%2$s" in Criticly. Tap here to join directly: criticly://group.join/%1$s</string>
+    <string name="invite_code_message">Use this code %1$s to join the group "%2$s" in Criticly. Tap here to join directly: https://criticly-web.onrender.com/join/%1$s</string>
     <string name="code_copied_to_clipboard">Code copied to clipboard</string>
     <string name="group_invitation_code">Invitation Code</string>
     <string name="join_group_description">Enter the invitation code to join the group</string>

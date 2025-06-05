@@ -36,7 +36,6 @@ class DeepLinkHandler {
                     }
                 } else {
                     println("DeepLinkHandler: Haciendo push de una nueva GroupsScreen")
-                    // Si no existe, simplemente hacemos push como lo hacíamos antes
                     navigator.push(GroupsScreen(inviteCode))
                 }
             } else {

@@ -119,7 +119,7 @@
     <string name="group_invitation_code">Invitation Code</string>
     <string name="join_group_description">Enter the invitation code to join the group</string>
     <string name="accept">Accept</string>
-    <string name="join_success_message">Join to the group with code: </string>
+    <string name="join_success_message">Join to the group</string>
 
     <!-- Auth Strings -->
     <string name="create_account">Create new account</string>

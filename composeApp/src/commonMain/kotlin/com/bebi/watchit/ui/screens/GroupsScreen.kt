@@ -87,6 +87,7 @@ import moviesseriesshare.composeapp.generated.resources.email
 import moviesseriesshare.composeapp.generated.resources.group_invitation_code
 import moviesseriesshare.composeapp.generated.resources.group_members
 import moviesseriesshare.composeapp.generated.resources.group_members_plural
+import moviesseriesshare.composeapp.generated.resources.invite_code_message
 import moviesseriesshare.composeapp.generated.resources.join_group
 import moviesseriesshare.composeapp.generated.resources.join_group_description
 import moviesseriesshare.composeapp.generated.resources.join_success_message

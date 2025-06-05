@@ -72,6 +72,9 @@ kotlin {
             implementation(libs.voyager.screenModel)
             implementation(libs.voyager.transitions)
 
+            implementation(libs.napier)
+
+
             // Firebase
             api(libs.gitlive.firebase.kotlin.analytics)
             api(libs.gitlive.firebase.kotlin.database)

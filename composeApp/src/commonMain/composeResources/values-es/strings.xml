@@ -119,7 +119,7 @@
     <string name="group_invitation_code">Código de Invitación</string>
     <string name="join_group_description">Ingresá el código para unirte al grupo</string>
     <string name="accept">Aceptar</string>
-    <string name="join_success_message">Unido al grupo con código: </string>
+    <string name="join_success_message">Unido al grupo</string>
 
     <!-- Group Info Dialog -->
     <string name="copy_code">Copiar código</string>

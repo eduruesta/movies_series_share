@@ -7,6 +7,7 @@ import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.analytics.analytics
 import dev.gitlive.firebase.database.database
 import dev.gitlive.firebase.initialize
+import io.github.aakira.napier.Napier
 
 fun MainViewController() = ComposeUIViewController(
     configure = {
@@ -30,8 +31,7 @@ fun initialise() {
  * @param deepLink La URL completa del deep link recibido
  */
 fun processDeepLink(deepLink: String) {
-    println("Kotlin iOS recibió deep link: $deepLink")
-    
+    Napier.d(tag = "Deeplink", message = "Deep link recibido: $deepLink")
     // Actualizamos la variable global con el deep link recibido
     // Esto disparará el LaunchedEffect en App.kt que procesará el deep link
     currentDeepLink.value = deepLink

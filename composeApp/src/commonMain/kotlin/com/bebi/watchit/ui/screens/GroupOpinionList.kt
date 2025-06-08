@@ -22,6 +22,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -65,6 +66,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.bebi.watchit.data.models.GroupResponse
 import com.bebi.watchit.model.MediaOpinion
+import com.bebi.watchit.rememberShareManager
 import com.bebi.watchit.ui.components.ErrorScreen
 import com.bebi.watchit.ui.components.Info
 import com.bebi.watchit.ui.components.MediaOpinionItem
@@ -186,7 +188,6 @@ fun GroupOpinionListScreen(
     var selectedOpinion by remember { mutableStateOf<MediaOpinion?>(null) }
     var showGroupInfoDialog by remember { mutableStateOf(false) }
 
-    val clipboardManager = LocalClipboardManager.current
 
     Scaffold(
         topBar = {
@@ -310,7 +311,6 @@ fun GroupOpinionListScreen(
             groupName = groupName,
             inviteCode = inviteCode,
             onDismiss = { showGroupInfoDialog = false },
-            clipboardManager = clipboardManager,
             groupInfo = groupInfo,
             isOwner = isOwner,
             onLeaveGroup = onLeaveGroup,
@@ -325,7 +325,6 @@ private fun GroupInfoBottomSheet(
     groupName: String,
     inviteCode: String,
     onDismiss: () -> Unit,
-    clipboardManager: ClipboardManager,
     groupInfo: GroupResponse,
     isOwner: Boolean,
     onLeaveGroup: () -> Unit = {},
@@ -339,6 +338,8 @@ private fun GroupInfoBottomSheet(
         inviteCode,
         groupInfo.name
     )
+    val shareManager = rememberShareManager()
+    val scope = rememberCoroutineScope()
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -399,16 +400,18 @@ private fun GroupInfoBottomSheet(
                 ) {
                     Text(
                         text = inviteCode,
-                        style = MaterialTheme.typography.bodyLarge
+                        style = MaterialTheme.typography.titleLarge
                     )
 
                     IconButton(
                         onClick = {
-                            clipboardManager.setText(AnnotatedString(member))
+                            scope.launch {
+                                shareManager.shareText(member)
+                            }
                         }
                     ) {
                         Icon(
-                            imageVector = copyToClipboard,
+                            imageVector = Icons.Rounded.Share,
                             contentDescription = stringResource(Res.string.copy_code)
                         )
                     }

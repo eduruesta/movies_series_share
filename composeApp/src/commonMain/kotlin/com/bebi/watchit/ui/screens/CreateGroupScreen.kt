@@ -70,13 +70,16 @@ data class CreateGroupScreen(
         var groupName by remember { mutableStateOf("") }
         var groupDescription by remember { mutableStateOf("") }
         var isLoading by remember { mutableStateOf(false) }
+        var hasAttemptedCreate by remember { mutableStateOf(false) }
 
         val uiState by viewModel.uiState.collectAsState()
 
         LaunchedEffect(uiState.groups, uiState.isLoading) {
-            if (!uiState.isLoading) {
-                isLoading = false
+            if (!uiState.isLoading && isLoading && uiState.error == null) {
+                // Si ha terminado de cargar sin errores, volvemos a la pantalla anterior
+                navigator.pop()
             }
+            isLoading = uiState.isLoading
         }
 
         CreateGroupContent(
@@ -85,15 +88,17 @@ data class CreateGroupScreen(
             groupDescription = groupDescription,
             onGroupDescriptionChange = { groupDescription = it },
             onCreateGroup = {
+                hasAttemptedCreate = true
                 if (groupName.isEmpty()) {
+                    // No hacemos nada, se mostrará el error
                 } else {
                     isLoading = true
                     viewModel.createGroup(groupName, groupDescription)
-                    navigator.pop()
+                    // No navegamos inmediatamente, esperamos a que termine la operación
                 }
             },
             onBackPressed = { navigator.pop() },
-            showNameError = groupName.isEmpty(),
+            showNameError = hasAttemptedCreate && groupName.isEmpty(),
             isLoading = isLoading,
             error = uiState.error,
             snackbarHostState = snackbarHostState

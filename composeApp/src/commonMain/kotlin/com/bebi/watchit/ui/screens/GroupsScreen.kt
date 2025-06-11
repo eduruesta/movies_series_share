@@ -46,6 +46,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -87,7 +88,6 @@ import moviesseriesshare.composeapp.generated.resources.email
 import moviesseriesshare.composeapp.generated.resources.group_invitation_code
 import moviesseriesshare.composeapp.generated.resources.group_members
 import moviesseriesshare.composeapp.generated.resources.group_members_plural
-import moviesseriesshare.composeapp.generated.resources.invite_code_message
 import moviesseriesshare.composeapp.generated.resources.join_group
 import moviesseriesshare.composeapp.generated.resources.join_group_description
 import moviesseriesshare.composeapp.generated.resources.join_success_message
@@ -131,8 +131,13 @@ class GroupsScreen(private val deepLinkInviteCode: String? = null) : Screen {
             )
         }
         val uiState by viewModel.uiState.collectAsState()
-        var showJoinGroupSheet by remember { mutableStateOf(deepLinkInviteCode != null) }
-        var prefilledCode by remember { mutableStateOf(deepLinkInviteCode ?: "") }
+        val alreadyHandledInviteCode = rememberSaveable { mutableStateOf(false) }
+
+        var showJoinGroupSheet by remember {
+            mutableStateOf(deepLinkInviteCode != null && !alreadyHandledInviteCode.value)
+        }
+
+        val prefilledCode by remember { mutableStateOf(deepLinkInviteCode ?: "") }
 
         val authErrorText = stringResource(Res.string.auth_error)
         val completeFieldsText = stringResource(Res.string.complete_fields)
@@ -191,10 +196,14 @@ class GroupsScreen(private val deepLinkInviteCode: String? = null) : Screen {
 
                 if (showJoinGroupSheet) {
                     JoinGroupBottomSheet(
-                        onDismiss = { showJoinGroupSheet = false },
+                        onDismiss = {
+                            showJoinGroupSheet = false
+                            alreadyHandledInviteCode.value = true
+                        },
                         onJoin = { invitationCode ->
                             coroutineScope.launch {
                                 showJoinGroupSheet = false
+                                alreadyHandledInviteCode.value = true
                                 viewModel.joinGroup(invitationCode)
                                 snackbarHostState.showSnackbar(joinGroupText)
                                 viewModel.loadGroups()

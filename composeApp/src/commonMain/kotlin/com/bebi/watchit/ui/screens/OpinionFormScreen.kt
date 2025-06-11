@@ -308,7 +308,7 @@ data class OpinionFormScreen(val id: String? = null) : Screen {
                     Button(
                         onClick = { viewModel.saveOpinion(groupId = id) },
                         modifier = Modifier.fillMaxWidth(),
-                        enabled = viewModel.title.isNotBlank()
+                        enabled = viewModel.title.isNotBlank() && viewModel.rating > 0f
                     ) {
                         Text(stringResource(Res.string.save_button))
                     }

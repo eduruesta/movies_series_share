@@ -19,7 +19,7 @@ import kotlinx.coroutines.launch
 class MediaOpinionViewModel(
     private val repository: MediaOpinionRepository,
     private val groupsRepository: GroupsRepository,
-    private val currentUserId: String,
+    private var currentUserId: String,
     private val groupCriticsCacheDao: GroupCriticsCacheDao
 ) : ViewModel() {
 
@@ -27,6 +27,30 @@ class MediaOpinionViewModel(
     val uiState: StateFlow<MediaOpinionUiState> = _uiState.asStateFlow()
 
     // Se quita el init para cargar datos bajo demanda
+
+    /**
+     * Actualiza el ID del usuario actual y limpia los datos anteriores
+     */
+    fun updateCurrentUser(userId: String) {
+        if (currentUserId != userId) {
+            currentUserId = userId
+            _uiState.update {
+                it.copy(
+                    groupCritics = emptyList(),
+                    isLoadingGroupCritics = false
+                )
+            }
+        }
+    }
+    
+    /**
+     * Limpia todos los datos almacenados en el ViewModel
+     */
+    fun clearData() {
+        _uiState.update {
+            MediaOpinionUiState(isLoading = false, isLoadingGroupCritics = false)
+        }
+    }
 
     fun loadOpinions() {
         viewModelScope.launch {

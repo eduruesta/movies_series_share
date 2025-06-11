@@ -41,8 +41,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
@@ -90,10 +92,21 @@ class HomeScreen : Screen {
         val snackbarHostState = remember { SnackbarHostState() }
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         val scope = rememberCoroutineScope()
-
-        // ViewModels
-        val user = Firebase.auth.currentUser
-        val currentUserId = user?.uid ?: ""
+        
+        // Observamos los cambios en el estado de autenticación
+        val auth = Firebase.auth
+        val authStateFlow = remember { auth.authStateChanged }
+        var currentUser by remember { mutableStateOf(auth.currentUser) }
+        
+        // Actualizamos currentUser cuando cambia el estado de autenticación
+        LaunchedEffect(Unit) {
+            authStateFlow.collect { user ->
+                currentUser = user
+            }
+        }
+        
+        // ViewModels - Recreados cuando cambia el usuario
+        val currentUserId = currentUser?.uid ?: ""
         val mediaOpinionViewModel: MediaOpinionViewModel = koinViewModel { parametersOf(currentUserId) }
         val trendingMoviesViewModel: TrendingMoviesViewModel = koinViewModel()
         val trendingSeriesViewModel: TrendingSeriesViewModel = koinViewModel()
@@ -141,6 +154,17 @@ class HomeScreen : Screen {
         // Cargar datos inicialmente
         LaunchedEffect(Unit) {
             reloadAllData()
+        }
+
+        // Efecto para recargar datos cuando cambia el usuario
+        LaunchedEffect(currentUserId) {
+            if (currentUserId.isNotEmpty()) {
+                mediaOpinionViewModel.updateCurrentUser(currentUserId)
+                mediaOpinionViewModel.loadGroupCritics()
+            } else {
+                // Si no hay usuario, limpiar los datos del ViewModel
+                mediaOpinionViewModel.clearData()
+            }
         }
 
         // Drawer state
@@ -260,7 +284,7 @@ class HomeScreen : Screen {
                         contentPadding = PaddingValues(bottom = 16.dp)
                     ) {
                         // Group recommendations section - mostrar solo si hay datos, no está vacío Y el usuario está autenticado
-                        if (user != null && mediaOpinionUiState.groupCritics.isNotEmpty()) {
+                        if (currentUser != null && mediaOpinionUiState.groupCritics.isNotEmpty()) {
                             item {
                                 Spacer(modifier = Modifier.height(16.dp))
                                 MediaCarouselSection(

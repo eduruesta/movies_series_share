@@ -48,3 +48,37 @@ data class TmdbGenre(
 data class TmdbGenresResponse(
     @SerialName("genres") val genres: List<TmdbGenre> = emptyList()
 )
+
+/**
+ * Modelo para la respuesta de créditos de una película
+ */
+@Serializable
+data class TmdbCreditsResponse(
+    @SerialName("id") val id: Int,
+    @SerialName("cast") val cast: List<TmdbCastMember> = emptyList(),
+    @SerialName("crew") val crew: List<TmdbCrewMember> = emptyList()
+)
+
+/**
+ * Modelo para un miembro del elenco
+ */
+@Serializable
+data class TmdbCastMember(
+    @SerialName("id") val id: Int,
+    @SerialName("name") val name: String,
+    @SerialName("profile_path") val profilePath: String? = null,
+    @SerialName("character") val character: String? = null,
+    @SerialName("order") val order: Int = 0
+)
+
+/**
+ * Modelo para un miembro del equipo de producción
+ */
+@Serializable
+data class TmdbCrewMember(
+    @SerialName("id") val id: Int,
+    @SerialName("name") val name: String,
+    @SerialName("profile_path") val profilePath: String? = null,
+    @SerialName("department") val department: String? = null,
+    @SerialName("job") val job: String? = null
+)

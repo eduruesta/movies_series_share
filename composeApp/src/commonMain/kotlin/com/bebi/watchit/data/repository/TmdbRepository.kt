@@ -2,6 +2,10 @@ package com.bebi.watchit.data.repository
 
 import com.bebi.watchit.data.remote.AppService
 import com.bebi.watchit.data.remote.model.Provider
+import com.bebi.watchit.data.remote.model.CountryProviders
+import com.bebi.watchit.data.remote.model.TmdbCastMember
+import com.bebi.watchit.data.remote.model.TmdbCreditsResponse
+import com.bebi.watchit.data.remote.model.TmdbCrewMember
 import com.bebi.watchit.data.remote.model.TmdbGenre
 import com.bebi.watchit.data.remote.model.TmdbMediaItem
 import kotlinx.coroutines.Dispatchers
@@ -152,7 +156,8 @@ class TmdbRepository(private val appService: AppService) {
     
     /**
      * Obtiene los proveedores de streaming para una película
-     * @return Lista de nombres de plataformas disponibles en el país del usuario
+     * @param movieId ID de la película en TMDB
+     * @return Mapa de proveedores por país
      */
     suspend fun getMovieWatchProviders(movieId: Int): Result<List<String>> = withContext(Dispatchers.IO) {
         try {
@@ -195,4 +200,73 @@ class TmdbRepository(private val appService: AppService) {
             Result.failure(e)
         }
     }
+
+    /**
+     * Obtiene los créditos de una película (elenco y equipo)
+     * @param movieId ID de la película en TMDB
+     * @return Respuesta con la información del elenco y equipo de la película
+     */
+    suspend fun getMovieCredits(movieId: Int): Result<TmdbCreditsResponse> = withContext(Dispatchers.IO) {
+        try {
+            val response = appService.getMovieCredits(movieId)
+            Result.success(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Obtiene el elenco principal de una película (solo actores)
+     * @param movieId ID de la película en TMDB
+     * @param limit Número máximo de actores a devolver (opcional)
+     * @return Lista con los actores de la película ordenados por importancia
+     */
+    suspend fun getMovieCast(movieId: Int, limit: Int? = null): Result<List<TmdbCastMember>> = withContext(Dispatchers.IO) {
+        try {
+            val credits = appService.getMovieCredits(movieId)
+            val castList = if (limit != null) {
+                credits.cast.take(limit)
+            } else {
+                credits.cast
+            }
+            Result.success(castList)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Obtiene los créditos de una serie (elenco y equipo)
+     * @param tvId ID de la serie en TMDB
+     * @return Respuesta con la información del elenco y equipo de la película
+     */
+    suspend fun getTvCredits(tvId: Int): Result<TmdbCreditsResponse> = withContext(Dispatchers.IO) {
+        try {
+            val response = appService.getTvCredits(tvId)
+            Result.success(response)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Obtiene el elenco principal de una serie (solo actores)
+     * @param serieId ID de la película en TMDB
+     * @param limit Número máximo de actores a devolver (opcional)
+     * @return Lista con los actores de la serie ordenados por importancia
+     */
+    suspend fun getTvCast(tvId: Int, limit: Int? = null): Result<List<TmdbCastMember>> = withContext(Dispatchers.IO) {
+        try {
+            val credits = appService.getTvCredits(tvId)
+            val castList = if (limit != null) {
+                credits.cast.take(limit)
+            } else {
+                credits.cast
+            }
+            Result.success(castList)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
 }

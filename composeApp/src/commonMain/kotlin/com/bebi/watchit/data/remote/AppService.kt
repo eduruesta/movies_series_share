@@ -3,6 +3,7 @@ package com.bebi.watchit.data.remote
 import com.bebi.app.watchit.BuildConfig
 import com.bebi.watchit.data.myCountry
 import com.bebi.watchit.data.myLang
+import com.bebi.watchit.data.remote.model.TmdbCreditsResponse
 import com.bebi.watchit.data.remote.model.TmdbGenresResponse
 import com.bebi.watchit.data.remote.model.TmdbSearchResponse
 import com.bebi.watchit.data.remote.model.TmdbWatchProvidersResponse
@@ -210,6 +211,40 @@ class AppService(
             protocol = URLProtocol.HTTPS
             host = baseUrl
             appendPathSegments(apiVersion, "tv", tvId.toString(), "watch", "providers")
+            parameters.append("api_key", BuildConfig.api_key)
+        }.build()
+
+        return client.get(url).body()
+    }
+    
+    /**
+     * Obtiene los créditos (elenco y equipo) de una película
+     * @param movieId ID de la película en TMDB
+     * @return Respuesta con la información del elenco y equipo de la película
+     */
+    suspend fun getMovieCredits(movieId: Int): TmdbCreditsResponse {
+        val url = URLBuilder().apply {
+            protocol = URLProtocol.HTTPS
+            host = baseUrl
+            appendPathSegments(apiVersion, "movie", movieId.toString(), "credits")
+            parameters.append("language", language)
+            parameters.append("api_key", BuildConfig.api_key)
+        }.build()
+
+        return client.get(url).body()
+    }
+
+    /**
+     * Obtiene los créditos (elenco y equipo) de una serie
+     * @param serieId ID de la serie en TMDB
+     * @return Respuesta con la información del elenco y equipo de la serie
+     */
+    suspend fun getTvCredits(tvId: Int): TmdbCreditsResponse {
+        val url = URLBuilder().apply {
+            protocol = URLProtocol.HTTPS
+            host = baseUrl
+            appendPathSegments(apiVersion, "tv", tvId.toString(), "credits")
+            parameters.append("language", language)
             parameters.append("api_key", BuildConfig.api_key)
         }.build()
 

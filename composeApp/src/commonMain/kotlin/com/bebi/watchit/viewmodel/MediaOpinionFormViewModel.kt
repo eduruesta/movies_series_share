@@ -8,6 +8,7 @@ import androidx.lifecycle.viewModelScope
 import com.bebi.watchit.data.remote.model.TmdbMediaItem
 import com.bebi.watchit.data.repository.MediaOpinionRepository
 import com.bebi.watchit.data.repository.TmdbRepository
+import com.bebi.watchit.model.Comment
 import com.bebi.watchit.model.MediaOpinion
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -236,7 +237,10 @@ class MediaOpinionFormViewModel(
             val commentsList = if (comments.isBlank()) {
                 emptyList()
             } else {
-                listOf(comments)
+                listOf(Comment(
+                    text = comments,
+                    username = pendingUsername ?: "Anónimo"
+                ))
             }
 
             val finalGroupId = groupId ?: pendingGroupId

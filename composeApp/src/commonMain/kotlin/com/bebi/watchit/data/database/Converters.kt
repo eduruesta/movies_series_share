@@ -1,6 +1,7 @@
 package com.bebi.watchit.data.database
 
 import androidx.room.TypeConverter
+import com.bebi.watchit.model.Comment
 import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.json.Json
@@ -47,6 +48,27 @@ class Converters {
         if (value.isBlank()) return emptyList()
         return try {
             Json.decodeFromString(ListSerializer(Int.serializer()), value)
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
+    /**
+     * Converts a List of Comment objects to a JSON string for storage
+     */
+    @TypeConverter
+    fun fromCommentList(comments: List<Comment>): String {
+        return Json.encodeToString(comments)
+    }
+
+    /**
+     * Converts a JSON string back to a List of Comment objects
+     */
+    @TypeConverter
+    fun toCommentList(value: String): List<Comment> {
+        if (value.isBlank()) return emptyList()
+        return try {
+            Json.decodeFromString<List<Comment>>(value)
         } catch (e: Exception) {
             emptyList()
         }

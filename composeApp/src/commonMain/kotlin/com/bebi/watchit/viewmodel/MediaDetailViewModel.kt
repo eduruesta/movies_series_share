@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.bebi.watchit.data.repository.MediaOpinionRepository
 import com.bebi.watchit.data.repository.TmdbRepository
 import com.bebi.watchit.data.remote.model.TmdbCastMember
+import com.bebi.watchit.model.Comment
 import com.bebi.watchit.model.MediaOpinion
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,7 +34,7 @@ class MediaDetailViewModel(
             try {
                 val opinion = repository.getOpinionByIdDirect(id)
 
-                _uiState.update { 
+                _uiState.update {
                     it.copy(
                         opinion = opinion,
                         isLoading = false,
@@ -61,7 +62,8 @@ class MediaDetailViewModel(
      */
     fun loadCast(tmdbId: Int, isMovie: Boolean? = null) {
         // No dependemos de opinion, usamos el isMovie proporcionado o lo inferimos de la opinión si está disponible
-        val isMovieMedia = isMovie ?: _uiState.value.opinion?.isMovie ?: true // Por defecto asumimos película
+        val isMovieMedia =
+            isMovie ?: _uiState.value.opinion?.isMovie ?: true // Por defecto asumimos película
 
         // Indicar que estamos cargando el elenco
         _uiState.update { it.copy(isLoadingCast = true) }
@@ -106,10 +108,16 @@ class MediaDetailViewModel(
      * Añade un nuevo comentario a la opinión actual.
      * Verifica si la opinión existe en el servidor antes de decidir si crear nueva o actualizar.
      */
-    fun addComment(comment: String) {
-        if (comment.isBlank()) return
+    fun addComment(commentText: String, username: String) {
+        if (commentText.isBlank()) return
 
         val currentOpinion = _uiState.value.opinion ?: return
+
+        // Crear el objeto Comment con la información del backend
+        val comment = Comment(
+            text = commentText,
+            username = username
+        )
 
         viewModelScope.launch {
             try {
@@ -135,7 +143,7 @@ class MediaDetailViewModel(
                     val savedId = repository.saveOpinion(newOpinion)
                     if (savedId > 0) {
                         loadOpinionById(savedId)
-                        _uiState.update { it.copy(newComment = "") }
+                        _uiState.update { it.copy(newComment = "", username = "") }
                     } else {
                         _uiState.update { it.copy(commentError = "No se pudo guardar la opinión") }
                     }
@@ -148,7 +156,13 @@ class MediaDetailViewModel(
 
                     val success = repository.updateOpinionById(existingOpinion.id, updatedOpinion)
                     if (success) {
-                        _uiState.update { it.copy(opinion = updatedOpinion, newComment = "") }
+                        _uiState.update {
+                            it.copy(
+                                opinion = updatedOpinion,
+                                newComment = "",
+                                username = ""
+                            )
+                        }
                     } else {
                         _uiState.update { it.copy(commentError = "No se pudo actualizar la opinión") }
                     }
@@ -165,6 +179,13 @@ class MediaDetailViewModel(
     fun updateNewComment(comment: String) {
         _uiState.update { it.copy(newComment = comment) }
     }
+
+    /**
+     * Actualiza el nombre del autor del nuevo comentario
+     */
+    fun updateUsername(username: String) {
+        _uiState.update { it.copy(username = username) }
+    }
 }
 
 /**
@@ -175,6 +196,7 @@ data class MediaDetailUiState(
     val isLoading: Boolean = false,
     val error: MediaDetailError? = null,
     val newComment: String = "",
+    val username: String = "",
     val commentError: String? = null,
     val cast: List<TmdbCastMember>? = null,
     val isLoadingCast: Boolean = false

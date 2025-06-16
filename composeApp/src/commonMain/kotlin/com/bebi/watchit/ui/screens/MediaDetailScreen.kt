@@ -219,20 +219,43 @@ data class MediaDetailScreen(
                 onDismissRequest = { showCommentDialog = false },
                 title = { Text(stringResource(Res.string.add_new_comment)) },
                 text = {
-                    OutlinedTextField(
-                        value = uiState.newComment,
-                        onValueChange = { viewModel.updateNewComment(it) },
+                    Column(
                         modifier = Modifier.fillMaxWidth(),
-                        placeholder = { Text(stringResource(Res.string.write_your_comment)) },
-                        minLines = 3
-                    )
+                        verticalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        // Campo para el nombre del autor
+                        OutlinedTextField(
+                            value = uiState.username,
+                            onValueChange = { viewModel.updateUsername(it) },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text("Tu nombre de usuario") },
+                            label = { Text("Nombre de usuario") },
+                            singleLine = true
+                        )
+                        
+                        // Campo para el comentario
+                        OutlinedTextField(
+                            value = uiState.newComment,
+                            onValueChange = { viewModel.updateNewComment(it) },
+                            modifier = Modifier.fillMaxWidth(),
+                            placeholder = { Text(stringResource(Res.string.write_your_comment)) },
+                            label = { Text("Comentario") },
+                            minLines = 3
+                        )
+                    }
                 },
                 confirmButton = {
                     TextButton(
                         onClick = {
-                            viewModel.addComment(uiState.newComment)
+                            // Verificar que haya un nombre de usuario
+                            if (uiState.username.isBlank()) {
+                                // Si no hay nombre, podríamos mostrar un error o usar "Anónimo"
+                                viewModel.updateUsername("Anónimo")
+                            }
+                            viewModel.addComment(uiState.newComment, uiState.username)
                             showCommentDialog = false
-                        }
+                        },
+                        enabled = uiState.newComment.isNotBlank()
                     ) {
                         Text(stringResource(Res.string.save))
                     }
@@ -719,13 +742,28 @@ data class MediaDetailScreen(
                                                                     bottomEnd = 12.dp
                                                                 )
                                                             ) {
-                                                                Text(
-                                                                    text = comment,
-                                                                    style = MaterialTheme.typography.bodyMedium,
-                                                                    modifier = Modifier.padding(
-                                                                        12.dp
+                                                                Column(
+                                                                    modifier = Modifier.padding(12.dp)
+                                                                ) {
+                                                                    // Nombre del autor, estilo WhatsApp
+                                                                    Text(
+                                                                        text = comment.username,
+                                                                        style = MaterialTheme.typography.labelMedium.copy(
+                                                                            fontWeight = FontWeight.Bold,
+                                                                            color = if (isEven) 
+                                                                                MaterialTheme.colorScheme.primary
+                                                                            else
+                                                                                MaterialTheme.colorScheme.secondary
+                                                                        ),
+                                                                        modifier = Modifier.padding(bottom = 4.dp)
                                                                     )
-                                                                )
+                                                                    
+                                                                    // Contenido del mensaje
+                                                                    Text(
+                                                                        text = comment.text,
+                                                                        style = MaterialTheme.typography.bodyMedium
+                                                                    )
+                                                                }
                                                             }
                                                         }
                                                     }

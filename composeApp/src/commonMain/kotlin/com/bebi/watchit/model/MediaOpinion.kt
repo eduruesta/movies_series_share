@@ -5,6 +5,7 @@ import androidx.room.Entity
 import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.bebi.watchit.data.JavaSerializable
+import com.bebi.watchit.model.Comment
 import kotlinx.serialization.Serializable
 
 /**
@@ -24,7 +25,7 @@ data class MediaOpinion(
     @ColumnInfo(name = "rating")
     val rating: Float = 0f,
     @ColumnInfo(name = "comments")
-    val comments: List<String> = mutableListOf(),
+    val comments: List<Comment> = mutableListOf(),
     @ColumnInfo(name = "image_url")
     val imageUrl: String = "",
     @ColumnInfo(name = "genre")

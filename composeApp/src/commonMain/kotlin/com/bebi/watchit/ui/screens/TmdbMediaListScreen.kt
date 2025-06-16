@@ -5,7 +5,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
@@ -167,7 +169,10 @@ abstract class TmdbMediaListScreen : Screen {
                                 uiState.mediaItems
                             }
                             
-                            itemsIndexed(displayedItems) { index, mediaItem ->
+                            itemsIndexed(
+                                items = displayedItems,
+                                key = { _, mediaItem -> mediaItem.id } // Esto asegura que las animaciones sean específicas para cada elemento
+                            ) { index, mediaItem ->
                                 MediaOpinionItem(
                                     opinion = mediaItem,
                                     onClick = {
@@ -195,6 +200,29 @@ abstract class TmdbMediaListScreen : Screen {
                                     HorizontalDivider(
                                         modifier = Modifier.padding(vertical = 8.dp)
                                     )
+                                }
+                                
+                                // Comprobar si hemos llegado casi al final de la lista para cargar más datos
+                                if (index >= displayedItems.size - 3 && !uiState.isLoadingNextPage && !uiState.hasReachedEnd) {
+                                    LaunchedEffect(key1 = index) {
+                                        viewModel.loadNextPage()
+                                    }
+                                }
+                            }
+                            
+                            // Mostrar indicador de carga para la siguiente página
+                            if (uiState.isLoadingNextPage) {
+                                item {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .padding(8.dp),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        CircularProgressIndicator(
+                                            modifier = Modifier.size(24.dp)
+                                        )
+                                    }
                                 }
                             }
                         }

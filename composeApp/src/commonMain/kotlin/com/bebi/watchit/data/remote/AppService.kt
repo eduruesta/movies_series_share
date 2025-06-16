@@ -110,12 +110,13 @@ class AppService(
     /**
      * Get trending TV shows for the week
      */
-    suspend fun getTrendingTvShows(): TmdbSearchResponse {
+    suspend fun getTrendingTvShows(page: Int = 1): TmdbSearchResponse {
         val url = URLBuilder().apply {
             protocol = URLProtocol.HTTPS
             host = baseUrl
             appendPathSegments(apiVersion, "trending", "tv", "week")
             parameters.append("language", language)
+            parameters.append("page", page.toString())
             parameters.append("api_key", BuildConfig.api_key)
         }.build()
 
@@ -125,12 +126,13 @@ class AppService(
     /**
      * Get trending movies for the week
      */
-    suspend fun getTrendingMovies(): TmdbSearchResponse {
+    suspend fun getTrendingMovies(page: Int = 1): TmdbSearchResponse {
         val url = URLBuilder().apply {
             protocol = URLProtocol.HTTPS
             host = baseUrl
             appendPathSegments(apiVersion, "trending", "movie", "week")
             parameters.append("language", language)
+            parameters.append("page", page.toString())
             parameters.append("api_key", BuildConfig.api_key)
         }.build()
 
@@ -140,13 +142,13 @@ class AppService(
     /**
      * Get top rated movies
      */
-    suspend fun getTopRatedMovies(): TmdbSearchResponse {
+    suspend fun getTopRatedMovies(page: Int = 1): TmdbSearchResponse {
         val url = URLBuilder().apply {
             protocol = URLProtocol.HTTPS
             host = baseUrl
             appendPathSegments(apiVersion, "movie", "top_rated")
             parameters.append("language", language)
-            parameters.append("page", "1")
+            parameters.append("page", page.toString())
             parameters.append("api_key", BuildConfig.api_key)
         }.build()
 
@@ -156,13 +158,13 @@ class AppService(
     /**
      * Get upcoming movies
      */
-    suspend fun getUpcomingMovies(): TmdbSearchResponse {
+    suspend fun getUpcomingMovies(page: Int = 1): TmdbSearchResponse {
         val url = URLBuilder().apply {
             protocol = URLProtocol.HTTPS
             host = baseUrl
             appendPathSegments(apiVersion, "movie", "upcoming")
             parameters.append("language", language)
-            parameters.append("page", "1")
+            parameters.append("page", page.toString())
             parameters.append("api_key", BuildConfig.api_key)
         }.build()
 
@@ -172,13 +174,13 @@ class AppService(
     /**
      * Get top rated TV shows
      */
-    suspend fun getTopRatedTvShows(): TmdbSearchResponse {
+    suspend fun getTopRatedTvShows(page: Int = 1): TmdbSearchResponse {
         val url = URLBuilder().apply {
             protocol = URLProtocol.HTTPS
             host = baseUrl
             appendPathSegments(apiVersion, "tv", "top_rated")
             parameters.append("language", language)
-            parameters.append("page", "1")
+            parameters.append("page", page.toString())
             parameters.append("api_key", BuildConfig.api_key)
         }.build()
 

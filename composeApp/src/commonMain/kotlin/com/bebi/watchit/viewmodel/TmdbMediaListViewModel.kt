@@ -33,6 +33,8 @@ abstract class TmdbMediaListViewModel(
     var genre by mutableStateOf("")
         private set
 
+    private val MAX_PAGES = 3
+
     // Categoría que identifica el tipo de datos que maneja este ViewModel
     protected abstract val cacheCategory: String
 
@@ -40,7 +42,7 @@ abstract class TmdbMediaListViewModel(
         loadMediaList() // Cargamos los datos automáticamente al inicializar el ViewModel
     }
 
-    protected abstract suspend fun loadMediaItems(): Result<List<TmdbMediaItem>>
+    protected abstract suspend fun loadMediaItems(page: Int): Result<List<TmdbMediaItem>>
 
     /**
      * Carga la lista de medios según la implementación específica
@@ -50,91 +52,24 @@ abstract class TmdbMediaListViewModel(
             _uiState.update { it.copy(isLoading = true, error = null) }
 
             try {
-                val result = loadMediaItems()
+                val result = loadMediaItems(1)
                 result.fold(
                     onSuccess = { items ->
                         val mediaOpinions = items.map { convertToMediaOpinion(it) }
-                        
+
                         _uiState.update {
                             it.copy(
                                 mediaItems = mediaOpinions,
-                                filteredMediaItems = mediaOpinions
+                                filteredMediaItems = mediaOpinions,
+                                currentPage = 1,
+                                hasReachedEnd = false
                             )
                         }
-                        
+
                         // Guardamos los datos en la caché
                         saveToCache(items)
-                        
-                        val loadingTasks = mediaOpinions.map { opinion ->
-                            async {
-                                val item = items.find { it.id.toLong() == opinion.id } ?: return@async null
-                                val isMovie = item.mediaType == "movie"
-                                
-                                val genresResult = if (isMovie) {
-                                    repository.getGenreNames(item.genreIds, isMovie = true)
-                                } else {
-                                    repository.getGenreNames(item.genreIds, isMovie = false)
-                                }
-                                
-                                val providersResult = if (isMovie) {
-                                    repository.getMovieWatchProviders(item.id)
-                                } else {
-                                    repository.getTvWatchProviders(item.id)
-                                }
-                                
-                                var genreText = ""
-                                var platformText = ""
-                                
-                                genresResult.fold(
-                                    onSuccess = { genreNames ->
-                                        if (genreNames.isNotEmpty()) {
-                                            genreText = genreNames.joinToString(", ")
-                                        }
-                                    },
-                                    onFailure = { /* No action needed */ }
-                                )
-                                
-                                providersResult.fold(
-                                    onSuccess = { providers ->
-                                        if (providers.isNotEmpty()) {
-                                            platformText = providers.first()
-                                        }
-                                    },
-                                    onFailure = { /* No action needed */ }
-                                )
-                                
-                                if (genreText.isNotEmpty() || platformText.isNotEmpty()) {
-                                    return@async opinion.copy(
-                                        genre = genreText.ifEmpty { opinion.genre },
-                                        platform = platformText.ifEmpty { opinion.platform }
-                                    )
-                                }
-                                
-                                return@async null
-                            }
-                        }
-                        
-                        val updatedOpinions = loadingTasks.awaitAll().filterNotNull()
-                        
-                        val currentState = _uiState.value
-                        val updatedMediaItems = currentState.mediaItems.map { opinion ->
-                            updatedOpinions.find { it.id == opinion.id } ?: opinion
-                        }
-                        
-                        _uiState.update {
-                            it.copy(
-                                isLoading = false,
-                                mediaItems = updatedMediaItems,
-                                filteredMediaItems = if (it.searchQuery.isEmpty()) {
-                                    updatedMediaItems
-                                } else {
-                                    updatedMediaItems.filter { opinion ->
-                                        opinion.title.contains(it.searchQuery, ignoreCase = true) || 
-                                        opinion.synopsis.contains(it.searchQuery, ignoreCase = true)
-                                    }
-                                }
-                            )
-                        }
+
+                        loadAdditionalData(mediaOpinions, items)
                     },
                     onFailure = { error ->
                         // Intentamos cargar datos de la caché en caso de error
@@ -149,6 +84,178 @@ abstract class TmdbMediaListViewModel(
     }
 
     /**
+     * Carga la siguiente página de resultados
+     */
+    fun loadNextPage() {
+        val currentState = _uiState.value
+
+        if (currentState.isLoadingNextPage || currentState.isLoading ||
+            currentState.hasReachedEnd || currentState.currentPage >= MAX_PAGES) {
+            return
+        }
+
+        val nextPage = currentState.currentPage + 1
+
+        viewModelScope.launch {
+            _uiState.update { it.copy(isLoadingNextPage = true) }
+
+            try {
+                val result = loadMediaItems(nextPage)
+                result.fold(
+                    onSuccess = { items ->
+                        if (items.isEmpty()) {
+                            _uiState.update {
+                                it.copy(
+                                    isLoadingNextPage = false,
+                                    hasReachedEnd = true
+                                )
+                            }
+                            return@fold
+                        }
+
+                        val mediaOpinions = items.map { convertToMediaOpinion(it) }
+
+                        // Filtramos los elementos para evitar duplicados por ID
+                        val existingIds = currentState.mediaItems.map { it.id }.toSet()
+                        val newMediaOpinions = mediaOpinions.filter { !existingIds.contains(it.id) }
+
+                        // Si todos los elementos son duplicados, consideramos que hemos alcanzado el final
+                        if (newMediaOpinions.isEmpty()) {
+                            _uiState.update {
+                                it.copy(
+                                    isLoadingNextPage = false,
+                                    hasReachedEnd = true
+                                )
+                            }
+                            return@fold
+                        }
+
+                        val allMediaItems = currentState.mediaItems + newMediaOpinions
+
+                        _uiState.update {
+                            it.copy(
+                                isLoadingNextPage = false,
+                                mediaItems = allMediaItems,
+                                filteredMediaItems = if (it.searchQuery.isEmpty()) {
+                                    allMediaItems
+                                } else {
+                                    allMediaItems.filter { opinion ->
+                                        opinion.title.contains(it.searchQuery, ignoreCase = true) ||
+                                        opinion.synopsis.contains(it.searchQuery, ignoreCase = true)
+                                    }
+                                },
+                                currentPage = nextPage,
+                                hasReachedEnd = nextPage >= MAX_PAGES
+                            )
+                        }
+
+                        // Guardamos los nuevos datos en la caché
+                        // Solo guardamos los items que no sean duplicados
+                        val nonDuplicateItems = items.filter { item -> !existingIds.contains(item.id.toLong()) }
+                        if (nonDuplicateItems.isNotEmpty()) {
+                            saveToCache(nonDuplicateItems)
+
+                            // Cargamos datos adicionales solo para los nuevos elementos
+                            loadAdditionalData(newMediaOpinions, nonDuplicateItems)
+                        }
+                    },
+                    onFailure = { error ->
+                        _uiState.update {
+                            it.copy(
+                                isLoadingNextPage = false,
+                                error = error.message
+                            )
+                        }
+                    }
+                )
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        isLoadingNextPage = false,
+                        error = e.message
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * Carga datos adicionales (géneros y proveedores) para los elementos
+     */
+    private suspend fun loadAdditionalData(mediaOpinions: List<MediaOpinion>, items: List<TmdbMediaItem>) {
+        val loadingTasks = mediaOpinions.map { opinion ->
+            viewModelScope.async {
+                val item = items.find { it.id.toLong() == opinion.id } ?: return@async null
+                val isMovie = item.mediaType == "movie"
+
+                val genresResult = if (isMovie) {
+                    repository.getGenreNames(item.genreIds, isMovie = true)
+                } else {
+                    repository.getGenreNames(item.genreIds, isMovie = false)
+                }
+
+                val providersResult = if (isMovie) {
+                    repository.getMovieWatchProviders(item.id)
+                } else {
+                    repository.getTvWatchProviders(item.id)
+                }
+
+                var genreText = ""
+                var platformText = ""
+
+                genresResult.fold(
+                    onSuccess = { genreNames ->
+                        if (genreNames.isNotEmpty()) {
+                            genreText = genreNames.joinToString(", ")
+                        }
+                    },
+                    onFailure = { /* No action needed */ }
+                )
+
+                providersResult.fold(
+                    onSuccess = { providers ->
+                        if (providers.isNotEmpty()) {
+                            platformText = providers.first()
+                        }
+                    },
+                    onFailure = { /* No action needed */ }
+                )
+
+                if (genreText.isNotEmpty() || platformText.isNotEmpty()) {
+                    return@async opinion.copy(
+                        genre = genreText.ifEmpty { opinion.genre },
+                        platform = platformText.ifEmpty { opinion.platform }
+                    )
+                }
+
+                return@async null
+            }
+        }
+
+        val updatedOpinions = loadingTasks.awaitAll().filterNotNull()
+
+        val currentState = _uiState.value
+        val updatedMediaItems = currentState.mediaItems.map { opinion ->
+            updatedOpinions.find { it.id == opinion.id } ?: opinion
+        }
+
+        _uiState.update {
+            it.copy(
+                isLoading = false,
+                mediaItems = updatedMediaItems,
+                filteredMediaItems = if (it.searchQuery.isEmpty()) {
+                    updatedMediaItems
+                } else {
+                    updatedMediaItems.filter { opinion ->
+                        opinion.title.contains(it.searchQuery, ignoreCase = true) ||
+                        opinion.synopsis.contains(it.searchQuery, ignoreCase = true)
+                    }
+                }
+            )
+        }
+    }
+
+    /**
      * Guarda los datos de TMDB en caché local
      */
     private fun saveToCache(items: List<TmdbMediaItem>) {
@@ -157,7 +264,7 @@ abstract class TmdbMediaListViewModel(
                 val cachedItems = items.map { item ->
                     val posterFullUrl = item.posterPath?.let { repository.getFullPosterUrl(it) }
                     val backdropFullUrl = item.backdropPath?.let { repository.getFullBackdropUrl(it) }
-                    
+
                     TmdbCachedMedia(
                         id = item.id.toLong(),
                         mediaType = item.mediaType ?: "",
@@ -173,7 +280,7 @@ abstract class TmdbMediaListViewModel(
                         category = cacheCategory
                     )
                 }
-                
+
                 tmdbCacheDao.updateCategoryCache(cacheCategory, cachedItems)
             } catch (e: Exception) {
                 // Solo registramos el error, no interrumpimos la UI
@@ -189,13 +296,13 @@ abstract class TmdbMediaListViewModel(
         try {
             // Verificamos si hay datos en caché
             val hasCache = tmdbCacheDao.hasCacheForCategory(cacheCategory) > 0
-            
+
             if (hasCache) {
                 // Cargar datos de caché
                 tmdbCacheDao.getCachedMediaByCategory(cacheCategory).collect { cachedItems ->
                     if (cachedItems.isNotEmpty()) {
                         val mediaOpinions = cachedItems.map { convertCachedMediaToOpinion(it) }
-                        
+
                         _uiState.update {
                             it.copy(
                                 isLoading = false,
@@ -204,7 +311,7 @@ abstract class TmdbMediaListViewModel(
                                     mediaOpinions
                                 } else {
                                     mediaOpinions.filter { opinion ->
-                                        opinion.title.contains(it.searchQuery, ignoreCase = true) || 
+                                        opinion.title.contains(it.searchQuery, ignoreCase = true) ||
                                         opinion.synopsis.contains(it.searchQuery, ignoreCase = true)
                                     }
                                 },
@@ -273,7 +380,7 @@ abstract class TmdbMediaListViewModel(
      */
     private fun convertToMediaOpinion(item: TmdbMediaItem): MediaOpinion {
         val isMovie = item.mediaType == "movie"
-        
+
         val mediaOpinion = MediaOpinion(
             id = item.id.toLong(),
             title = item.displayTitle,
@@ -287,7 +394,7 @@ abstract class TmdbMediaListViewModel(
             year = item.displayReleaseDate,
             isMovie = isMovie
         )
-        
+
         return mediaOpinion
     }
 
@@ -298,17 +405,17 @@ abstract class TmdbMediaListViewModel(
         viewModelScope.launch {
             val newQuery = query.trim()
             val currentItems = uiState.value.mediaItems
-            
+
             val filteredItems = if (newQuery.isEmpty()) {
                 currentItems
             } else {
                 currentItems.filter { opinion ->
-                    opinion.title.contains(newQuery, ignoreCase = true) || 
+                    opinion.title.contains(newQuery, ignoreCase = true) ||
                     opinion.synopsis.contains(newQuery, ignoreCase = true)
                 }
             }
-            
-            _uiState.update { 
+
+            _uiState.update {
                 it.copy(
                     searchQuery = newQuery,
                     filteredMediaItems = filteredItems
@@ -316,17 +423,17 @@ abstract class TmdbMediaListViewModel(
             }
         }
     }
-    
+
     /**
      * Maneja el proceso de calificación de un medio TMDB
-     * 
+     *
      * @param mediaOpinion Opinión del medio a calificar
      * @param rating Calificación del usuario (1-10)
      * @param onComplete Callback con el resultado (éxito o fracaso)
      */
     fun submitRating(mediaOpinion: MediaOpinion, rating: Int, onComplete: (Boolean) -> Unit) {
         _uiState.update { it.copy(isRating = true) }
-        
+
         viewModelScope.launch {
             try {
                 // Verificamos si la opinión existe en el remoto
@@ -334,7 +441,7 @@ abstract class TmdbMediaListViewModel(
 
                 if (existingOpinion == null) {
                     // La opinión no existe - Crear y guardar nueva opinión
-                    
+
                     val newOpinion = MediaOpinion(
                         id = mediaOpinion.id,  // Usamos 0, el servicio asignará el ID real
                         title = mediaOpinion.title,
@@ -349,7 +456,7 @@ abstract class TmdbMediaListViewModel(
                         year = mediaOpinion.year,
                         backdropUrl = mediaOpinion.backdropUrl
                     )
-                    
+
                     val savedId = opinionRepository.saveOpinion(newOpinion)
                     if (savedId > 0) {
                         _uiState.update { it.copy(isRating = false) }
@@ -413,16 +520,16 @@ abstract class TmdbMediaListViewModel(
                     opinion
                 }
             }
-            
+
             val updatedFilteredMediaItems = if (currentState.searchQuery.isNotEmpty()) {
                 updatedMediaItems.filter { opinion ->
-                    opinion.title.contains(currentState.searchQuery, ignoreCase = true) || 
+                    opinion.title.contains(currentState.searchQuery, ignoreCase = true) ||
                     opinion.synopsis.contains(currentState.searchQuery, ignoreCase = true)
                 }
             } else {
                 updatedMediaItems
             }
-            
+
             currentState.copy(
                 mediaItems = updatedMediaItems,
                 filteredMediaItems = updatedFilteredMediaItems
@@ -434,11 +541,14 @@ abstract class TmdbMediaListViewModel(
      * Estado UI para las pantallas de listado de medios de TMDB
      */
     data class TmdbMediaListUiState(
-        val isLoading: Boolean = true,
+        val isLoading: Boolean = false,
+        val isLoadingNextPage: Boolean = false,
         val mediaItems: List<MediaOpinion> = emptyList(),
         val filteredMediaItems: List<MediaOpinion> = emptyList(),
-        val searchQuery: String = "",
         val error: String? = null,
+        val searchQuery: String = "",
+        val currentPage: Int = 1,
+        val hasReachedEnd: Boolean = false,
         val isRating: Boolean = false
     )
 }
@@ -450,8 +560,8 @@ class TopSeriesViewModel(repository: TmdbRepository, opinionRepository: MediaOpi
     override val cacheCategory: String
         get() = "top_series"
 
-    override suspend fun loadMediaItems(): Result<List<TmdbMediaItem>> {
-        return repository.getTopRatedTvShows()
+    override suspend fun loadMediaItems(page: Int): Result<List<TmdbMediaItem>> {
+        return repository.getTopRatedTvShows(page)
     }
 }
 
@@ -462,8 +572,8 @@ class TrendingSeriesViewModel(repository: TmdbRepository, opinionRepository: Med
     override val cacheCategory: String
         get() = "trending_series"
 
-    override suspend fun loadMediaItems(): Result<List<TmdbMediaItem>> {
-        return repository.getTrendingTvShows()
+    override suspend fun loadMediaItems(page: Int): Result<List<TmdbMediaItem>> {
+        return repository.getTrendingTvShows(page)
     }
 }
 
@@ -474,8 +584,8 @@ class UpcomingMoviesViewModel(repository: TmdbRepository, opinionRepository: Med
     override val cacheCategory: String
         get() = "upcoming_movies"
 
-    override suspend fun loadMediaItems(): Result<List<TmdbMediaItem>> {
-        return repository.getUpcomingMovies()
+    override suspend fun loadMediaItems(page: Int): Result<List<TmdbMediaItem>> {
+        return repository.getUpcomingMovies(page)
     }
 }
 
@@ -486,8 +596,8 @@ class TopMoviesViewModel(repository: TmdbRepository, opinionRepository: MediaOpi
     override val cacheCategory: String
         get() = "top_movies"
 
-    override suspend fun loadMediaItems(): Result<List<TmdbMediaItem>> {
-        return repository.getTopRatedMovies()
+    override suspend fun loadMediaItems(page: Int): Result<List<TmdbMediaItem>> {
+        return repository.getTopRatedMovies(page)
     }
 }
 
@@ -498,7 +608,7 @@ class TrendingMoviesViewModel(repository: TmdbRepository, opinionRepository: Med
     override val cacheCategory: String
         get() = "trending_movies"
 
-    override suspend fun loadMediaItems(): Result<List<TmdbMediaItem>> {
-        return repository.getTrendingMovies()
+    override suspend fun loadMediaItems(page: Int): Result<List<TmdbMediaItem>> {
+        return repository.getTrendingMovies(page)
     }
 }

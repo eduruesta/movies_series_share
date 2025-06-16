@@ -36,9 +36,9 @@ class TmdbRepository(private val appService: AppService) {
     /**
      * Obtiene las series mejor valoradas
      */
-    suspend fun getTopRatedTvShows(): Result<List<TmdbMediaItem>> = withContext(Dispatchers.IO) {
+    suspend fun getTopRatedTvShows(page: Int = 1): Result<List<TmdbMediaItem>> = withContext(Dispatchers.IO) {
         try {
-            val response = appService.getTopRatedTvShows()
+            val response = appService.getTopRatedTvShows(page)
             val results = response.results.map { it.copy(mediaType = "tv") }
             Result.success(results)
         } catch (e: Exception) {
@@ -49,9 +49,9 @@ class TmdbRepository(private val appService: AppService) {
     /**
      * Obtiene las series en tendencia
      */
-    suspend fun getTrendingTvShows(): Result<List<TmdbMediaItem>> = withContext(Dispatchers.IO) {
+    suspend fun getTrendingTvShows(page: Int = 1): Result<List<TmdbMediaItem>> = withContext(Dispatchers.IO) {
         try {
-            val response = appService.getTrendingTvShows()
+            val response = appService.getTrendingTvShows(page)
             Result.success(response.results)
         } catch (e: Exception) {
             Result.failure(e)
@@ -61,9 +61,9 @@ class TmdbRepository(private val appService: AppService) {
     /**
      * Obtiene las películas en tendencia
      */
-    suspend fun getTrendingMovies(): Result<List<TmdbMediaItem>> = withContext(Dispatchers.IO) {
+    suspend fun getTrendingMovies(page: Int = 1): Result<List<TmdbMediaItem>> = withContext(Dispatchers.IO) {
         try {
-            val response = appService.getTrendingMovies()
+            val response = appService.getTrendingMovies(page)
             Result.success(response.results)
         } catch (e: Exception) {
             Result.failure(e)
@@ -73,9 +73,9 @@ class TmdbRepository(private val appService: AppService) {
     /**
      * Obtiene las películas mejor valoradas
      */
-    suspend fun getTopRatedMovies(): Result<List<TmdbMediaItem>> = withContext(Dispatchers.IO) {
+    suspend fun getTopRatedMovies(page: Int = 1): Result<List<TmdbMediaItem>> = withContext(Dispatchers.IO) {
         try {
-            val response = appService.getTopRatedMovies()
+            val response = appService.getTopRatedMovies(page)
             val results = response.results.map { it.copy(mediaType = "movie") }
             Result.success(results)
         } catch (e: Exception) {
@@ -86,9 +86,9 @@ class TmdbRepository(private val appService: AppService) {
     /**
      * Obtiene las próximas películas
      */
-    suspend fun getUpcomingMovies(): Result<List<TmdbMediaItem>> = withContext(Dispatchers.IO) {
+    suspend fun getUpcomingMovies(page: Int = 1): Result<List<TmdbMediaItem>> = withContext(Dispatchers.IO) {
         try {
-            val response = appService.getUpcomingMovies()
+            val response = appService.getUpcomingMovies(page)
             val results = response.results.map { it.copy(mediaType = "movie") }
             Result.success(results)
         } catch (e: Exception) {

@@ -1,6 +1,5 @@
 package com.bebi.watchit.ui.screens
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -56,9 +55,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.ClipboardManager
-import androidx.compose.ui.platform.LocalClipboardManager
-import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
@@ -71,7 +67,6 @@ import com.bebi.watchit.ui.components.ErrorScreen
 import com.bebi.watchit.ui.components.Info
 import com.bebi.watchit.ui.components.MediaOpinionItem
 import com.bebi.watchit.ui.components.RatingBottomSheet
-import com.bebi.watchit.ui.components.copyToClipboard
 import com.bebi.watchit.viewmodel.GroupDetailUiState
 import com.bebi.watchit.viewmodel.GroupDetailViewModel
 import com.bebi.watchit.viewmodel.GroupsViewModel
@@ -125,7 +120,7 @@ data class GroupOpinionList(private val group: GroupResponse) : Screen {
 
         val scope = rememberCoroutineScope()
         val uiState by viewModel.uiState.collectAsState()
-        
+
         // Forzar la actualización de las opiniones cada vez que se navega a esta pantalla
         LaunchedEffect(Unit) {
             viewModel.refreshOpinions()
@@ -244,7 +239,7 @@ fun GroupOpinionListScreen(
                         modifier = Modifier.align(Alignment.Center)
                     )
                 }
-                
+
                 uiState.error != null -> {
                     ErrorScreen(
                         onRetry = { viewModel.refreshOpinions() }
@@ -308,13 +303,16 @@ fun GroupOpinionListScreen(
     if (showGroupInfoDialog) {
         val isOwner = groupsViewModel.isGroupOwner(groupInfo)
         GroupInfoBottomSheet(
-            groupName = groupName,
-            inviteCode = inviteCode,
-            onDismiss = { showGroupInfoDialog = false },
             groupInfo = groupInfo,
-            isOwner = isOwner,
+            onDismiss = { showGroupInfoDialog = false },
             onLeaveGroup = onLeaveGroup,
-            onDeleteGroup = onDeleteGroup
+            onDeleteGroup = onDeleteGroup,
+            isOwner = isOwner,
+            member = stringResource(
+                Res.string.invite_code_message,
+                groupInfo.inviteCode,
+                groupInfo.name
+            )
         )
     }
 }
@@ -322,209 +320,235 @@ fun GroupOpinionListScreen(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun GroupInfoBottomSheet(
-    groupName: String,
-    inviteCode: String,
-    onDismiss: () -> Unit,
     groupInfo: GroupResponse,
+    onDismiss: () -> Unit,
+    onLeaveGroup: () -> Unit,
+    onDeleteGroup: () -> Unit,
     isOwner: Boolean,
-    onLeaveGroup: () -> Unit = {},
-    onDeleteGroup: () -> Unit = {}
+    member: String
 ) {
-    var showDeleteConfirmation by remember { mutableStateOf(false) }
-    var showLeaveConfirmation by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState()
-    val member = stringResource(
-        Res.string.invite_code_message,
-        inviteCode,
-        groupInfo.name
-    )
-    val shareManager = rememberShareManager()
     val scope = rememberCoroutineScope()
+
+    val shareManager = rememberShareManager()
+    var showLeaveConfirmation by remember { mutableStateOf(false) }
+    var showDeleteConfirmation by remember { mutableStateOf(false) }
+    val inviteCode = groupInfo.inviteCode
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        dragHandle = { 
+        dragHandle = {
             Box(
                 modifier = Modifier
                     .padding(vertical = 12.dp)
-                    .width(40.dp)
-                    .height(4.dp)
-                    .background(
-                        color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
-                        shape = RoundedCornerShape(2.dp)
-                    )
-            )
+                    .fillMaxWidth()
+            ) {
+                Surface(
+                    modifier = Modifier
+                        .width(40.dp)
+                        .height(4.dp)
+                        .align(Alignment.Center),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.4f),
+                    shape = RoundedCornerShape(2.dp)
+                ) {}
+            }
         }
     ) {
-        Column(
+        LazyColumn(
             modifier = Modifier
-                .padding(horizontal = 20.dp, vertical = 8.dp)
                 .fillMaxWidth()
+                .padding(horizontal = 20.dp)
                 .padding(bottom = 32.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(
-                text = groupName,
-                style = MaterialTheme.typography.titleLarge,
-                color = MaterialTheme.colorScheme.onSurface
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = stringResource(Res.string.group_invite_code),
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Card(
-                shape = RoundedCornerShape(8.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                ),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 4.dp
-                ),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier
-                        .padding(12.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = inviteCode,
-                        style = MaterialTheme.typography.titleLarge
-                    )
-
-                    IconButton(
-                        onClick = {
-                            scope.launch {
-                                shareManager.shareText(member)
-                            }
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Share,
-                            contentDescription = stringResource(Res.string.copy_code)
-                        )
-                    }
-                }
+            // Título del grupo
+            item {
+                Text(
+                    text = groupInfo.name,
+                    style = MaterialTheme.typography.titleLarge,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                
+                Spacer(modifier = Modifier.height(16.dp))
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Text(
-                text = stringResource(Res.string.members),
-                style = MaterialTheme.typography.titleSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant
-            )
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Card(
-                shape = RoundedCornerShape(8.dp),
-                colors = CardDefaults.cardColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer,
-                    contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                ),
-                elevation = CardDefaults.cardElevation(
-                    defaultElevation = 4.dp
-                ),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.padding(12.dp)) {
-                    groupInfo.members.forEachIndexed { index, member ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Surface(
-                                shape = CircleShape,
-                                color = MaterialTheme.colorScheme.primary,
-                                modifier = Modifier.size(32.dp)
-                            ) {
-                                Box(contentAlignment = Alignment.Center) {
-                                    Icon(
-                                        imageVector = Icons.Default.Person,
-                                        contentDescription = null,
-                                        tint = MaterialTheme.colorScheme.onPrimary,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
-                            }
-
-                            Spacer(modifier = Modifier.width(12.dp))
-
-                            Text(
-                                text = member.name,
-                                style = MaterialTheme.typography.bodyLarge
-                            )
-                        }
-
-                        if (index < groupInfo.members.size - 1) {
-                            HorizontalDivider(
-                                modifier = Modifier.padding(vertical = 4.dp),
-                                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
-                            )
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Button(
-                onClick = { showLeaveConfirmation = true },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = MaterialTheme.colorScheme.errorContainer,
-                    contentColor = MaterialTheme.colorScheme.onErrorContainer
-                ),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(Res.string.leave_group))
-            }
-
-            if (isOwner) {
+            
+            // Código de invitación
+            item {
+                Text(
+                    text = stringResource(Res.string.group_invite_code),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                
                 Spacer(modifier = Modifier.height(8.dp))
-
-                Button(
-                    onClick = { showDeleteConfirmation = true },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error,
-                        contentColor = MaterialTheme.colorScheme.onError
+                
+                Card(
+                    shape = RoundedCornerShape(8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    ),
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 4.dp
                     ),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.Center
+                        modifier = Modifier
+                            .padding(12.dp)
+                            .fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = null
+                        Text(
+                            text = inviteCode,
+                            style = MaterialTheme.typography.titleLarge
                         )
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(Res.string.delete_group))
+
+                        IconButton(
+                            onClick = {
+                                scope.launch {
+                                    shareManager.shareText(member)
+                                }
+                            }
+                        ) {
+                            Icon(
+                                imageVector = Icons.Rounded.Share,
+                                contentDescription = stringResource(Res.string.copy_code)
+                            )
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(16.dp))
+            }
+            
+            // Título de miembros
+            item {
+                Text(
+                    text = stringResource(Res.string.members),
+                    style = MaterialTheme.typography.titleSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+                
+                Spacer(modifier = Modifier.height(8.dp))
+            }
+            
+            // Tarjeta con miembros (usamos directamente los ítems en la LazyColumn principal)
+            item {
+                Card(
+                    shape = RoundedCornerShape(8.dp),
+                    colors = CardDefaults.cardColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    ),
+                    elevation = CardDefaults.cardElevation(
+                        defaultElevation = 4.dp
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Column(
+                        modifier = Modifier.padding(12.dp)
+                    ) {
+                        groupInfo.members.forEachIndexed { index, member ->
+                            Row(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp),
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Surface(
+                                    shape = CircleShape,
+                                    color = MaterialTheme.colorScheme.primary,
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Box(contentAlignment = Alignment.Center) {
+                                        Icon(
+                                            imageVector = Icons.Default.Person,
+                                            contentDescription = null,
+                                            tint = MaterialTheme.colorScheme.onPrimary,
+                                            modifier = Modifier.size(20.dp)
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.width(12.dp))
+
+                                Text(
+                                    text = member.name,
+                                    style = MaterialTheme.typography.bodyLarge
+                                )
+                            }
+
+                            if (index < groupInfo.members.size - 1) {
+                                HorizontalDivider(
+                                    modifier = Modifier.padding(vertical = 4.dp),
+                                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+                                )
+                            }
+                        }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(24.dp))
+            }
+            
+            // Botón salir del grupo
+            item {
+                Button(
+                    onClick = { showLeaveConfirmation = true },
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.errorContainer,
+                        contentColor = MaterialTheme.colorScheme.onErrorContainer
+                    ),
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(Res.string.leave_group))
+                }
+            }
+            
+            // Botón eliminar grupo (solo para propietarios)
+            if (isOwner) {
+                item {
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    Button(
+                        onClick = { showDeleteConfirmation = true },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.error,
+                            contentColor = MaterialTheme.colorScheme.onError
+                        ),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = null
+                            )
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text(stringResource(Res.string.delete_group))
+                        }
                     }
                 }
             }
+            
+            // Botón cerrar
+            item {
+                Spacer(modifier = Modifier.height(8.dp))
 
-            Spacer(modifier = Modifier.height(8.dp))
-
-            OutlinedButton(
-                onClick = onDismiss,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(stringResource(Res.string.close))
+                OutlinedButton(
+                    onClick = onDismiss,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    Text(stringResource(Res.string.close))
+                }
+                
+                // Espaciado extra para evitar que el contenido quede bajo gestos de navegación
+                Spacer(modifier = Modifier.height(8.dp))
             }
         }
     }

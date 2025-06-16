@@ -60,7 +60,6 @@ import com.bebi.watchit.viewmodel.MediaOpinionFormViewModel.SearchUiMessage
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.auth.auth
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.back_button
 import moviesseriesshare.composeapp.generated.resources.comment_field
@@ -72,7 +71,6 @@ import moviesseriesshare.composeapp.generated.resources.rating_field
 import moviesseriesshare.composeapp.generated.resources.save_button
 import moviesseriesshare.composeapp.generated.resources.search_error
 import moviesseriesshare.composeapp.generated.resources.search_no_results
-import moviesseriesshare.composeapp.generated.resources.search_results_count
 import moviesseriesshare.composeapp.generated.resources.search_selected
 import moviesseriesshare.composeapp.generated.resources.synopsis_field
 import moviesseriesshare.composeapp.generated.resources.title_field

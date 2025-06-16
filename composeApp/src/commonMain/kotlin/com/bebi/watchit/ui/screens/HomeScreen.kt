@@ -93,19 +93,16 @@ class HomeScreen : Screen {
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         val scope = rememberCoroutineScope()
         
-        // Observamos los cambios en el estado de autenticación
         val auth = Firebase.auth
         val authStateFlow = remember { auth.authStateChanged }
         var currentUser by remember { mutableStateOf(auth.currentUser) }
         
-        // Actualizamos currentUser cuando cambia el estado de autenticación
         LaunchedEffect(Unit) {
             authStateFlow.collect { user ->
                 currentUser = user
             }
         }
         
-        // ViewModels - Recreados cuando cambia el usuario
         val currentUserId = currentUser?.uid ?: ""
         val mediaOpinionViewModel: MediaOpinionViewModel = koinViewModel { parametersOf(currentUserId) }
         val trendingMoviesViewModel: TrendingMoviesViewModel = koinViewModel()
@@ -135,34 +132,24 @@ class HomeScreen : Screen {
             }
         }
 
-        // Función para recargar todos los datos
         val reloadAllData: () -> Unit = {
-            // Primero limpiamos todos los errores explícitamente
             clearAllErrors()
             
             // Luego recargamos los datos
             scope.launch {
                 mediaOpinionViewModel.loadGroupCritics()
-                trendingMoviesViewModel.loadMediaList()
-                trendingSeriesViewModel.loadMediaList()
-                topMoviesViewModel.loadMediaList()
-                topSeriesViewModel.loadMediaList()
-                upcomingMoviesViewModel.loadMediaList()
             }
         }
 
-        // Cargar datos inicialmente
         LaunchedEffect(Unit) {
             reloadAllData()
         }
 
-        // Efecto para recargar datos cuando cambia el usuario
         LaunchedEffect(currentUserId) {
             if (currentUserId.isNotEmpty()) {
                 mediaOpinionViewModel.updateCurrentUser(currentUserId)
                 mediaOpinionViewModel.loadGroupCritics()
             } else {
-                // Si no hay usuario, limpiar los datos del ViewModel
                 mediaOpinionViewModel.clearData()
             }
         }

@@ -32,7 +32,7 @@
     <string name="save">Save</string>
     <string name="cancel">Cancel</string>
 
-   <string name="dark_mode">Dark Mode</string>
+    <string name="dark_mode">Dark Mode</string>
 
     <!-- Media List Screen Strings -->
     <string name="media_list_title">Recommendations</string>
@@ -119,7 +119,14 @@
     <string name="group_invitation_code">Invitation Code</string>
     <string name="join_group_description">Enter the invitation code to join the group</string>
     <string name="accept">Accept</string>
+    <string name="comments">Comments</string>
+    <string name="cast">Cast</string>
+    <string name="platform">Plataforma: %1$s</string>
+    <string name="genre">Genre: %1$s</string>
+    <string name="loading_cast">Loading cast...</string>
+    <string name="loading_cast_issue">There is not cast information available</string>
     <string name="join_success_message">Join to the group</string>
+    <string name="information">Info</string>
 
     <!-- Auth Strings -->
     <string name="create_account">Create new account</string>

@@ -6,11 +6,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.defaultMinSize
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -18,7 +18,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -34,13 +35,16 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.ScrollableTabRow
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -79,11 +83,17 @@ import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.add_new_comment
 import moviesseriesshare.composeapp.generated.resources.back_button
 import moviesseriesshare.composeapp.generated.resources.cancel
-import moviesseriesshare.composeapp.generated.resources.comment
+import moviesseriesshare.composeapp.generated.resources.cast
+import moviesseriesshare.composeapp.generated.resources.comments
 import moviesseriesshare.composeapp.generated.resources.delete_from_recommendations
+import moviesseriesshare.composeapp.generated.resources.genre
+import moviesseriesshare.composeapp.generated.resources.information
+import moviesseriesshare.composeapp.generated.resources.loading_cast
+import moviesseriesshare.composeapp.generated.resources.loading_cast_issue
 import moviesseriesshare.composeapp.generated.resources.loading_details
 import moviesseriesshare.composeapp.generated.resources.loading_title
 import moviesseriesshare.composeapp.generated.resources.opinion_count
+import moviesseriesshare.composeapp.generated.resources.platform
 import moviesseriesshare.composeapp.generated.resources.recommendation_already_saved
 import moviesseriesshare.composeapp.generated.resources.recommendation_not_saved
 import moviesseriesshare.composeapp.generated.resources.recommendation_remove_error
@@ -95,6 +105,7 @@ import moviesseriesshare.composeapp.generated.resources.save_to_recommendations
 import moviesseriesshare.composeapp.generated.resources.synopsis_field
 import moviesseriesshare.composeapp.generated.resources.without_comment
 import moviesseriesshare.composeapp.generated.resources.write_your_comment
+import org.jetbrains.compose.resources.InternalResourceApi
 import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.viewmodel.koinViewModel
 import placeholder
@@ -128,7 +139,7 @@ data class MediaDetailScreen(
     )
 
     @OptIn(
-        ExperimentalMaterial3Api::class
+        ExperimentalMaterial3Api::class, InternalResourceApi::class
     )
     @Composable
     override fun Content() {
@@ -150,12 +161,18 @@ data class MediaDetailScreen(
         LaunchedEffect(opinionId, tmdbMediaOpinion) {
             if (opinionId != null) {
                 viewModel.loadOpinionById(opinionId)
+                viewModel.loadCast(opinionId.toInt())
+
                 isTmbdMediaOpinion = false
                 savedViewModel.isRecommendationSaved(opinionId) { saved ->
                     isSaved = saved
                 }
             } else if (tmdbMediaOpinion != null) {
                 viewModel.setTmdbMediaOpinion(tmdbMediaOpinion)
+                viewModel.loadCast(tmdbMediaOpinion.id.toInt())
+                savedViewModel.isRecommendationSaved(tmdbMediaOpinion.id) { saved ->
+                    isSaved = saved
+                }
                 isTmbdMediaOpinion = true
             }
         }
@@ -357,15 +374,17 @@ data class MediaDetailScreen(
                                                 style = MaterialTheme.typography.labelMedium
                                             )
                                         }
-                                        
-                                        // Mostrar el nombre del usuario si está disponible
+
                                         if (!opinion.username.isNullOrEmpty()) {
                                             FilledTonalButton(
                                                 onClick = { },
-                                                modifier = Modifier.height(32.dp).padding(start = 8.dp),
+                                                modifier = Modifier.height(32.dp)
+                                                    .padding(start = 8.dp),
                                                 contentPadding = PaddingValues(horizontal = 8.dp),
                                                 colors = ButtonDefaults.filledTonalButtonColors(
-                                                    containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)
+                                                    containerColor = MaterialTheme.colorScheme.primary.copy(
+                                                        alpha = 0.2f
+                                                    )
                                                 )
                                             ) {
                                                 Row(
@@ -432,158 +451,325 @@ data class MediaDetailScreen(
                                 }
                             }
 
-                            if (opinion.synopsis.isNotEmpty()) {
-                                Column(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .padding(vertical = 8.dp)
-                                ) {
-                                    Text(
-                                        text = stringResource(Res.string.synopsis_field),
-                                        style = MaterialTheme.typography.titleMedium,
-                                        fontWeight = FontWeight.Bold
-                                    )
+                            Spacer(modifier = Modifier.height(16.dp))
 
-                                    Spacer(modifier = Modifier.height(4.dp))
-
-                                    Text(
-                                        text = opinion.synopsis,
-                                        style = MaterialTheme.typography.bodyMedium
-                                    )
+                            // Sistema de pestañas (Tabs)
+                            var selectedTab by remember { mutableStateOf(0) }
+                            val tabs = buildList {
+                                add(stringResource(Res.string.synopsis_field))
+                                add(stringResource(Res.string.cast))
+                                add(stringResource(Res.string.information))
+                                if (opinion.groupId != null && !isTmbdMediaOpinion) {
+                                    add(stringResource(Res.string.comments))
                                 }
-
-                                Spacer(modifier = Modifier.height(16.dp))
                             }
 
-                            if (opinion.genre.isNotEmpty() || opinion.platform.isNotEmpty()) {
-                                FlowRow(
-                                    modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                                ) {
-                                    if (opinion.genre.isNotEmpty()) {
-                                        FilledTonalButton(
-                                            onClick = { },
-                                            modifier = Modifier.wrapContentWidth(),
-                                            contentPadding = PaddingValues(horizontal = 8.dp)
-                                        ) {
-                                            Text(
-                                                opinion.genre,
-                                                style = MaterialTheme.typography.labelMedium,
-                                                maxLines = 1,
-                                                overflow = TextOverflow.Ellipsis
-                                            )
-                                        }
+                            // Tabs
+                            Box(
+                                modifier = Modifier.fillMaxWidth(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                ScrollableTabRow(
+                                    selectedTabIndex = selectedTab,
+                                    contentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    edgePadding = 24.dp,
+                                    divider = {
+                                        HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
                                     }
-
-                                    if (opinion.platform.isNotEmpty()) {
-                                        FilledTonalButton(
-                                            onClick = { },
-                                            modifier = Modifier.wrapContentWidth(),
-                                            contentPadding = PaddingValues(horizontal = 8.dp)
-                                        ) {
-                                            Text(
-                                                opinion.platform,
-                                                style = MaterialTheme.typography.labelMedium
-                                            )
-                                        }
+                                ) {
+                                    tabs.forEachIndexed { index, title ->
+                                        Tab(
+                                            selected = selectedTab == index,
+                                            onClick = {
+                                                selectedTab = index
+                                            },
+                                            text = {
+                                                Text(
+                                                    text = title,
+                                                    style = MaterialTheme.typography.bodyLarge
+                                                )
+                                            }
+                                        )
                                     }
                                 }
-
-                                Spacer(modifier = Modifier.height(16.dp))
                             }
 
                             Spacer(modifier = Modifier.height(16.dp))
 
-                            val shouldShowComments = opinion.groupId != null
+                            // Contenido de la tab seleccionada
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(vertical = 8.dp)
+                            ) {
+                                when {
+                                    // Sinopsis
+                                    selectedTab == 0 && opinion.synopsis.isNotEmpty() -> {
+                                        Column {
+                                            Text(
+                                                text = opinion.synopsis,
+                                                style = MaterialTheme.typography.bodyLarge
+                                            )
+                                        }
+                                    }
 
-                            if (shouldShowComments) {
-                                Text(
-                                    text = stringResource(Res.string.comment),
-                                    style = MaterialTheme.typography.titleMedium,
-                                    fontWeight = FontWeight.Bold
-                                )
-
-                                Spacer(modifier = Modifier.height(8.dp))
-
-                                if (opinion.comments.isEmpty()) {
-                                    Text(
-                                        text = stringResource(Res.string.without_comment),
-                                        style = MaterialTheme.typography.bodyLarge
-                                    )
-                                } else {
-                                    Column(
-                                        modifier = Modifier.fillMaxWidth(),
-                                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                                    ) {
-                                        opinion.comments.forEachIndexed { index, comment ->
-                                            val isEven = index % 2 == 0
-                                            val backgroundColor = if (isEven)
-                                                MaterialTheme.colorScheme.primaryContainer
-                                            else
-                                                MaterialTheme.colorScheme.secondaryContainer
-
-                                            val contentColor = if (isEven)
-                                                MaterialTheme.colorScheme.onPrimaryContainer
-                                            else
-                                                MaterialTheme.colorScheme.onSecondaryContainer
-
-                                            val alignment = if (isEven)
-                                                Arrangement.Start
-                                            else
-                                                Arrangement.End
-
-                                            Row(
-                                                modifier = Modifier.fillMaxWidth(),
-                                                horizontalArrangement = alignment
+                                    // Cast
+                                    selectedTab == 1 -> {
+                                        val castList = uiState.cast
+                                        if (uiState.isLoadingCast) {
+                                            // Mostrar indicador de carga
+                                            Box(
+                                                modifier = Modifier.fillMaxWidth()
+                                                    .padding(vertical = 32.dp),
+                                                contentAlignment = Alignment.Center
                                             ) {
-                                                Card(
-                                                    modifier = Modifier
-                                                        .widthIn(max = 280.dp)
-                                                        .padding(vertical = 4.dp),
-                                                    colors = CardDefaults.cardColors(
-                                                        containerColor = backgroundColor,
-                                                        contentColor = contentColor
-                                                    ),
-                                                    shape = RoundedCornerShape(
-                                                        topStart = if (!isEven) 12.dp else 4.dp,
-                                                        topEnd = if (isEven) 12.dp else 4.dp,
-                                                        bottomStart = 12.dp,
-                                                        bottomEnd = 12.dp
-                                                    )
+                                                Column(
+                                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                                    verticalArrangement = Arrangement.spacedBy(8.dp)
                                                 ) {
+                                                    CircularProgressIndicator()
                                                     Text(
-                                                        text = comment,
-                                                        style = MaterialTheme.typography.bodyMedium,
-                                                        modifier = Modifier.padding(12.dp)
+                                                        text = stringResource(Res.string.loading_cast),
+                                                        style = MaterialTheme.typography.bodyLarge
                                                     )
+                                                }
+                                            }
+                                        } else if (castList.isNullOrEmpty()) {
+                                            Box(
+                                                modifier = Modifier.fillMaxWidth()
+                                                    .padding(vertical = 32.dp),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text(
+                                                    text = stringResource(Res.string.loading_cast_issue),
+                                                    style = MaterialTheme.typography.bodyLarge
+                                                )
+                                            }
+                                        } else {
+                                            LazyColumn(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .height(300.dp),
+                                                contentPadding = PaddingValues(vertical = 8.dp),
+                                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                                            ) {
+                                                items(castList) { castMember ->
+                                                    Row(
+                                                        modifier = Modifier.fillMaxWidth(),
+                                                        verticalAlignment = Alignment.CenterVertically
+                                                    ) {
+                                                        val imageUrl =
+                                                            if (!castMember.profilePath.isNullOrEmpty()) {
+                                                                "https://image.tmdb.org/t/p/w185${castMember.profilePath}"
+                                                            } else {
+                                                                null
+                                                            }
+
+                                                        Card(
+                                                            modifier = Modifier.size(60.dp)
+                                                        ) {
+                                                            if (imageUrl != null) {
+                                                                AsyncImage(
+                                                                    model = imageUrl,
+                                                                    contentDescription = castMember.name,
+                                                                    contentScale = ContentScale.Crop,
+                                                                    modifier = Modifier.fillMaxSize()
+                                                                )
+                                                            } else {
+                                                                Box(
+                                                                    modifier = Modifier.fillMaxSize(),
+                                                                    contentAlignment = Alignment.Center
+                                                                ) {
+                                                                    Icon(
+                                                                        imageVector = Icons.Default.Person,
+                                                                        contentDescription = null,
+                                                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                                        modifier = Modifier.size(32.dp)
+                                                                    )
+                                                                }
+                                                            }
+                                                        }
+
+                                                        Column(
+                                                            modifier = Modifier.padding(start = 16.dp)
+                                                        ) {
+                                                            Text(
+                                                                text = castMember.name,
+                                                                style = MaterialTheme.typography.bodyLarge,
+                                                                fontWeight = FontWeight.SemiBold
+                                                            )
+
+                                                            if (!castMember.character.isNullOrEmpty()) {
+                                                                Text(
+                                                                    text = castMember.character,
+                                                                    style = MaterialTheme.typography.bodyMedium,
+                                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                                                )
+                                                            }
+                                                        }
+                                                    }
                                                 }
                                             }
                                         }
                                     }
-                                }
 
-                                if (uiState.commentError != null) {
-                                    Text(
-                                        text = uiState.commentError.toString(),
-                                        color = MaterialTheme.colorScheme.error,
-                                        style = MaterialTheme.typography.bodySmall,
-                                        modifier = Modifier.padding(top = 8.dp)
-                                    )
-                                }
+                                    // Info
+                                    (selectedTab == 2 && opinion.genre.isNotEmpty()) -> {
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxWidth(),
+                                            verticalArrangement = Arrangement.Center,
+                                            horizontalAlignment = Alignment.Start
+                                        ) {
+                                            FilledTonalButton(
+                                                onClick = { },
+                                                modifier = Modifier
+                                                    .defaultMinSize(minHeight = 32.dp)
+                                                    .padding(end = 8.dp),
+                                                contentPadding = PaddingValues(
+                                                    horizontal = 12.dp,
+                                                )
+                                            ) {
+                                                Text(
+                                                    text = stringResource(
+                                                        Res.string.genre,
+                                                        opinion.genre
+                                                    ),
+                                                    style = MaterialTheme.typography.bodyLarge
+                                                )
+                                            }
 
-                                Spacer(modifier = Modifier.height(24.dp))
+                                            if (opinion.platform.isNotEmpty()) {
+                                                FilledTonalButton(
+                                                    onClick = { },
+                                                    modifier = Modifier
+                                                        .defaultMinSize(minHeight = 32.dp),
+                                                    contentPadding = PaddingValues(
+                                                        horizontal = 12.dp,
+                                                        vertical = 4.dp
+                                                    )
+                                                ) {
+                                                    Text(
+                                                        text = stringResource(
+                                                            Res.string.platform,
+                                                            opinion.platform
+                                                        ),
+                                                        style = MaterialTheme.typography.bodyLarge
+                                                    )
+                                                }
+                                            }
+                                        }
 
-                                Button(
-                                    onClick = { showCommentDialog = true },
-                                    modifier = Modifier.align(Alignment.CenterHorizontally)
-                                ) {
-                                    Icon(
-                                        imageVector = Icons.Default.Add,
-                                        contentDescription = null,
-                                        modifier = Modifier.padding(end = 8.dp)
-                                    )
-                                    Text(stringResource(Res.string.add_new_comment))
+                                    }
+
+                                    // Comentarios (solo si hay groupId)
+                                    !isTmbdMediaOpinion && selectedTab == 3 && opinion.groupId != null -> {
+                                        Column(
+                                            modifier = Modifier.fillMaxWidth()
+                                        ) {
+                                            if (opinion.comments.isEmpty()) {
+                                                Box(
+                                                    modifier = Modifier.fillMaxWidth()
+                                                        .padding(vertical = 32.dp),
+                                                    contentAlignment = Alignment.Center
+                                                ) {
+                                                    Text(
+                                                        text = stringResource(Res.string.without_comment),
+                                                        style = MaterialTheme.typography.bodyMedium
+                                                    )
+                                                }
+                                            } else {
+                                                Column(
+                                                    modifier = Modifier.fillMaxWidth(),
+                                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                                ) {
+                                                    opinion.comments.forEachIndexed { index, comment ->
+                                                        val isEven = index % 2 == 0
+                                                        val backgroundColor = if (isEven)
+                                                            MaterialTheme.colorScheme.primaryContainer
+                                                        else
+                                                            MaterialTheme.colorScheme.secondaryContainer
+
+                                                        val contentColor = if (isEven)
+                                                            MaterialTheme.colorScheme.onPrimaryContainer
+                                                        else
+                                                            MaterialTheme.colorScheme.onSecondaryContainer
+
+                                                        val alignment = if (isEven)
+                                                            Arrangement.Start
+                                                        else
+                                                            Arrangement.End
+
+                                                        Row(
+                                                            modifier = Modifier.fillMaxWidth(),
+                                                            horizontalArrangement = alignment
+                                                        ) {
+                                                            Card(
+                                                                modifier = Modifier
+                                                                    .widthIn(max = 280.dp)
+                                                                    .padding(vertical = 4.dp),
+                                                                colors = CardDefaults.cardColors(
+                                                                    containerColor = backgroundColor,
+                                                                    contentColor = contentColor
+                                                                ),
+                                                                shape = RoundedCornerShape(
+                                                                    topStart = if (!isEven) 12.dp else 4.dp,
+                                                                    topEnd = if (isEven) 12.dp else 4.dp,
+                                                                    bottomStart = 12.dp,
+                                                                    bottomEnd = 12.dp
+                                                                )
+                                                            ) {
+                                                                Text(
+                                                                    text = comment,
+                                                                    style = MaterialTheme.typography.bodyMedium,
+                                                                    modifier = Modifier.padding(
+                                                                        12.dp
+                                                                    )
+                                                                )
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+
+                                            if (uiState.commentError != null) {
+                                                Text(
+                                                    text = uiState.commentError.toString(),
+                                                    color = MaterialTheme.colorScheme.error,
+                                                    style = MaterialTheme.typography.bodySmall,
+                                                    modifier = Modifier.padding(top = 8.dp)
+                                                )
+                                            }
+
+                                            Spacer(modifier = Modifier.height(24.dp))
+
+                                            Button(
+                                                onClick = { showCommentDialog = true },
+                                                modifier = Modifier.align(Alignment.CenterHorizontally)
+                                            ) {
+                                                Icon(
+                                                    imageVector = Icons.Default.Add,
+                                                    contentDescription = null,
+                                                    modifier = Modifier.padding(end = 8.dp)
+                                                )
+                                                Text(stringResource(Res.string.add_new_comment))
+                                            }
+                                        }
+                                    }
+
+                                    // Si no hay información para mostrar
+                                    else -> {
+                                        Box(
+                                            modifier = Modifier.fillMaxWidth()
+                                                .padding(vertical = 32.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = "No hay información disponible",
+                                                style = MaterialTheme.typography.bodyMedium
+                                            )
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -592,7 +778,8 @@ data class MediaDetailScreen(
             }
         }
 
-        LaunchedEffect(opinionId, uiState.opinion) {
+        LaunchedEffect(opinionId, uiState.opinion)
+        {
             if (opinionId != null) {
                 savedViewModel.isRecommendationSaved(opinionId) { saved ->
                     isSaved = saved

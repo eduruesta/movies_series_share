@@ -3,6 +3,8 @@ package com.bebi.watchit.viewmodel
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.bebi.watchit.data.repository.MediaOpinionRepository
+import com.bebi.watchit.data.repository.TmdbRepository
+import com.bebi.watchit.data.remote.model.TmdbCastMember
 import com.bebi.watchit.model.MediaOpinion
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,12 +17,13 @@ import kotlinx.coroutines.launch
  * ViewModel for the Media Detail screen
  */
 class MediaDetailViewModel(
-    private val repository: MediaOpinionRepository
+    private val repository: MediaOpinionRepository,
+    private val tmdbRepository: TmdbRepository
 ) : ViewModel() {
-    
+
     private val _uiState = MutableStateFlow(MediaDetailUiState())
     val uiState: StateFlow<MediaDetailUiState> = _uiState.asStateFlow()
-    
+
     /**
      * Loads a specific opinion by ID
      */
@@ -29,7 +32,7 @@ class MediaDetailViewModel(
         viewModelScope.launch {
             try {
                 val opinion = repository.getOpinionByIdDirect(id)
-                
+
                 _uiState.update { 
                     it.copy(
                         opinion = opinion,
@@ -51,37 +54,71 @@ class MediaDetailViewModel(
     }
 
     /**
-     * Establece directamente un MediaOpinion para elementos TMDB
-     * que no están guardados en la base de datos
+     * Carga el elenco de una película o serie.
+     * Se puede llamar con un ID de TMDB sin necesidad de tener la opinión cargada.
+     * @param tmdbId El ID de TMDB de la película o serie
+     * @param isMovie Opcional, indica si es una película (true) o serie (false)
      */
-    fun setTmdbMediaOpinion(opinion: MediaOpinion) {
+    fun loadCast(tmdbId: Int, isMovie: Boolean? = null) {
+        // No dependemos de opinion, usamos el isMovie proporcionado o lo inferimos de la opinión si está disponible
+        val isMovieMedia = isMovie ?: _uiState.value.opinion?.isMovie ?: true // Por defecto asumimos película
+
+        // Indicar que estamos cargando el elenco
+        _uiState.update { it.copy(isLoadingCast = true) }
+
+        viewModelScope.launch {
+            try {
+                val castResult = if (isMovieMedia) {
+                    tmdbRepository.getMovieCast(tmdbId, 5)
+                } else {
+                    tmdbRepository.getTvCast(tmdbId, 5)
+                }
+
+                castResult.fold(
+                    onSuccess = { cast ->
+                        _uiState.update { it.copy(cast = cast, isLoadingCast = false) }
+                    },
+                    onFailure = {
+                        _uiState.update { it.copy(isLoadingCast = false) }
+                    }
+                )
+            } catch (e: Exception) {
+                _uiState.update { it.copy(isLoadingCast = false) }
+            }
+        }
+    }
+
+    /**
+     * Establece directamente un MediaOpinion para elementos TMDB
+     * que no están guardados en la base de datos.
+     * Este método se llama cuando el usuario selecciona una película/serie de TMDB en la home.
+     */
+    fun setTmdbMediaOpinion(opinion: MediaOpinion? = null) {
         _uiState.update {
             it.copy(
                 opinion = opinion,
-                isLoading = false,
-                error = null
+                isLoading = false
             )
         }
     }
-    
+
     /**
      * Añade un nuevo comentario a la opinión actual.
      * Verifica si la opinión existe en el servidor antes de decidir si crear nueva o actualizar.
      */
     fun addComment(comment: String) {
         if (comment.isBlank()) return
-        
+
         val currentOpinion = _uiState.value.opinion ?: return
-        
+
         viewModelScope.launch {
             try {
                 val existingOpinion = repository.getOpinionByIdDirect(currentOpinion.id)
-                
+
                 if (existingOpinion == null) {
-                    val randomId = kotlin.random.Random.nextLong(1_000_000, Long.MAX_VALUE)
-                    
+
                     val newOpinion = MediaOpinion(
-                        id = randomId,
+                        id = currentOpinion.id,
                         title = currentOpinion.title,
                         platform = currentOpinion.platform,
                         genre = currentOpinion.genre,
@@ -94,7 +131,7 @@ class MediaDetailViewModel(
                         year = currentOpinion.year,
                         backdropUrl = currentOpinion.backdropUrl
                     )
-                    
+
                     val savedId = repository.saveOpinion(newOpinion)
                     if (savedId > 0) {
                         loadOpinionById(savedId)
@@ -106,9 +143,9 @@ class MediaDetailViewModel(
                     val updatedComments = existingOpinion.comments.toMutableList().apply {
                         add(comment)
                     }
-                    
+
                     val updatedOpinion = existingOpinion.copy(comments = updatedComments)
-                    
+
                     val success = repository.updateOpinionById(existingOpinion.id, updatedOpinion)
                     if (success) {
                         _uiState.update { it.copy(opinion = updatedOpinion, newComment = "") }
@@ -121,7 +158,7 @@ class MediaDetailViewModel(
             }
         }
     }
-    
+
     /**
      * Actualiza el texto del nuevo comentario
      */
@@ -138,7 +175,9 @@ data class MediaDetailUiState(
     val isLoading: Boolean = false,
     val error: MediaDetailError? = null,
     val newComment: String = "",
-    val commentError: String? = null
+    val commentError: String? = null,
+    val cast: List<TmdbCastMember>? = null,
+    val isLoadingCast: Boolean = false
 )
 
 /**

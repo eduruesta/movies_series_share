@@ -284,7 +284,8 @@ abstract class TmdbMediaListViewModel(
             rating = item.voteAverage?.toFloat() ?: 0f,
             averageRating = item.voteAverage?.toFloat() ?: 0f,
             synopsis = item.overview ?: "",
-            year = item.displayReleaseDate
+            year = item.displayReleaseDate,
+            isMovie = isMovie
         )
         
         return mediaOpinion
@@ -333,10 +334,9 @@ abstract class TmdbMediaListViewModel(
 
                 if (existingOpinion == null) {
                     // La opinión no existe - Crear y guardar nueva opinión
-                    val randomId = kotlin.random.Random.nextLong(1_000_000, Long.MAX_VALUE)
                     
                     val newOpinion = MediaOpinion(
-                        id = randomId,
+                        id = mediaOpinion.id,  // Usamos 0, el servicio asignará el ID real
                         title = mediaOpinion.title,
                         platform = mediaOpinion.platform,
                         genre = mediaOpinion.genre,

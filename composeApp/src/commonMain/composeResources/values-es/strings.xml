@@ -23,6 +23,15 @@
     <string name="synopsis_field">Sinopsis</string>
     <string name="result_error">Hubo un error en la búsqueda, volvé a internarlo</string>
     <string name="comment">Comentario:</string>
+    <string name="comments">Comentarios</string>
+    <string name="cast">Elenco</string>
+    <string name="platform">Plataforma: %1$s</string>
+    <string name="genre">Género: %1$s</string>
+
+    <string name="loading_cast">Cargando elenco...</string>
+    <string name="loading_cast_issue">No hay información del elenco disponible</string>
+    <string name="information">Info</string>
+
     <string name="without_comment">Sin comentarios</string>
     <string name="add_new_comment">Agregar comentario</string>
     <string name="write_your_comment">Escribe tu comentario...</string>

@@ -27,6 +27,8 @@ class MediaOpinionFormViewModel(
     val uiState: StateFlow<MediaOpinionFormUiState> = _uiState.asStateFlow()
 
     // Campos individuales del formulario
+    var id by mutableStateOf("")
+        private set
     var title by mutableStateOf("")
         private set
 
@@ -62,7 +64,6 @@ class MediaOpinionFormViewModel(
     // Tipos de mensajes que pueden mostrarse en la UI
     sealed class SearchUiMessage {
         data class NoResults(val query: String): SearchUiMessage()
-        data class ResultsCount(val count: Int, val query: String): SearchUiMessage()
         data class Error(val error: String): SearchUiMessage()
         data class Selected(val title: String): SearchUiMessage()
         data class Generic(val text: String): SearchUiMessage()
@@ -116,7 +117,6 @@ class MediaOpinionFormViewModel(
                     } else {
                         searchResults = results
                         showSearchResults = true
-                        _searchUiMessage.value = SearchUiMessage.ResultsCount(results.size, query)
                     }
                     isSearching = false
                 },
@@ -154,6 +154,7 @@ class MediaOpinionFormViewModel(
         title = mediaItem.displayTitle
         synopsis = mediaItem.overview ?: ""
         year = mediaItem.displayReleaseDate
+        id = mediaItem.id.toString()
 
         val fullUrl = tmdbRepository.getFullPosterUrl(mediaItem.posterPath)
         val fullBackdropUrl = tmdbRepository.getFullBackdropUrl(mediaItem.backdropPath)
@@ -228,10 +229,9 @@ class MediaOpinionFormViewModel(
     /**
      * Guarda la opinión
      */
-    fun saveOpinion(groupId: String? = null) {
+    fun saveOpinion(groupId: String? = null, opinionId: String? = null) {
         viewModelScope.launch {
             _uiState.value = _uiState.value.copy(isSaving = true)
-            val randomId = kotlin.random.Random.nextLong(1_000_000, Long.MAX_VALUE)
 
             val commentsList = if (comments.isBlank()) {
                 emptyList()
@@ -241,11 +241,10 @@ class MediaOpinionFormViewModel(
 
             val finalGroupId = groupId ?: pendingGroupId
 
-            // Log para depuración
             println("DEBUG: Guardando opinión con username: $pendingUsername")
 
             val opinion = MediaOpinion(
-                id = randomId,
+                id = opinionId?.toLong() ?: 0,
                 title = title,
                 platform = platform,
                 genre = genre,
@@ -261,7 +260,6 @@ class MediaOpinionFormViewModel(
                 username = pendingUsername
             )
 
-            // Log para verificar que la opinión tiene el username configurado
             println("DEBUG: Opinion creada con username: ${opinion.username}")
 
             repository.saveOpinion(opinion)

@@ -16,7 +16,7 @@ import kotlinx.serialization.Serializable
     indices = [Index(value = ["title"], unique = true)]
 )
 data class MediaOpinion(
-    @PrimaryKey(autoGenerate = true)
+    @PrimaryKey(autoGenerate = false)
     @ColumnInfo(name = "id")
     val id: Long = 0,
     @ColumnInfo(name = "title")
@@ -62,4 +62,10 @@ data class MediaOpinion(
 
     @ColumnInfo(name = "username")
     val username: String? = null,
+
+    /**
+     * Indica si es una película (true) o serie (false)
+     */
+    @ColumnInfo(name = "is_movie")
+    val isMovie: Boolean = true,
 ) : JavaSerializable

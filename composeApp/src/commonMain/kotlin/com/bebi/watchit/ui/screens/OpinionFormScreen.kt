@@ -306,7 +306,7 @@ data class OpinionFormScreen(val id: String? = null) : Screen {
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Button(
-                        onClick = { viewModel.saveOpinion(groupId = id) },
+                        onClick = { viewModel.saveOpinion(groupId = id, viewModel.id) },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = viewModel.title.isNotBlank() && viewModel.rating > 0f
                     ) {
@@ -345,13 +345,6 @@ data class OpinionFormScreen(val id: String? = null) : Screen {
         val displayText = when (message) {
             is SearchUiMessage.NoResults ->
                 stringResource(Res.string.search_no_results, message.query)
-
-            is SearchUiMessage.ResultsCount ->
-                stringResource(
-                    Res.string.search_results_count,
-                    message.count.toString(),
-                    message.query
-                )
 
             is SearchUiMessage.Error ->
                 stringResource(Res.string.search_error, message.error)

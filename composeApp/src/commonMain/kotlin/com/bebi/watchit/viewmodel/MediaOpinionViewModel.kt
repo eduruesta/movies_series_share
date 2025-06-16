@@ -26,7 +26,6 @@ class MediaOpinionViewModel(
     private val _uiState = MutableStateFlow(MediaOpinionUiState())
     val uiState: StateFlow<MediaOpinionUiState> = _uiState.asStateFlow()
 
-    // Se quita el init para cargar datos bajo demanda
 
     /**
      * Actualiza el ID del usuario actual y limpia los datos anteriores
@@ -270,10 +269,8 @@ class MediaOpinionViewModel(
                 val existingOpinion = repository.getOpinionByIdDirect(opinion.id)
 
                 if (existingOpinion == null) {
-                    val randomId = kotlin.random.Random.nextLong(1_000_000, Long.MAX_VALUE)
-                    
                     val newOpinion = MediaOpinion(
-                        id = randomId,
+                        id = opinion.id,
                         title = opinion.title,
                         platform = opinion.platform,
                         genre = opinion.genre,

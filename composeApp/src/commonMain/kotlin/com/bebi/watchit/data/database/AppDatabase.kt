@@ -20,7 +20,7 @@ import com.bebi.watchit.model.GroupCriticCached
         TmdbCachedMedia::class,
         GroupCriticCached::class
     ],
-    version = 7,
+    version = 10,
     exportSchema = false
 )
 @TypeConverters(Converters::class)

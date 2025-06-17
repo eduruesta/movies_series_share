@@ -60,10 +60,8 @@ class MediaDetailViewModel(
      * @param tmdbId El ID de TMDB de la película o serie
      * @param isMovie Opcional, indica si es una película (true) o serie (false)
      */
-    fun loadCast(tmdbId: Int, isMovie: Boolean? = null) {
-        // No dependemos de opinion, usamos el isMovie proporcionado o lo inferimos de la opinión si está disponible
-        val isMovieMedia =
-            isMovie ?: _uiState.value.opinion?.isMovie ?: true // Por defecto asumimos película
+    fun loadCast(tmdbId: Int, mediaType: String? = null) {
+        val isMovieMedia = mediaType == "movie"
 
         // Indicar que estamos cargando el elenco
         _uiState.update { it.copy(isLoadingCast = true) }

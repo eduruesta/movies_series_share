@@ -362,7 +362,8 @@ abstract class TmdbMediaListViewModel(
             rating = cachedMedia.voteAverage.toFloat(),
             averageRating = cachedMedia.voteAverage.toFloat(),
             synopsis = cachedMedia.overview,
-            year = cachedMedia.releaseDate
+            year = cachedMedia.releaseDate,
+            mediaType = cachedMedia.mediaType
         )
     }
 
@@ -392,7 +393,8 @@ abstract class TmdbMediaListViewModel(
             averageRating = item.voteAverage?.toFloat() ?: 0f,
             synopsis = item.overview ?: "",
             year = item.displayReleaseDate,
-            isMovie = isMovie
+            isMovie = isMovie,
+            mediaType = item.mediaType
         )
 
         return mediaOpinion

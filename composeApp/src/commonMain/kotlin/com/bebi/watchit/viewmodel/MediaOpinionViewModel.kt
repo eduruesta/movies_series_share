@@ -143,7 +143,8 @@ class MediaOpinionViewModel(
                         averageRating = critic.averageRating,
                         synopsis = critic.synopsis,
                         year = critic.year,
-                        userId = currentUserId
+                        userId = currentUserId,
+                        mediaType = critic.mediaType ?: ""
                     )
                 }
                 
@@ -176,7 +177,8 @@ class MediaOpinionViewModel(
                                 rating = cached.rating,
                                 averageRating = cached.averageRating,
                                 synopsis = cached.synopsis,
-                                year = cached.year
+                                year = cached.year,
+                                mediaType = cached.mediaType
                             )
                         }
                         

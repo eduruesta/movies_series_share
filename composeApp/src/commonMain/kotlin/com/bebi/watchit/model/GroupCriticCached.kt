@@ -25,5 +25,6 @@ data class GroupCriticCached(
     val synopsis: String,
     val year: String,
     val userId: String, // Usuario al que pertenece esta crítica en caché
-    val lastUpdated: Long = Clock.System.now().toEpochMilliseconds()
+    val lastUpdated: Long = Clock.System.now().toEpochMilliseconds(),
+    val mediaType: String
 )

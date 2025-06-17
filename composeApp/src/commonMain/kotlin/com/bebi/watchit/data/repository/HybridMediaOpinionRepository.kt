@@ -96,6 +96,7 @@ class HybridMediaOpinionRepository(
                             backdropUrl = savedRec.backdropUrl,
                             averageRating = savedRec.rating,
                             synopsis = savedRec.overview ?: "",
+                            platform = savedRec.platform
                         )
                     }
                 }

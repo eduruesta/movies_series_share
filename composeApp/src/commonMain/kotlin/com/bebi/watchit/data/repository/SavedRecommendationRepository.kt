@@ -36,7 +36,8 @@ class SavedRecommendationRepository(
             rating = if (opinion.averageRating > 0) opinion.averageRating else opinion.rating,
             genre = opinion.genre,
             backdropUrl = opinion.backdropUrl,
-            overview = opinion.synopsis
+            overview = opinion.synopsis,
+            platform = opinion.platform
         )
 
         val insertId = savedRecommendationDao.insertSavedRecommendation(savedRecommendation)

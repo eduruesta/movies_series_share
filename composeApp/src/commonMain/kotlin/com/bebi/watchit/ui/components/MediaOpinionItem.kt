@@ -265,7 +265,8 @@ fun MediaOpinionItem(
                                         rating = opinion.averageRating,
                                         genre = opinion.genre,
                                         backdropUrl = opinion.backdropUrl,
-                                        overview = opinion.synopsis
+                                        overview = opinion.synopsis,
+                                        platform = opinion.platform
                                     )
                                     savedViewModel.removeRecommendation(
                                         recommendation = recommendation

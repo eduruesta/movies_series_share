@@ -58,6 +58,9 @@ class MediaOpinionFormViewModel(
     var year by mutableStateOf("")
         private set
 
+    var mediaType by mutableStateOf("")
+        private set
+
     // Estado de búsqueda
     var isSearching by mutableStateOf(false)
         private set
@@ -156,6 +159,8 @@ class MediaOpinionFormViewModel(
         synopsis = mediaItem.overview ?: ""
         year = mediaItem.displayReleaseDate
         id = mediaItem.id.toString()
+        mediaType = mediaItem.mediaType ?: ""
+
 
         val fullUrl = tmdbRepository.getFullPosterUrl(mediaItem.posterPath)
         val fullBackdropUrl = tmdbRepository.getFullBackdropUrl(mediaItem.backdropPath)
@@ -261,7 +266,8 @@ class MediaOpinionFormViewModel(
                 year = year,
                 backdropUrl = backdropUrl,
                 groupId = finalGroupId,
-                username = pendingUsername
+                username = pendingUsername,
+                mediaType = mediaType
             )
 
             println("DEBUG: Opinion creada con username: ${opinion.username}")

@@ -161,7 +161,7 @@ data class MediaDetailScreen(
         LaunchedEffect(opinionId, tmdbMediaOpinion) {
             if (opinionId != null) {
                 viewModel.loadOpinionById(opinionId)
-                viewModel.loadCast(opinionId.toInt())
+                viewModel.loadCast(opinionId.toInt(), uiState.opinion?.mediaType)
 
                 isTmbdMediaOpinion = false
                 savedViewModel.isRecommendationSaved(opinionId) { saved ->
@@ -169,7 +169,7 @@ data class MediaDetailScreen(
                 }
             } else if (tmdbMediaOpinion != null) {
                 viewModel.setTmdbMediaOpinion(tmdbMediaOpinion)
-                viewModel.loadCast(tmdbMediaOpinion.id.toInt())
+                viewModel.loadCast(tmdbMediaOpinion.id.toInt(), tmdbMediaOpinion.mediaType)
                 savedViewModel.isRecommendationSaved(tmdbMediaOpinion.id) { saved ->
                     isSaved = saved
                 }
@@ -448,7 +448,8 @@ data class MediaDetailScreen(
                                                             rating = opinion.averageRating,
                                                             genre = opinion.genre,
                                                             backdropUrl = opinion.backdropUrl,
-                                                            overview = opinion.synopsis
+                                                            overview = opinion.synopsis,
+                                                            platform = opinion.platform
                                                         )
                                                         savedViewModel.removeRecommendation(
                                                             recommendation = recommendation

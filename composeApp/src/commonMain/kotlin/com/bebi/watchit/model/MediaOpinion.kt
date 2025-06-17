@@ -43,6 +43,9 @@ data class MediaOpinion(
     @ColumnInfo(name = "poster_url")
     val posterUrl: String? = null,
 
+    @ColumnInfo(name = "media_type")
+    val mediaType: String? = null,
+
     @ColumnInfo(name = "backdrop_url")
     val backdropUrl: String? = null,
     /**

@@ -149,6 +149,13 @@ fun SavedRecommendationItem(
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
                         )
+                        Spacer(modifier = Modifier.width(8.dp))
+
+                        Text(
+                            text = recommendation.platform,
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+                        )
                     }
                     
                     Spacer(modifier = Modifier.height(4.dp))

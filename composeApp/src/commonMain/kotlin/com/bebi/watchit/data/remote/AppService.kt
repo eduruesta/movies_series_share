@@ -252,4 +252,42 @@ class AppService(
 
         return client.get(url).body()
     }
+    
+    /**
+     * Obtiene películas similares a una película específica
+     * @param movieId ID de la película en TMDB
+     * @param page Número de página para la paginación
+     * @return Respuesta con la lista de películas recomendadas
+     */
+    suspend fun getRecommendationsMovies(movieId: Int, page: Int = 1): TmdbSearchResponse {
+        val url = URLBuilder().apply {
+            protocol = URLProtocol.HTTPS
+            host = baseUrl
+            appendPathSegments(apiVersion, "movie", movieId.toString(), "recommendations")
+            parameters.append("language", language)
+            parameters.append("page", page.toString())
+            parameters.append("api_key", BuildConfig.api_key)
+        }.build()
+
+        return client.get(url).body()
+    }
+    
+    /**
+     * Obtiene series similares a una serie específica
+     * @param tvId ID de la serie en TMDB
+     * @param page Número de página para la paginación
+     * @return Respuesta con la lista de series recomendadas
+     */
+    suspend fun getRecommendationsTvShows(tvId: Int, page: Int = 1): TmdbSearchResponse {
+        val url = URLBuilder().apply {
+            protocol = URLProtocol.HTTPS
+            host = baseUrl
+            appendPathSegments(apiVersion, "tv", tvId.toString(), "recommendations")
+            parameters.append("language", language)
+            parameters.append("page", page.toString())
+            parameters.append("api_key", BuildConfig.api_key)
+        }.build()
+
+        return client.get(url).body()
+    }
 }

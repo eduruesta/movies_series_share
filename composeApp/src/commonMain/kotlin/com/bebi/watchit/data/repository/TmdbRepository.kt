@@ -2,10 +2,8 @@ package com.bebi.watchit.data.repository
 
 import com.bebi.watchit.data.remote.AppService
 import com.bebi.watchit.data.remote.model.Provider
-import com.bebi.watchit.data.remote.model.CountryProviders
 import com.bebi.watchit.data.remote.model.TmdbCastMember
 import com.bebi.watchit.data.remote.model.TmdbCreditsResponse
-import com.bebi.watchit.data.remote.model.TmdbCrewMember
 import com.bebi.watchit.data.remote.model.TmdbGenre
 import com.bebi.watchit.data.remote.model.TmdbMediaItem
 import kotlinx.coroutines.Dispatchers
@@ -269,4 +267,47 @@ class TmdbRepository(private val appService: AppService) {
         }
     }
 
+    /**
+     * Get cast for a TV show
+     */
+    suspend fun getTvShowCast(tvId: Int): Result<List<TmdbCastMember>> = withContext(Dispatchers.IO) {
+        try {
+            val response = appService.getTvCredits(tvId)
+            Result.success(response.cast)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Obtiene películas recomendadas a una película específica
+     * @param movieId ID de la película en TMDB
+     * @param page Número de página para la paginación
+     * @return Resultado con lista de películas recomendadas marcadas con tipo "movie"
+     */
+    suspend fun getRecommendationsMovies(movieId: Int, page: Int = 1): Result<List<TmdbMediaItem>> = withContext(Dispatchers.IO) {
+        try {
+            val response = appService.getRecommendationsMovies(movieId, page)
+            val results = response.results.map { it.copy(mediaType = "movie") }
+            Result.success(results)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
+
+    /**
+     * Obtiene series recomendadas a una serie específica
+     * @param tvId ID de la serie en TMDB
+     * @param page Número de página para la paginación
+     * @return Resultado con lista de series recomendadas marcadas con tipo "tv"
+     */
+    suspend fun getRecommendationsTvShows(tvId: Int, page: Int = 1): Result<List<TmdbMediaItem>> = withContext(Dispatchers.IO) {
+        try {
+            val response = appService.getRecommendationsTvShows(tvId, page)
+            val results = response.results.map { it.copy(mediaType = "tv") }
+            Result.success(results)
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
+    }
 }

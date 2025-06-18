@@ -125,6 +125,8 @@
     <string name="genre">Genre: %1$s</string>
     <string name="loading_cast">Loading cast...</string>
     <string name="loading_cast_issue">There is not cast information available</string>
+    <string name="loading_recommendation">Loading recommendations...</string>
+    <string name="loading_recommendation_issue">There is not recommendation information available</string>
     <string name="join_success_message">Join to the group</string>
     <string name="information">Info</string>
 

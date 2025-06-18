@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.bebi.watchit.data.repository.MediaOpinionRepository
 import com.bebi.watchit.data.repository.TmdbRepository
 import com.bebi.watchit.data.remote.model.TmdbCastMember
+import com.bebi.watchit.data.remote.model.TmdbMediaItem
 import com.bebi.watchit.model.Comment
 import com.bebi.watchit.model.MediaOpinion
 import kotlinx.coroutines.CancellationException
@@ -58,32 +59,94 @@ class MediaDetailViewModel(
      * Carga el elenco de una película o serie.
      * Se puede llamar con un ID de TMDB sin necesidad de tener la opinión cargada.
      * @param tmdbId El ID de TMDB de la película o serie
-     * @param isMovie Opcional, indica si es una película (true) o serie (false)
+     * @param mediaType Tipo de medio (movie o tv)
      */
     fun loadCast(tmdbId: Int, mediaType: String? = null) {
         val isMovieMedia = mediaType == "movie"
-
         // Indicar que estamos cargando el elenco
         _uiState.update { it.copy(isLoadingCast = true) }
 
         viewModelScope.launch {
             try {
                 val castResult = if (isMovieMedia) {
-                    tmdbRepository.getMovieCast(tmdbId, 5)
+                    tmdbRepository.getMovieCast(tmdbId)
                 } else {
-                    tmdbRepository.getTvCast(tmdbId, 5)
+                    tmdbRepository.getTvShowCast(tmdbId)
                 }
 
                 castResult.fold(
                     onSuccess = { cast ->
-                        _uiState.update { it.copy(cast = cast, isLoadingCast = false) }
+                        _uiState.update {
+                            it.copy(
+                                cast = cast,
+                                isLoadingCast = false
+                            )
+                        }
                     },
-                    onFailure = {
-                        _uiState.update { it.copy(isLoadingCast = false) }
+                    onFailure = { exception ->
+                        _uiState.update {
+                            it.copy(
+                                cast = emptyList(),
+                                isLoadingCast = false
+                            )
+                        }
                     }
                 )
             } catch (e: Exception) {
-                _uiState.update { it.copy(isLoadingCast = false) }
+                _uiState.update {
+                    it.copy(
+                        cast = emptyList(),
+                        isLoadingCast = false
+                    )
+                }
+            }
+        }
+    }
+
+    /**
+     * Carga medios recomendadas para una película o serie
+     * @param tmdbId El ID de TMDB del medio
+     * @param mediaType Tipo de medio ("movie" o "tv")
+     */
+    fun loadRecommendationsMedia(tmdbId: Int, mediaType: String? = null) {
+        val isMovieMedia = mediaType == "movie"
+        
+        // Indicar que estamos cargando medios similares
+        _uiState.update { it.copy(isLoadingRecommendationsMedia = true) }
+        
+        viewModelScope.launch {
+            try {
+                val similarResult = if (isMovieMedia) {
+                    tmdbRepository.getRecommendationsMovies(tmdbId)
+                } else {
+                    tmdbRepository.getRecommendationsTvShows(tmdbId)
+                }
+                
+                similarResult.fold(
+                    onSuccess = { similarMedia ->
+                        _uiState.update {
+                            it.copy(
+                                recommendationsMedia = similarMedia,
+                                isLoadingRecommendationsMedia = false
+                            )
+                        }
+                    },
+                    onFailure = { exception ->
+                        _uiState.update {
+                            it.copy(
+                                recommendationsMedia = emptyList(),
+                                isLoadingRecommendationsMedia = false
+                            )
+                        }
+                    }
+                )
+            } catch (e: Exception) {
+                _uiState.update {
+                    it.copy(
+                        recommendationsMedia = emptyList(),
+                        isLoadingRecommendationsMedia = false
+                    )
+                }
             }
         }
     }
@@ -94,12 +157,7 @@ class MediaDetailViewModel(
      * Este método se llama cuando el usuario selecciona una película/serie de TMDB en la home.
      */
     fun setTmdbMediaOpinion(opinion: MediaOpinion? = null) {
-        _uiState.update {
-            it.copy(
-                opinion = opinion,
-                isLoading = false
-            )
-        }
+        _uiState.update { it.copy(opinion = opinion, isLoading = false) }
     }
 
     /**
@@ -175,14 +233,14 @@ class MediaDetailViewModel(
      * Actualiza el texto del nuevo comentario
      */
     fun updateNewComment(comment: String) {
-        _uiState.update { it.copy(newComment = comment) }
+        _uiState.update { it.copy(newComment = comment, commentError = null) }
     }
-
+    
     /**
      * Actualiza el nombre del autor del nuevo comentario
      */
     fun updateUsername(username: String) {
-        _uiState.update { it.copy(username = username) }
+        _uiState.update { it.copy(username = username, commentError = null) }
     }
 }
 
@@ -197,7 +255,9 @@ data class MediaDetailUiState(
     val username: String = "",
     val commentError: String? = null,
     val cast: List<TmdbCastMember>? = null,
-    val isLoadingCast: Boolean = false
+    val isLoadingCast: Boolean = false,
+    val recommendationsMedia: List<TmdbMediaItem> = emptyList(),
+    val isLoadingRecommendationsMedia: Boolean = false
 )
 
 /**

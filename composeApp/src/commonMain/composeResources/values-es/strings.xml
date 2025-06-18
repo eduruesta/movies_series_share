@@ -30,6 +30,8 @@
 
     <string name="loading_cast">Cargando elenco...</string>
     <string name="loading_cast_issue">No hay información del elenco disponible</string>
+    <string name="loading_recommendation">Cargando recomendaciones...</string>
+    <string name="loading_recommendation_issue">No hay información de recomendaciones disponible</string>
     <string name="information">Info</string>
 
     <string name="without_comment">Sin comentarios</string>

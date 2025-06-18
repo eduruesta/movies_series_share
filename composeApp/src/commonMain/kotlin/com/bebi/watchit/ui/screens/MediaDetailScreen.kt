@@ -2,6 +2,7 @@ package com.bebi.watchit.ui.screens
 
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -59,6 +60,8 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
@@ -91,7 +94,10 @@ import moviesseriesshare.composeapp.generated.resources.information
 import moviesseriesshare.composeapp.generated.resources.loading_cast
 import moviesseriesshare.composeapp.generated.resources.loading_cast_issue
 import moviesseriesshare.composeapp.generated.resources.loading_details
+import moviesseriesshare.composeapp.generated.resources.loading_recommendation
+import moviesseriesshare.composeapp.generated.resources.loading_recommendation_issue
 import moviesseriesshare.composeapp.generated.resources.loading_title
+import moviesseriesshare.composeapp.generated.resources.media_list_title
 import moviesseriesshare.composeapp.generated.resources.opinion_count
 import moviesseriesshare.composeapp.generated.resources.platform
 import moviesseriesshare.composeapp.generated.resources.recommendation_already_saved
@@ -158,22 +164,42 @@ data class MediaDetailScreen(
         val snackbarHostState = remember { SnackbarHostState() }
         val coroutineScope = rememberCoroutineScope()
 
+        // Cargar los datos de la opinión al entrar a la pantalla
         LaunchedEffect(opinionId, tmdbMediaOpinion) {
             if (opinionId != null) {
                 viewModel.loadOpinionById(opinionId)
-                viewModel.loadCast(opinionId.toInt(), uiState.opinion?.mediaType)
-
                 isTmbdMediaOpinion = false
                 savedViewModel.isRecommendationSaved(opinionId) { saved ->
                     isSaved = saved
                 }
             } else if (tmdbMediaOpinion != null) {
                 viewModel.setTmdbMediaOpinion(tmdbMediaOpinion)
-                viewModel.loadCast(tmdbMediaOpinion.id.toInt(), tmdbMediaOpinion.mediaType)
+                isTmbdMediaOpinion = true
                 savedViewModel.isRecommendationSaved(tmdbMediaOpinion.id) { saved ->
                     isSaved = saved
                 }
-                isTmbdMediaOpinion = true
+            }
+        }
+        
+        LaunchedEffect(uiState.opinion) {
+            val opinion = uiState.opinion
+            if (opinion != null && opinionId != null) {
+                val isTvMedia = opinion.mediaType == "tv"
+                val isMovieMedia = opinion.mediaType == "movie"
+                if (isTvMedia || isMovieMedia) {
+                    viewModel.loadCast(opinionId.toInt(), opinion.mediaType)
+                }
+                viewModel.loadRecommendationsMedia(opinionId.toInt(), opinion.mediaType)
+            } else if (opinion != null && tmdbMediaOpinion != null) {
+                val isTvMedia = tmdbMediaOpinion.mediaType == "tv"
+                val isMovieMedia = tmdbMediaOpinion.mediaType == "movie"
+                if (isTvMedia || isMovieMedia) {
+                    viewModel.loadCast(tmdbMediaOpinion.id.toInt(), tmdbMediaOpinion.mediaType)
+                }
+                viewModel.loadRecommendationsMedia(
+                    tmdbMediaOpinion.id.toInt(),
+                    tmdbMediaOpinion.mediaType
+                )
             }
         }
 
@@ -232,7 +258,7 @@ data class MediaDetailScreen(
                             label = { Text("Nombre de usuario") },
                             singleLine = true
                         )
-                        
+
                         // Campo para el comentario
                         OutlinedTextField(
                             value = uiState.newComment,
@@ -403,11 +429,8 @@ data class MediaDetailScreen(
                                                 onClick = { },
                                                 modifier = Modifier.height(32.dp)
                                                     .padding(start = 8.dp),
-                                                contentPadding = PaddingValues(horizontal = 8.dp),
-                                                colors = ButtonDefaults.filledTonalButtonColors(
-                                                    containerColor = MaterialTheme.colorScheme.primary.copy(
-                                                        alpha = 0.2f
-                                                    )
+                                                contentPadding = PaddingValues(
+                                                    horizontal = 8.dp,
                                                 )
                                             ) {
                                                 Row(
@@ -483,6 +506,7 @@ data class MediaDetailScreen(
                                 add(stringResource(Res.string.synopsis_field))
                                 add(stringResource(Res.string.cast))
                                 add(stringResource(Res.string.information))
+                                add(stringResource(Res.string.media_list_title))
                                 if (opinion.groupId != null && !isTmbdMediaOpinion) {
                                     add(stringResource(Res.string.comments))
                                 }
@@ -541,7 +565,6 @@ data class MediaDetailScreen(
                                     selectedTab == 1 -> {
                                         val castList = uiState.cast
                                         if (uiState.isLoadingCast) {
-                                            // Mostrar indicador de carga
                                             Box(
                                                 modifier = Modifier.fillMaxWidth()
                                                     .padding(vertical = 32.dp),
@@ -651,7 +674,12 @@ data class MediaDetailScreen(
                                                     .defaultMinSize(minHeight = 32.dp)
                                                     .padding(end = 8.dp),
                                                 contentPadding = PaddingValues(
-                                                    horizontal = 12.dp,
+                                                    horizontal = 8.dp,
+                                                ),
+                                                colors = ButtonDefaults.filledTonalButtonColors(
+                                                    containerColor = MaterialTheme.colorScheme.primary.copy(
+                                                        alpha = 0.2f
+                                                    )
                                                 )
                                             ) {
                                                 Text(
@@ -686,8 +714,150 @@ data class MediaDetailScreen(
 
                                     }
 
+                                    // Similar
+                                    selectedTab == 3 -> {
+                                        if (uiState.isLoadingRecommendationsMedia) {
+                                            // Mostrar indicador de carga
+                                            Box(
+                                                modifier = Modifier.fillMaxWidth()
+                                                    .padding(vertical = 32.dp),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Column(
+                                                    horizontalAlignment = Alignment.CenterHorizontally,
+                                                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                                                ) {
+                                                    CircularProgressIndicator()
+                                                    Text(
+                                                        text = stringResource(Res.string.loading_recommendation),
+                                                        style = MaterialTheme.typography.bodyLarge
+                                                    )
+                                                }
+                                            }
+                                        } else if (uiState.recommendationsMedia.isEmpty()) {
+                                            Box(
+                                                modifier = Modifier.fillMaxWidth()
+                                                    .padding(vertical = 32.dp),
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text(
+                                                    text = stringResource(Res.string.loading_recommendation_issue),
+                                                    style = MaterialTheme.typography.bodyLarge
+                                                )
+                                            }
+                                        } else {
+                                            // Mostrar la lista de medios similares
+                                            LazyColumn(
+                                                modifier = Modifier
+                                                    .fillMaxWidth()
+                                                    .height(300.dp),
+                                                contentPadding = PaddingValues(vertical = 8.dp),
+                                                verticalArrangement = Arrangement.spacedBy(12.dp)
+                                            ) {
+                                                items(
+                                                    items = uiState.recommendationsMedia,
+                                                    key = { it.id }
+                                                ) { recommendation ->
+                                                    Row(
+                                                        modifier = Modifier
+                                                            .fillMaxWidth()
+                                                            .padding(8.dp),
+                                                        verticalAlignment = Alignment.CenterVertically
+                                                    ) {
+                                                        // Imagen del poster
+                                                        if (recommendation.posterPath != null) {
+                                                            AsyncImage(
+                                                                model = "https://image.tmdb.org/t/p/w185${recommendation.posterPath}",
+                                                                contentDescription = recommendation.title,
+                                                                contentScale = ContentScale.Crop,
+                                                                modifier = Modifier
+                                                                    .width(60.dp)
+                                                                    .height(90.dp)
+                                                                    .clip(RoundedCornerShape(8.dp))
+                                                                    .border(
+                                                                        width = 1.dp,
+                                                                        color = Color.Transparent,
+                                                                        shape = RoundedCornerShape(8.dp)
+                                                                    ),
+                                                            )
+                                                        } else {
+                                                            Box(
+                                                                modifier = Modifier
+                                                                    .width(60.dp)
+                                                                    .height(90.dp),
+                                                                contentAlignment = Alignment.Center
+                                                            ) {
+                                                                Icon(
+                                                                    imageVector = placeholder,
+                                                                    contentDescription = null,
+                                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                                    modifier = Modifier.size(32.dp)
+                                                                )
+                                                            }
+                                                        }
+
+                                                        Column(
+                                                            modifier = Modifier.padding(start = 16.dp)
+                                                        ) {
+                                                            Text(
+                                                                text = recommendation.title
+                                                                    ?: recommendation.name
+                                                                    ?: "",
+                                                                style = MaterialTheme.typography.bodyLarge,
+                                                                fontWeight = FontWeight.SemiBold,
+                                                                maxLines = 2,
+                                                                overflow = TextOverflow.Ellipsis
+                                                            )
+
+                                                            Spacer(modifier = Modifier.height(4.dp))
+
+                                                            Row(
+                                                                verticalAlignment = Alignment.CenterVertically
+                                                            ) {
+                                                                StarRating(
+                                                                    rating = recommendation.voteAverage?.toFloat()
+                                                                        ?: 0f,
+                                                                    maxRating = 1
+                                                                )
+
+                                                                Text(
+                                                                    text = (recommendation.voteAverage?.toString()
+                                                                        ?: "0.0"),
+                                                                    style = MaterialTheme.typography.bodyMedium
+                                                                )
+
+                                                                if (recommendation.releaseDate != null) {
+                                                                    Text(
+                                                                        text = " • ${
+                                                                            extractYearFromDate(
+                                                                                recommendation.releaseDate
+                                                                            )
+                                                                        }",
+                                                                        style = MaterialTheme.typography.bodyMedium
+                                                                    )
+                                                                }
+                                                            }
+
+                                                            if (recommendation.overview != null) {
+                                                                Text(
+                                                                    text = recommendation.overview,
+                                                                    style = MaterialTheme.typography.bodySmall,
+                                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                                                    maxLines = 2,
+                                                                    overflow = TextOverflow.Ellipsis,
+                                                                    modifier = Modifier.padding(top = 4.dp)
+                                                                )
+                                                            }
+                                                        }
+                                                    }
+
+                                                }
+                                            }
+                                        }
+                                    }
+
                                     // Comentarios (solo si hay groupId)
-                                    !isTmbdMediaOpinion && selectedTab == 3 && opinion.groupId != null -> {
+                                    !isTmbdMediaOpinion && selectedTab == 4 && opinion.groupId != null -> {
                                         Column(
                                             modifier = Modifier.fillMaxWidth()
                                         ) {
@@ -751,14 +921,16 @@ data class MediaDetailScreen(
                                                                         text = comment.username,
                                                                         style = MaterialTheme.typography.labelMedium.copy(
                                                                             fontWeight = FontWeight.Bold,
-                                                                            color = if (isEven) 
+                                                                            color = if (isEven)
                                                                                 MaterialTheme.colorScheme.primary
                                                                             else
                                                                                 MaterialTheme.colorScheme.secondary
                                                                         ),
-                                                                        modifier = Modifier.padding(bottom = 4.dp)
+                                                                        modifier = Modifier.padding(
+                                                                            bottom = 4.dp
+                                                                        )
                                                                     )
-                                                                    
+
                                                                     // Contenido del mensaje
                                                                     Text(
                                                                         text = comment.text,

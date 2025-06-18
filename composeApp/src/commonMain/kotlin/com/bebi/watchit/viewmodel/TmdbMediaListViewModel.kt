@@ -206,7 +206,7 @@ abstract class TmdbMediaListViewModel(
                 genresResult.fold(
                     onSuccess = { genreNames ->
                         if (genreNames.isNotEmpty()) {
-                            genreText = genreNames.joinToString(", ")
+                            genreText = genreNames.take(2).joinToString(", ")
                         }
                     },
                     onFailure = { /* No action needed */ }

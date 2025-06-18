@@ -196,7 +196,7 @@ class MediaOpinionFormViewModel(
 
         genres.fold(
             onSuccess = { genreNames ->
-                genre = genreNames.joinToString(", ")
+                genre = genreNames.take(2).joinToString(", ")
             },
             onFailure = { /* Mantener valor actual */ }
         )

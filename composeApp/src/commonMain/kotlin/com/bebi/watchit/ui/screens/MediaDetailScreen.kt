@@ -180,7 +180,7 @@ data class MediaDetailScreen(
                 }
             }
         }
-        
+
         LaunchedEffect(uiState.opinion) {
             val opinion = uiState.opinion
             if (opinion != null && opinionId != null) {
@@ -500,12 +500,49 @@ data class MediaDetailScreen(
 
                             Spacer(modifier = Modifier.height(16.dp))
 
+                            if (opinion.genre.isNotEmpty()) {
+                                Row(
+                                    modifier = Modifier
+                                        .fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.Start,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
+                                    FilledTonalButton(
+                                        onClick = { },
+                                        modifier = Modifier
+                                            .defaultMinSize(minHeight = 32.dp)
+                                            .padding(end = 8.dp)
+
+                                    ) {
+                                        Text(
+                                            text = opinion.genre,
+                                            style = MaterialTheme.typography.labelMedium
+                                        )
+                                    }
+
+                                    if (opinion.platform.isNotEmpty()) {
+                                        FilledTonalButton(
+                                            onClick = { },
+                                            modifier = Modifier
+                                                .defaultMinSize(minHeight = 32.dp),
+
+                                            ) {
+                                            Text(
+                                                text = opinion.platform,
+                                                style = MaterialTheme.typography.labelMedium
+                                            )
+                                        }
+                                    }
+                                }
+
+                            }
+
+
                             // Sistema de pestañas (Tabs)
                             var selectedTab by remember { mutableStateOf(0) }
                             val tabs = buildList {
                                 add(stringResource(Res.string.synopsis_field))
                                 add(stringResource(Res.string.cast))
-                                add(stringResource(Res.string.information))
                                 add(stringResource(Res.string.media_list_title))
                                 if (opinion.groupId != null && !isTmbdMediaOpinion) {
                                     add(stringResource(Res.string.comments))
@@ -660,62 +697,8 @@ data class MediaDetailScreen(
                                         }
                                     }
 
-                                    // Info
-                                    (selectedTab == 2 && opinion.genre.isNotEmpty()) -> {
-                                        Column(
-                                            modifier = Modifier
-                                                .fillMaxWidth(),
-                                            verticalArrangement = Arrangement.Center,
-                                            horizontalAlignment = Alignment.Start
-                                        ) {
-                                            FilledTonalButton(
-                                                onClick = { },
-                                                modifier = Modifier
-                                                    .defaultMinSize(minHeight = 32.dp)
-                                                    .padding(end = 8.dp),
-                                                contentPadding = PaddingValues(
-                                                    horizontal = 8.dp,
-                                                ),
-                                                colors = ButtonDefaults.filledTonalButtonColors(
-                                                    containerColor = MaterialTheme.colorScheme.primary.copy(
-                                                        alpha = 0.2f
-                                                    )
-                                                )
-                                            ) {
-                                                Text(
-                                                    text = stringResource(
-                                                        Res.string.genre,
-                                                        opinion.genre
-                                                    ),
-                                                    style = MaterialTheme.typography.bodyLarge
-                                                )
-                                            }
-
-                                            if (opinion.platform.isNotEmpty()) {
-                                                FilledTonalButton(
-                                                    onClick = { },
-                                                    modifier = Modifier
-                                                        .defaultMinSize(minHeight = 32.dp),
-                                                    contentPadding = PaddingValues(
-                                                        horizontal = 12.dp,
-                                                        vertical = 4.dp
-                                                    )
-                                                ) {
-                                                    Text(
-                                                        text = stringResource(
-                                                            Res.string.platform,
-                                                            opinion.platform
-                                                        ),
-                                                        style = MaterialTheme.typography.bodyLarge
-                                                    )
-                                                }
-                                            }
-                                        }
-
-                                    }
-
                                     // Similar
-                                    selectedTab == 3 -> {
+                                    selectedTab == 2 -> {
                                         if (uiState.isLoadingRecommendationsMedia) {
                                             // Mostrar indicador de carga
                                             Box(

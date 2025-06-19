@@ -37,6 +37,8 @@ import coil3.compose.AsyncImage
 import com.bebi.watchit.data.remote.model.TmdbMediaItem
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.poster_description
+import moviesseriesshare.composeapp.generated.resources.available_in
+
 import org.jetbrains.compose.resources.stringResource
 import placeholder
 
@@ -167,6 +169,27 @@ private fun SearchResultItem(
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            }
+            
+            // Mostrar plataformas si están disponibles
+            if (mediaItem.watchProviders.isNotEmpty()) {
+                Row(
+                    modifier = Modifier.padding(vertical = 4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    Text(
+                        text = stringResource(Res.string.available_in),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.primary
+                    )
+                    Text(
+                        text = mediaItem.watchProviders.joinToString(", "),
+                        style = MaterialTheme.typography.labelMedium,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        maxLines = 2,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                }
             }
             
             if (!mediaItem.overview.isNullOrEmpty()) {

@@ -98,8 +98,11 @@
 
     <!-- Search placeholders -->
     <string name="search_movies_series">Buscar películas y series...</string>
+    <string name="search_where_movies_series">Buscá dónde verla</string>
+
     <string name="search_recommendations">Buscar recomendaciones...</string>
     <string name="search">Buscar...</string>
+    <string name="available_in">Disponible en:</string>
 
     <!-- Home Screen -->
     <string name="trending_movies">Películas en Tendencia</string>

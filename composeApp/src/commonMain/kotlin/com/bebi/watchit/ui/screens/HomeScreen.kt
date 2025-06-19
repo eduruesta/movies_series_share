@@ -1,6 +1,7 @@
 package com.bebi.watchit.ui.screens
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -24,6 +25,7 @@ import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -34,7 +36,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
@@ -47,10 +48,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -58,7 +61,10 @@ import coil3.compose.AsyncImage
 import com.bebi.watchit.model.MediaOpinion
 import com.bebi.watchit.ui.components.AppDrawerContent
 import com.bebi.watchit.ui.components.ErrorScreen
+import com.bebi.watchit.ui.components.SearchResultsDropdown
+import com.bebi.watchit.ui.components.SearchTopAppBar
 import com.bebi.watchit.ui.components.SkeletonPosterCard
+import com.bebi.watchit.viewmodel.MediaOpinionFormViewModel
 import com.bebi.watchit.viewmodel.MediaOpinionViewModel
 import com.bebi.watchit.viewmodel.TopMoviesViewModel
 import com.bebi.watchit.viewmodel.TopSeriesViewModel
@@ -71,6 +77,7 @@ import kotlinx.coroutines.launch
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.app_name
 import moviesseriesshare.composeapp.generated.resources.group_recommendations
+import moviesseriesshare.composeapp.generated.resources.search_where_movies_series
 import moviesseriesshare.composeapp.generated.resources.see_all
 import moviesseriesshare.composeapp.generated.resources.top_movies
 import moviesseriesshare.composeapp.generated.resources.top_series
@@ -92,24 +99,26 @@ class HomeScreen : Screen {
         val snackbarHostState = remember { SnackbarHostState() }
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         val scope = rememberCoroutineScope()
-        
+
         val auth = Firebase.auth
         val authStateFlow = remember { auth.authStateChanged }
         var currentUser by remember { mutableStateOf(auth.currentUser) }
-        
+
         LaunchedEffect(Unit) {
             authStateFlow.collect { user ->
                 currentUser = user
             }
         }
-        
+
         val currentUserId = currentUser?.uid ?: ""
-        val mediaOpinionViewModel: MediaOpinionViewModel = koinViewModel { parametersOf(currentUserId) }
+        val mediaOpinionViewModel: MediaOpinionViewModel =
+            koinViewModel { parametersOf(currentUserId) }
         val trendingMoviesViewModel: TrendingMoviesViewModel = koinViewModel()
         val trendingSeriesViewModel: TrendingSeriesViewModel = koinViewModel()
         val topMoviesViewModel: TopMoviesViewModel = koinViewModel()
         val topSeriesViewModel: TopSeriesViewModel = koinViewModel()
         val upcomingMoviesViewModel: UpcomingMoviesViewModel = koinViewModel()
+        val mediaOpinionFormViewModel = koinViewModel<MediaOpinionFormViewModel>()
 
         // UI States
         val mediaOpinionUiState by mediaOpinionViewModel.uiState.collectAsState()
@@ -119,12 +128,11 @@ class HomeScreen : Screen {
         val topSeriesState by topSeriesViewModel.uiState.collectAsState()
         val upcomingMoviesState by upcomingMoviesViewModel.uiState.collectAsState()
 
-        // Extensiones para limpiar errores explícitamente
         fun clearAllErrors() {
             scope.launch {
                 // Forzamos la limpieza de errores en todos los ViewModels
                 mediaOpinionViewModel.clearError()
-                trendingMoviesViewModel.clearError() 
+                trendingMoviesViewModel.clearError()
                 trendingSeriesViewModel.clearError()
                 topMoviesViewModel.clearError()
                 topSeriesViewModel.clearError()
@@ -134,7 +142,7 @@ class HomeScreen : Screen {
 
         val reloadAllData: () -> Unit = {
             clearAllErrors()
-            
+
             // Luego recargamos los datos
             scope.launch {
                 mediaOpinionViewModel.loadGroupCritics()
@@ -215,13 +223,9 @@ class HomeScreen : Screen {
         ) {
             Scaffold(
                 topBar = {
-                    TopAppBar(
-                        title = {
-                            Text(
-                                text = stringResource(Res.string.app_name),
-                                style = MaterialTheme.typography.titleLarge
-                            )
-                        },
+
+                    SearchTopAppBar(
+                        title = stringResource(Res.string.app_name),
                         navigationIcon = {
                             IconButton(onClick = {
                                 scope.launch {
@@ -238,24 +242,64 @@ class HomeScreen : Screen {
                                 )
                             }
                         },
-                        colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        ),
-                        scrollBehavior = scrollBehavior
+                        onNavigationIconClick = {
+                            scope.launch {
+                                if (drawerState.isClosed) {
+                                    drawerState.open()
+                                } else {
+                                    drawerState.close()
+                                }
+                            }
+                        },
+                        onSearchQueryChanged = { query ->
+                            mediaOpinionFormViewModel.searchMedia(query)
+                        },
+                        scrollBehavior = scrollBehavior,
+                        placeHolderText = stringResource(Res.string.search_where_movies_series)
                     )
                 },
                 snackbarHost = { SnackbarHost(snackbarHostState) },
                 modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
             ) { paddingValues ->
-                // Recalculamos hasError cada vez que cambia alguno de los estados
-                // Esto garantiza que el valor se actualice reactivamente
+
+                if (mediaOpinionFormViewModel.isSearching) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .clickable {  }
+                            .background(Color.LightGray.copy(alpha = 0.5f))
+                            .zIndex(1f),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(48.dp)
+                        )
+                    }
+                } else {
+
+                    if (mediaOpinionFormViewModel.showSearchResults && mediaOpinionFormViewModel.searchResults.isNotEmpty()) {
+                        Box(modifier = Modifier.fillMaxWidth()) {
+                            SearchResultsDropdown(
+                                results = mediaOpinionFormViewModel.searchResults,
+                                onItemSelected = { },
+                                onDismiss = { mediaOpinionFormViewModel.closeSearchResults() },
+                                getFullPosterUrl = { posterPath ->
+                                    if (posterPath != null) {
+                                        "https://image.tmdb.org/t/p/w500$posterPath"
+                                    } else null
+                                }
+                            )
+                        }
+                    }
+                }
+
+
                 val hasError = mediaOpinionUiState.error != null &&
-                    trendingMoviesState.error != null &&
-                    trendingSeriesState.error != null &&
-                    topMoviesState.error != null &&
-                    topSeriesState.error != null &&
-                    upcomingMoviesState.error != null
+                        trendingMoviesState.error != null &&
+                        trendingSeriesState.error != null &&
+                        topMoviesState.error != null &&
+                        topSeriesState.error != null &&
+                        upcomingMoviesState.error != null
 
                 if (hasError) {
                     ErrorScreen(
@@ -387,6 +431,7 @@ class HomeScreen : Screen {
                                 }
                             )
                         }
+
                     }
                 }
             }

@@ -25,6 +25,9 @@ data class TmdbMediaItem(
     @SerialName("first_air_date") val firstAirDate: String? = null,
     @SerialName("vote_average") val voteAverage: Double? = null
 ) {
+    // No marcamos como @Transient porque no afecta la serialización
+    var watchProviders: List<String> = emptyList()
+    
     val displayTitle: String
         get() = title ?: name ?: ""
         

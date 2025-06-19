@@ -84,8 +84,11 @@
 
     <!-- Search placeholders -->
     <string name="search_movies_series">Search Movies and Tv shows...</string>
+    <string name="search_where_movies_series">Find where to watch it</string>
     <string name="search_recommendations">Search recommendations...</string>
     <string name="search">Search...</string>
+    <string name="available_in">Available in:</string>
+
 
     <string name="empty_recommendations_message">You don't have any saved recommendations yet. Add recommendations from the main screen to see them here.</string>
 

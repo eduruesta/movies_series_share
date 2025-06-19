@@ -35,6 +35,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.focus.FocusRequester
 import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.TextFieldValue
 
@@ -63,6 +64,7 @@ fun SearchTopAppBar(
     var isSearchActive by remember { mutableStateOf(false) }
     var searchQuery by remember { mutableStateOf(TextFieldValue("")) }
     val focusRequester = remember { FocusRequester() }
+    val keyboardController = LocalSoftwareKeyboardController.current
 
     TopAppBar(
         title = {
@@ -74,7 +76,7 @@ fun SearchTopAppBar(
                 ) {
                     Text(title)
                 }
-                
+
                 AnimatedVisibility(
                     visible = isSearchActive,
                     enter = fadeIn() + slideInHorizontally(
@@ -94,9 +96,8 @@ fun SearchTopAppBar(
                 ) {
                     TextField(
                         value = searchQuery,
-                        onValueChange = { 
+                        onValueChange = {
                             searchQuery = it
-                            onSearchQueryChanged(it.text)
                         },
                         modifier = Modifier
                             .fillMaxWidth()
@@ -106,8 +107,10 @@ fun SearchTopAppBar(
                         keyboardOptions = KeyboardOptions(imeAction = ImeAction.Search),
                         keyboardActions = KeyboardActions(
                             onSearch = {
-                                // Opcionalmente podría ejecutar una acción específica al presionar Search
-                                onSearchQueryChanged(searchQuery.text)
+                                if (searchQuery.text.isNotEmpty()) {
+                                    keyboardController?.hide()
+                                    onSearchQueryChanged(searchQuery.text)
+                                }
                             }
                         ),
                         leadingIcon = {
@@ -116,6 +119,7 @@ fun SearchTopAppBar(
                                     isSearchActive = false
                                     searchQuery = TextFieldValue("")
                                     onSearchQueryChanged("")
+                                    keyboardController?.hide()
                                 } else {
                                     onNavigationIconClick()
                                 }
@@ -161,12 +165,28 @@ fun SearchTopAppBar(
             if (!isSearchActive) {
                 IconButton(onClick = {
                     isSearchActive = true
-                    // Solicitar el foco al campo de texto después de que la animación comience
-                    // para evitar problemas con el teclado
                 }) {
                     Icon(
                         imageVector = Icons.Default.Search,
                         contentDescription = "Buscar"
+                    )
+                }
+            } else {
+                IconButton(
+                    onClick = {
+                        if (searchQuery.text.isNotEmpty()) {
+                            keyboardController?.hide()
+                            onSearchQueryChanged(searchQuery.text)
+                        }
+                    },
+                    enabled = searchQuery.text.isNotEmpty()
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Search,
+                        contentDescription = "Buscar",
+                        tint = if (searchQuery.text.isEmpty())
+                            MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)
+                        else MaterialTheme.colorScheme.primary
                     )
                 }
             }
@@ -178,3 +198,4 @@ fun SearchTopAppBar(
         )
     )
 }
+

@@ -10,6 +10,8 @@ import com.bebi.watchit.data.repository.MediaOpinionRepository
 import com.bebi.watchit.data.repository.TmdbRepository
 import com.bebi.watchit.model.Comment
 import com.bebi.watchit.model.MediaOpinion
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -118,11 +120,39 @@ class MediaOpinionFormViewModel(
                 onSuccess = { results ->
                     if (results.isEmpty()) {
                         _searchUiMessage.value = SearchUiMessage.NoResults(query)
+                        isSearching = false
                     } else {
-                        searchResults = results
-                        showSearchResults = true
+                        // Lanzamos una corutina por cada resultado para obtener sus proveedores
+                        val updatedResults = results.map { mediaItem -> 
+                            async {
+                                val watchProvidersResult = if (mediaItem.isMovie) {
+                                    tmdbRepository.getMovieWatchProviders(mediaItem.id)
+                                } else {
+                                    tmdbRepository.getTvWatchProviders(mediaItem.id)
+                                }
+                                
+                                // Actualizamos el mediaItem con los proveedores encontrados
+                                watchProvidersResult.fold(
+                                    onSuccess = { providers ->
+                                        mediaItem.watchProviders = providers
+                                    },
+                                    onFailure = { /* Ignoramos errores al obtener proveedores */ }
+                                )
+                                
+                                mediaItem
+                            }
+                        }
+                        
+                        // Esperamos a que todas las consultas terminen
+                        try {
+                            searchResults = updatedResults.awaitAll()
+                            showSearchResults = true
+                        } catch (e: Exception) {
+                            _searchUiMessage.value = SearchUiMessage.Error(e.message ?: "Error al cargar proveedores")
+                        } finally {
+                            isSearching = false
+                        }
                     }
-                    isSearching = false
                 },
                 onFailure = { error ->
                     searchResults = emptyList()
@@ -141,6 +171,19 @@ class MediaOpinionFormViewModel(
             fillFormWithMediaItem(mediaItem)
             showSearchResults = false
             _searchUiMessage.value = SearchUiMessage.Selected(mediaItem.displayTitle)
+        }
+    }
+
+    /**
+     * Selecciona una lista de item de los resultados de búsqueda
+     */
+    fun selectMediaItemList(mediaItemList: List<TmdbMediaItem>) {
+        viewModelScope.launch {
+            mediaItemList.forEach { mediaItem ->
+                fillFormWithMediaItem(mediaItem)
+                showSearchResults = false
+                _searchUiMessage.value = SearchUiMessage.Selected(mediaItem.displayTitle)
+            }
         }
     }
 
@@ -196,7 +239,7 @@ class MediaOpinionFormViewModel(
 
         genres.fold(
             onSuccess = { genreNames ->
-                genre = genreNames.take(2).joinToString(", ")
+                genre = genreNames.first()
             },
             onFailure = { /* Mantener valor actual */ }
         )

@@ -840,7 +840,7 @@ data class MediaDetailScreen(
                                     }
 
                                     // Comentarios (solo si hay groupId)
-                                    !isTmbdMediaOpinion && selectedTab == 4 && opinion.groupId != null -> {
+                                    !isTmbdMediaOpinion && selectedTab == 3 && opinion.groupId != null -> {
                                         Column(
                                             modifier = Modifier.fillMaxWidth()
                                         ) {

@@ -92,6 +92,7 @@ import moviesseriesshare.composeapp.generated.resources.join_group
 import moviesseriesshare.composeapp.generated.resources.join_group_description
 import moviesseriesshare.composeapp.generated.resources.join_success_message
 import moviesseriesshare.composeapp.generated.resources.login
+import moviesseriesshare.composeapp.generated.resources.login_success
 import moviesseriesshare.composeapp.generated.resources.my_groups
 import moviesseriesshare.composeapp.generated.resources.no_groups
 import moviesseriesshare.composeapp.generated.resources.password
@@ -132,6 +133,7 @@ class GroupsScreen(private val deepLinkInviteCode: String? = null) : Screen {
         }
         val uiState by viewModel.uiState.collectAsState()
         val alreadyHandledInviteCode = rememberSaveable { mutableStateOf(false) }
+        var isLoggedInSuccess by remember { mutableStateOf(false) }
 
         var showJoinGroupSheet by remember {
             mutableStateOf(deepLinkInviteCode != null && !alreadyHandledInviteCode.value)
@@ -142,17 +144,28 @@ class GroupsScreen(private val deepLinkInviteCode: String? = null) : Screen {
         val authErrorText = stringResource(Res.string.auth_error)
         val completeFieldsText = stringResource(Res.string.complete_fields)
         val joinGroupText = stringResource(Res.string.join_success_message)
+        val loginSuccessTemplate = stringResource(Res.string.login_success)
+
 
         // Cargar grupos cuando cambia el usuario o cuando se monta la pantalla
         LaunchedEffect(firebaseUser) {
             if (firebaseUser != null) {
                 viewModel.loadGroups()
+                if (isLoggedInSuccess) {
+                    // Mostrar mensaje de bienvenida después del login exitoso
+                    val userName = firebaseUser?.displayName ?: firebaseUser?.email ?: "Usuario"
+                    val welcomeMessage = loginSuccessTemplate.replace("%1\$s", userName)
+                    snackbarHostState.showSnackbar(welcomeMessage)
+                    isLoggedInSuccess = false
+                }
             }
         }
 
-        LaunchedEffect(Unit) {
-            viewModel.loadGroups()
-        }
+        /*
+                LaunchedEffect(Unit) {
+                    viewModel.loadGroups()
+                }
+        */
 
         if (firebaseUser != null) {
             Scaffold(
@@ -352,6 +365,7 @@ class GroupsScreen(private val deepLinkInviteCode: String? = null) : Screen {
                                             }
 
                                             withContext(Dispatchers.Main) {
+                                                isLoggedInSuccess = true
                                                 firebaseUser = auth.currentUser
                                             }
                                         } catch (e: Exception) {
@@ -377,6 +391,7 @@ class GroupsScreen(private val deepLinkInviteCode: String? = null) : Screen {
                         Spacer(modifier = Modifier.height(16.dp))
                         val onFirebaseResult: (Result<FirebaseUser?>) -> Unit = { result ->
                             if (result.isSuccess) {
+                                isLoggedInSuccess = true
                                 val firebase = result.getOrNull()
                                 firebaseUser = firebase
                             } else {

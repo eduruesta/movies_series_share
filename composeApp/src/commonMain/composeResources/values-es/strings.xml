@@ -33,6 +33,8 @@
     <string name="loading_recommendation">Cargando recomendaciones...</string>
     <string name="loading_recommendation_issue">No hay información de recomendaciones disponible</string>
     <string name="information">Info</string>
+    <string name="login_success">Usuario %1$s ha iniciado sesión correctamente</string>
+    <string name="user">Usuario</string>
 
     <string name="without_comment">Sin comentarios</string>
     <string name="add_new_comment">Agregar comentario</string>

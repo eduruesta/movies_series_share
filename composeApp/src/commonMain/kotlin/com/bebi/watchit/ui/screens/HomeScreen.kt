@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -97,7 +98,6 @@ class HomeScreen : Screen {
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val snackbarHostState = remember { SnackbarHostState() }
-        val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         val scope = rememberCoroutineScope()
 
         val auth = Firebase.auth
@@ -164,6 +164,11 @@ class HomeScreen : Screen {
 
         // Drawer state
         val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+        val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+
+        // Animar el contenido principal cuando se abre/cierra el drawer
+        val drawerOffset = if (drawerState.targetValue == DrawerValue.Open) 240.dp else 0.dp
+        val contentOffset = androidx.compose.animation.core.animateDpAsState(targetValue = drawerOffset, label = "drawerAnimation")
 
         ModalNavigationDrawer(
             drawerState = drawerState,
@@ -221,221 +226,223 @@ class HomeScreen : Screen {
                 )
             }
         ) {
-            Scaffold(
-                topBar = {
-                    TopAppBar(
-                        title = {
-                            Text(
-                                text = stringResource(Res.string.app_name),
-                                style = MaterialTheme.typography.titleLarge
-                            )
-                        },
-                        navigationIcon = {
-                            IconButton(onClick = {
-                                scope.launch {
-                                    if (drawerState.isClosed) {
-                                        drawerState.open()
-                                    } else {
-                                        drawerState.close()
-                                    }
-                                }
-                            }) {
-                                Icon(
-                                    imageVector = Icons.Default.Menu,
-                                    contentDescription = "Menu"
-                                )
-                            }
-                        },
-                        colors = TopAppBarDefaults.topAppBarColors(
-                            containerColor = MaterialTheme.colorScheme.primaryContainer,
-                            titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                        ),
-
-                        scrollBehavior = scrollBehavior,
-                    )
-                },
-                snackbarHost = { SnackbarHost(snackbarHostState) },
-                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
-            ) { paddingValues ->
-
-                if (mediaOpinionFormViewModel.isSearching) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .clickable { }
-                            .background(Color.LightGray.copy(alpha = 0.5f))
-                            .zIndex(1f),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(48.dp)
+            // Contenido principal con animación (incluye TopBar)
+            Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .offset(x = contentOffset.value)
+            ) {
+                TopAppBar(
+                    title = {
+                        Text(
+                            text = stringResource(Res.string.app_name),
+                            style = MaterialTheme.typography.titleLarge
                         )
-                    }
-                } else {
-
-                    if (mediaOpinionFormViewModel.showSearchResults && mediaOpinionFormViewModel.searchResults.isNotEmpty()) {
-                        Box(modifier = Modifier.fillMaxWidth()) {
-                            SearchResultsDropdown(
-                                results = mediaOpinionFormViewModel.searchResults,
-                                onItemSelected = { },
-                                onDismiss = { mediaOpinionFormViewModel.closeSearchResults() },
-                                getFullPosterUrl = { posterPath ->
-                                    if (posterPath != null) {
-                                        "https://image.tmdb.org/t/p/w500$posterPath"
-                                    } else null
-                                }
+                    },
+                    navigationIcon = {
+                        IconButton(onClick = {
+                            scope.launch {
+                                if (drawerState.isClosed) drawerState.open() else drawerState.close()
+                            }
+                        }) {
+                            Icon(
+                                imageVector = Icons.Default.Menu,
+                                contentDescription = "Menu"
                             )
                         }
-                    }
-                }
+                    },
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primaryContainer,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimaryContainer
+                    ),
+                    scrollBehavior = scrollBehavior,
+                )
 
+                Scaffold(
+                    topBar = { /* TopBar vacía porque ya la pusimos arriba */ },
+                    snackbarHost = { SnackbarHost(snackbarHostState) },
+                    modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+                ) { paddingValues ->
 
-                val hasError = mediaOpinionUiState.error != null &&
-                        trendingMoviesState.error != null &&
-                        trendingSeriesState.error != null &&
-                        topMoviesState.error != null &&
-                        topSeriesState.error != null &&
-                        upcomingMoviesState.error != null
-
-                if (hasError) {
-                    ErrorScreen(
-                        onRetry = reloadAllData,
-                        modifier = Modifier.fillMaxSize().padding(paddingValues)
-                    )
-                } else {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(top = paddingValues.calculateTopPadding()),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        HomeSearchBar(mediaOpinionFormViewModel = mediaOpinionFormViewModel)
-                        // El resto del contenido normal
-                        LazyColumn(
+                    if (mediaOpinionFormViewModel.isSearching) {
+                        Box(
                             modifier = Modifier
-                                .fillMaxSize(),
-                            contentPadding = PaddingValues(bottom = 16.dp)
+                                .fillMaxSize()
+                                .clickable { }
+                                .background(Color.LightGray.copy(alpha = 0.5f))
+                                .zIndex(1f),
+                            contentAlignment = Alignment.Center
                         ) {
+                            CircularProgressIndicator(
+                                modifier = Modifier.size(48.dp)
+                            )
+                        }
+                    } else {
 
-                            // Group recommendations section - mostrar solo si hay datos, no está vacío Y el usuario está autenticado
-                            if (currentUser != null && mediaOpinionUiState.groupCritics.isNotEmpty()) {
+                        if (mediaOpinionFormViewModel.showSearchResults && mediaOpinionFormViewModel.searchResults.isNotEmpty()) {
+                            Box(modifier = Modifier.fillMaxWidth()) {
+                                SearchResultsDropdown(
+                                    results = mediaOpinionFormViewModel.searchResults,
+                                    onItemSelected = { },
+                                    onDismiss = { mediaOpinionFormViewModel.closeSearchResults() },
+                                    getFullPosterUrl = { posterPath ->
+                                        if (posterPath != null) {
+                                            "https://image.tmdb.org/t/p/w500$posterPath"
+                                        } else null
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    val hasError = mediaOpinionUiState.error != null &&
+                            trendingMoviesState.error != null &&
+                            trendingSeriesState.error != null &&
+                            topMoviesState.error != null &&
+                            topSeriesState.error != null &&
+                            upcomingMoviesState.error != null
+
+                    if (hasError) {
+                        ErrorScreen(
+                            onRetry = reloadAllData,
+                            modifier = Modifier.fillMaxSize().padding(paddingValues)
+                        )
+                    } else {
+                        val modifier = Modifier
+                        Column(
+                            modifier = modifier
+                                .fillMaxSize()
+                                .padding(bottom = paddingValues.calculateBottomPadding()),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            HomeSearchBar(mediaOpinionFormViewModel = mediaOpinionFormViewModel, modifier)
+                            // El resto del contenido normal
+                            LazyColumn(
+                                modifier = Modifier
+                                    .fillMaxSize(),
+                                contentPadding = PaddingValues(bottom = 16.dp)
+                            ) {
+
+                                // Group recommendations section - mostrar solo si hay datos, no está vacío Y el usuario está autenticado
+                                if (currentUser != null && mediaOpinionUiState.groupCritics.isNotEmpty()) {
+                                    item {
+                                        Spacer(modifier = Modifier.height(16.dp))
+                                        MediaCarouselSection(
+                                            title = stringResource(Res.string.group_recommendations),
+                                            items = mediaOpinionUiState.groupCritics,
+                                            isLoading = mediaOpinionUiState.isLoadingGroupCritics,
+                                            onItemClick = { media ->
+                                                navigator.push(MediaDetailScreen(media.id))
+                                            },
+                                            onSeeAllClick = {
+                                                navigator.push(AllGroupRecommendationsScreen())
+                                            }
+                                        )
+                                    }
+                                }
+
+                                // Trending Movies section
                                 item {
                                     Spacer(modifier = Modifier.height(16.dp))
                                     MediaCarouselSection(
-                                        title = stringResource(Res.string.group_recommendations),
-                                        items = mediaOpinionUiState.groupCritics,
-                                        isLoading = mediaOpinionUiState.isLoadingGroupCritics,
+                                        title = stringResource(Res.string.trending_movies),
+                                        items = trendingMoviesState.mediaItems,
+                                        isLoading = trendingMoviesState.isLoading,
                                         onItemClick = { media ->
-                                            navigator.push(MediaDetailScreen(media.id))
+                                            navigator.push(
+                                                MediaDetailScreen(
+                                                    tmdbMediaOpinion = media
+                                                )
+                                            )
                                         },
                                         onSeeAllClick = {
-                                            navigator.push(AllGroupRecommendationsScreen())
+                                            navigator.push(TrendingMoviesScreen())
                                         }
                                     )
                                 }
-                            }
 
-                            // Trending Movies section
-                            item {
-                                Spacer(modifier = Modifier.height(16.dp))
-                                MediaCarouselSection(
-                                    title = stringResource(Res.string.trending_movies),
-                                    items = trendingMoviesState.mediaItems,
-                                    isLoading = trendingMoviesState.isLoading,
-                                    onItemClick = { media ->
-                                        navigator.push(
-                                            MediaDetailScreen(
-                                                tmdbMediaOpinion = media
+                                // Top Movies section
+                                item {
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    MediaCarouselSection(
+                                        title = stringResource(Res.string.top_movies),
+                                        items = topMoviesState.mediaItems,
+                                        isLoading = topMoviesState.isLoading,
+                                        onItemClick = { media ->
+                                            navigator.push(
+                                                MediaDetailScreen(
+                                                    tmdbMediaOpinion = media
+                                                )
                                             )
-                                        )
-                                    },
-                                    onSeeAllClick = {
-                                        navigator.push(TrendingMoviesScreen())
-                                    }
-                                )
-                            }
+                                        },
+                                        onSeeAllClick = {
+                                            navigator.push(TopMoviesScreen())
+                                        }
+                                    )
+                                }
 
-                            // Top Movies section
-                            item {
-                                Spacer(modifier = Modifier.height(16.dp))
-                                MediaCarouselSection(
-                                    title = stringResource(Res.string.top_movies),
-                                    items = topMoviesState.mediaItems,
-                                    isLoading = topMoviesState.isLoading,
-                                    onItemClick = { media ->
-                                        navigator.push(
-                                            MediaDetailScreen(
-                                                tmdbMediaOpinion = media
+                                // Upcoming Movies section
+                                item {
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    MediaCarouselSection(
+                                        title = stringResource(Res.string.upcoming_movies),
+                                        items = upcomingMoviesState.mediaItems,
+                                        isLoading = upcomingMoviesState.isLoading,
+                                        onItemClick = { media ->
+                                            navigator.push(
+                                                MediaDetailScreen(
+                                                    tmdbMediaOpinion = media
+                                                )
                                             )
-                                        )
-                                    },
-                                    onSeeAllClick = {
-                                        navigator.push(TopMoviesScreen())
-                                    }
-                                )
-                            }
+                                        },
+                                        onSeeAllClick = {
+                                            navigator.push(UpcomingMoviesScreen())
+                                        }
+                                    )
+                                }
 
-                            // Upcoming Movies section
-                            item {
-                                Spacer(modifier = Modifier.height(16.dp))
-                                MediaCarouselSection(
-                                    title = stringResource(Res.string.upcoming_movies),
-                                    items = upcomingMoviesState.mediaItems,
-                                    isLoading = upcomingMoviesState.isLoading,
-                                    onItemClick = { media ->
-                                        navigator.push(
-                                            MediaDetailScreen(
-                                                tmdbMediaOpinion = media
+                                // Trending Series section
+                                item {
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    MediaCarouselSection(
+                                        title = stringResource(Res.string.trending_series),
+                                        items = trendingSeriesState.mediaItems,
+                                        isLoading = trendingSeriesState.isLoading,
+                                        onItemClick = { media ->
+                                            navigator.push(
+                                                MediaDetailScreen(
+                                                    tmdbMediaOpinion = media
+                                                )
                                             )
-                                        )
-                                    },
-                                    onSeeAllClick = {
-                                        navigator.push(UpcomingMoviesScreen())
-                                    }
-                                )
-                            }
+                                        },
+                                        onSeeAllClick = {
+                                            navigator.push(TrendingSeriesScreen())
+                                        }
+                                    )
+                                }
 
-                            // Trending Series section
-                            item {
-                                Spacer(modifier = Modifier.height(16.dp))
-                                MediaCarouselSection(
-                                    title = stringResource(Res.string.trending_series),
-                                    items = trendingSeriesState.mediaItems,
-                                    isLoading = trendingSeriesState.isLoading,
-                                    onItemClick = { media ->
-                                        navigator.push(
-                                            MediaDetailScreen(
-                                                tmdbMediaOpinion = media
+                                // Top Series section
+                                item {
+                                    Spacer(modifier = Modifier.height(16.dp))
+                                    MediaCarouselSection(
+                                        title = stringResource(Res.string.top_series),
+                                        items = topSeriesState.mediaItems,
+                                        isLoading = topSeriesState.isLoading,
+                                        onItemClick = { media ->
+                                            navigator.push(
+                                                MediaDetailScreen(
+                                                    tmdbMediaOpinion = media
+                                                )
                                             )
-                                        )
-                                    },
-                                    onSeeAllClick = {
-                                        navigator.push(TrendingSeriesScreen())
-                                    }
-                                )
-                            }
+                                        },
+                                        onSeeAllClick = {
+                                            navigator.push(TopSeriesScreen())
+                                        }
+                                    )
+                                }
 
-                            // Top Series section
-                            item {
-                                Spacer(modifier = Modifier.height(16.dp))
-                                MediaCarouselSection(
-                                    title = stringResource(Res.string.top_series),
-                                    items = topSeriesState.mediaItems,
-                                    isLoading = topSeriesState.isLoading,
-                                    onItemClick = { media ->
-                                        navigator.push(
-                                            MediaDetailScreen(
-                                                tmdbMediaOpinion = media
-                                            )
-                                        )
-                                    },
-                                    onSeeAllClick = {
-                                        navigator.push(TopSeriesScreen())
-                                    }
-                                )
                             }
-
                         }
                     }
                 }

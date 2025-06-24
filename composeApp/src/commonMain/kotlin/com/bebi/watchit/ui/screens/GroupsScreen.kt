@@ -594,7 +594,12 @@ private fun GroupsList(
 ) {
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
-        contentPadding = PaddingValues(vertical = 8.dp)
+        contentPadding = PaddingValues(
+            top = 8.dp, 
+            start = 8.dp, 
+            end = 8.dp,
+            bottom = 80.dp // Añadir espacio adicional en la parte inferior para el botón
+        )
     ) {
         items(groups) { group ->
             GroupItem(

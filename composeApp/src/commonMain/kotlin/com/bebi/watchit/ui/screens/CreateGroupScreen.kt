@@ -66,7 +66,7 @@ data class CreateGroupScreen(
         val snackbarHostState = remember { SnackbarHostState() }
 
         val viewModel = koinInject<GroupsViewModel> { parametersOf(userId, userName, userEmail) }
-        
+
         var groupName by remember { mutableStateOf("") }
         var groupDescription by remember { mutableStateOf("") }
         var isLoading by remember { mutableStateOf(false) }
@@ -78,6 +78,7 @@ data class CreateGroupScreen(
             if (!uiState.isLoading && isLoading && uiState.error == null) {
                 // Si ha terminado de cargar sin errores, volvemos a la pantalla anterior
                 navigator.pop()
+                navigator.push(GroupOpinionList(uiState.groups.last { it.createdBy == userId }, openGroupInfo = true))
             }
             isLoading = uiState.isLoading
         }
@@ -89,7 +90,7 @@ data class CreateGroupScreen(
             onGroupDescriptionChange = { groupDescription = it },
             onCreateGroup = {
                 hasAttemptedCreate = true
-                if (groupName.isEmpty()) {
+                if (groupName.isEmpty() && groupDescription.isEmpty()) {
                     // No hacemos nada, se mostrará el error
                 } else {
                     isLoading = true
@@ -101,12 +102,13 @@ data class CreateGroupScreen(
             showNameError = hasAttemptedCreate && groupName.isEmpty(),
             isLoading = isLoading,
             error = uiState.error,
-            snackbarHostState = snackbarHostState
+            snackbarHostState = snackbarHostState,
+            showDescriptionError = hasAttemptedCreate && groupDescription.isEmpty()
         )
 
         LaunchedEffect(uiState.error) {
             if (uiState.error != null) {
-                snackbarHostState.showSnackbar(uiState.error?: "Error")
+                snackbarHostState.showSnackbar(uiState.error ?: "Error")
                 isLoading = false
             }
         }
@@ -123,6 +125,7 @@ private fun CreateGroupContent(
     onCreateGroup: () -> Unit,
     onBackPressed: () -> Unit,
     showNameError: Boolean,
+    showDescriptionError: Boolean,
     isLoading: Boolean,
     error: String?,
     snackbarHostState: SnackbarHostState
@@ -134,9 +137,10 @@ private fun CreateGroupContent(
             snackbarHostState.showSnackbar(error)
         }
     }
-    
+
     val isNameValid = groupName.isNotBlank()
-    
+    val isDescriptionValid = groupDescription.isNotBlank()
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -189,14 +193,15 @@ private fun CreateGroupContent(
                             imeAction = ImeAction.Next
                         )
                     )
-                    
+
                     Spacer(modifier = Modifier.height(16.dp))
-                    
+
                     OutlinedTextField(
                         value = groupDescription,
                         onValueChange = onGroupDescriptionChange,
                         label = { Text(stringResource(Res.string.group_description)) },
                         placeholder = { Text(stringResource(Res.string.description)) },
+                        isError = showDescriptionError,
                         modifier = Modifier.fillMaxWidth(),
                         keyboardOptions = KeyboardOptions(
                             capitalization = KeyboardCapitalization.Sentences,
@@ -205,19 +210,19 @@ private fun CreateGroupContent(
                         ),
                         keyboardActions = KeyboardActions(
                             onDone = {
-                                if (isNameValid) {
+                                if (isNameValid && isDescriptionValid) {
                                     onCreateGroup()
                                 }
                             }
                         ),
                         minLines = 3
                     )
-                    
+
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Button(
                         onClick = onCreateGroup,
-                        enabled = isNameValid,
+                        enabled = isNameValid && isDescriptionValid,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Text(stringResource(Res.string.create_group_button))

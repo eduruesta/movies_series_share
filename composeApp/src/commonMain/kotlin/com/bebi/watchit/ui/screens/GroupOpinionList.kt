@@ -1,6 +1,7 @@
 package com.bebi.watchit.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -102,7 +103,8 @@ import org.jetbrains.compose.resources.stringResource
 import org.koin.compose.koinInject
 import org.koin.core.parameter.parametersOf
 
-data class GroupOpinionList(private val group: GroupResponse) : Screen {
+data class GroupOpinionList(private val group: GroupResponse, val openGroupInfo: Boolean = false) :
+    Screen {
     @Composable
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
@@ -132,7 +134,6 @@ data class GroupOpinionList(private val group: GroupResponse) : Screen {
         GroupOpinionListScreen(
             uiState = uiState,
             groupName = group.name,
-            inviteCode = group.inviteCode,
             onBackPressed = { navigator.pop() },
             onOpinionClick = { opinion -> navigator.push(MediaDetailScreen(opinion.id)) },
             onAddOpinionClick = {
@@ -158,7 +159,8 @@ data class GroupOpinionList(private val group: GroupResponse) : Screen {
                 }
             },
             mediaOpinionViewModel = mediaOpinionViewModel,
-            viewModel = viewModel
+            viewModel = viewModel,
+            openGroupInfo
         )
     }
 }
@@ -168,7 +170,6 @@ data class GroupOpinionList(private val group: GroupResponse) : Screen {
 fun GroupOpinionListScreen(
     uiState: GroupDetailUiState,
     groupName: String,
-    inviteCode: String,
     onBackPressed: () -> Unit,
     onOpinionClick: (MediaOpinion) -> Unit,
     onAddOpinionClick: () -> Unit,
@@ -177,7 +178,8 @@ fun GroupOpinionListScreen(
     onLeaveGroup: () -> Unit,
     onDeleteGroup: () -> Unit,
     mediaOpinionViewModel: MediaOpinionViewModel,
-    viewModel: GroupDetailViewModel
+    viewModel: GroupDetailViewModel,
+    openGroupInfo: Boolean
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     val snackbarHostState = remember { SnackbarHostState() }
@@ -185,6 +187,7 @@ fun GroupOpinionListScreen(
     var showRatingSheet by remember { mutableStateOf(false) }
     var selectedOpinion by remember { mutableStateOf<MediaOpinion?>(null) }
     var showGroupInfoDialog by remember { mutableStateOf(false) }
+    var showGroupInfo by remember { mutableStateOf(openGroupInfo) }
 
 
     Scaffold(
@@ -330,11 +333,14 @@ fun GroupOpinionListScreen(
         )
     }
 
-    if (showGroupInfoDialog) {
+    if (showGroupInfoDialog || showGroupInfo) {
         val isOwner = groupsViewModel.isGroupOwner(groupInfo)
         GroupInfoBottomSheet(
             groupInfo = groupInfo,
-            onDismiss = { showGroupInfoDialog = false },
+            onDismiss = {
+                showGroupInfoDialog = false
+                showGroupInfo = false
+            },
             onLeaveGroup = onLeaveGroup,
             onDeleteGroup = onDeleteGroup,
             isOwner = isOwner,
@@ -422,7 +428,11 @@ private fun GroupInfoBottomSheet(
                     elevation = CardDefaults.cardElevation(
                         defaultElevation = 4.dp
                     ),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth().clickable {
+                        scope.launch {
+                            shareManager.shareText(member)
+                        }
+                    }
                 ) {
                     Row(
                         modifier = Modifier
@@ -467,15 +477,7 @@ private fun GroupInfoBottomSheet(
 
             // Tarjeta con miembros (usamos directamente los ítems en la LazyColumn principal)
             item {
-                Card(
-                    shape = RoundedCornerShape(8.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.primaryContainer,
-                        contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-                    ),
-                    elevation = CardDefaults.cardElevation(
-                        defaultElevation = 4.dp
-                    ),
+                Box(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Column(
@@ -510,18 +512,11 @@ private fun GroupInfoBottomSheet(
                                     style = MaterialTheme.typography.bodyLarge
                                 )
                             }
-
-                            if (index < groupInfo.members.size - 1) {
-                                HorizontalDivider(
-                                    modifier = Modifier.padding(vertical = 4.dp),
-                                    color = MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
-                                )
-                            }
                         }
                     }
                 }
 
-                Spacer(modifier = Modifier.height(24.dp))
+                Spacer(modifier = Modifier.height(8.dp))
             }
 
             // Botón salir del grupo

@@ -10,11 +10,16 @@ import com.bebi.watchit.data.repository.MediaOpinionRepository
 import com.bebi.watchit.data.repository.TmdbRepository
 import com.bebi.watchit.model.Comment
 import com.bebi.watchit.model.MediaOpinion
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.launch
 
 /**
@@ -91,6 +96,39 @@ class MediaOpinionFormViewModel(
     private var pendingGroupId: String? = null
     private var pendingUsername: String? = null
 
+    // Resultados en caché para poder mostrarlos nuevamente
+    private var cachedSearchResults: List<TmdbMediaItem> = emptyList()
+
+    // Estado para búsqueda con debounce
+    private val _searchQuery = MutableStateFlow("")
+    private var searchJob: Job? = null
+
+    init {
+        setupSearchDebounce()
+    }
+
+    @OptIn(FlowPreview::class)
+    private fun setupSearchDebounce() {
+        viewModelScope.launch {
+            _searchQuery
+                .debounce(600L)
+                .collectLatest { query ->
+                    if (query.isNotBlank()) {
+                        performSearch(query)
+                    } else {
+                        clearSearchResults()
+                    }
+                }
+        }
+    }
+    
+    private fun clearSearchResults() {
+        isSearching = false
+        _searchUiMessage.value = SearchUiMessage.None
+        searchResults = emptyList()
+        showSearchResults = false
+    }
+
     fun setGroupIdForNextSave(groupId: String?) {
         pendingGroupId = groupId
     }
@@ -105,23 +143,35 @@ class MediaOpinionFormViewModel(
     }
 
     /**
-     * Realiza una búsqueda de películas/series por título
+     * Actualiza la consulta de búsqueda (desencadena búsqueda con debounce)
      */
     fun searchMedia(query: String) {
-        if (query.isBlank()) return
+        _searchQuery.value = query
+        if (query.isBlank()) {
+            clearSearchResults()
+        }
+    }
 
+    /**
+     * Realiza la búsqueda real después del debounce
+     */
+    private fun performSearch(query: String) {
         isSearching = true
         _searchUiMessage.value = SearchUiMessage.None
         searchResults = emptyList()
         showSearchResults = false
 
-        viewModelScope.launch {
+        searchJob?.cancel()
+        searchJob = viewModelScope.launch {
             tmdbRepository.searchMediaByTitle(query).fold(
                 onSuccess = { results ->
                     if (results.isEmpty()) {
                         _searchUiMessage.value = SearchUiMessage.NoResults(query)
                         isSearching = false
                     } else {
+                        // Guardamos los resultados base en caché para poder recuperarlos después
+                        cachedSearchResults = results
+                        
                         // Lanzamos una corutina por cada resultado para obtener sus proveedores
                         val updatedResults = results.map { mediaItem -> 
                             async {
@@ -146,6 +196,8 @@ class MediaOpinionFormViewModel(
                         // Esperamos a que todas las consultas terminen
                         try {
                             searchResults = updatedResults.awaitAll()
+                            // Actualizamos también la caché con los resultados completos
+                            cachedSearchResults = searchResults
                             showSearchResults = true
                         } catch (e: Exception) {
                             _searchUiMessage.value = SearchUiMessage.Error(e.message ?: "Error al cargar proveedores")
@@ -162,7 +214,7 @@ class MediaOpinionFormViewModel(
             )
         }
     }
-
+    
     /**
      * Selecciona un item de los resultados de búsqueda
      */
@@ -192,6 +244,24 @@ class MediaOpinionFormViewModel(
      */
     fun closeSearchResults() {
         showSearchResults = false
+    }
+
+    /**
+     * Alterna la visibilidad de los resultados de búsqueda
+     */
+    fun toggleSearchResultsVisibility() {
+        // Si tenemos resultados en caché
+        if (cachedSearchResults.isNotEmpty()) {
+            // Cambiamos la visibilidad
+            showSearchResults = !showSearchResults
+            // Si ahora estamos mostrando los resultados, los asignamos 
+            if (showSearchResults) {
+                searchResults = cachedSearchResults
+            }
+        } else if (_searchQuery.value.isNotBlank()) {
+            // Si no hay resultados en caché pero hay una consulta, volvemos a buscar
+            performSearch(_searchQuery.value)
+        }
     }
 
     /**

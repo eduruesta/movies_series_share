@@ -1,5 +1,6 @@
 package com.bebi.watchit.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -18,7 +19,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.rounded.Share
@@ -29,7 +29,6 @@ import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -54,9 +53,11 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -67,6 +68,7 @@ import com.bebi.watchit.ui.components.ErrorScreen
 import com.bebi.watchit.ui.components.Info
 import com.bebi.watchit.ui.components.MediaOpinionItem
 import com.bebi.watchit.ui.components.RatingBottomSheet
+import com.bebi.watchit.ui.components.ThreeDots
 import com.bebi.watchit.viewmodel.GroupDetailUiState
 import com.bebi.watchit.viewmodel.GroupDetailViewModel
 import com.bebi.watchit.viewmodel.GroupsViewModel
@@ -83,6 +85,7 @@ import moviesseriesshare.composeapp.generated.resources.back_button
 import moviesseriesshare.composeapp.generated.resources.cancel_button
 import moviesseriesshare.composeapp.generated.resources.close
 import moviesseriesshare.composeapp.generated.resources.copy_code
+import moviesseriesshare.composeapp.generated.resources.create_critic_button
 import moviesseriesshare.composeapp.generated.resources.delete_button
 import moviesseriesshare.composeapp.generated.resources.delete_group
 import moviesseriesshare.composeapp.generated.resources.delete_group_confirmation
@@ -197,14 +200,14 @@ fun GroupOpinionListScreen(
                     }
                 },
                 actions = {
-                    if (inviteCode.isNotBlank()) {
-                        IconButton(onClick = { showGroupInfoDialog = true }) {
-                            Icon(
-                                imageVector = Info,
-                                contentDescription = "Info"
-                            )
-                        }
+
+                    IconButton(onClick = { showGroupInfoDialog = true }) {
+                        Icon(
+                            imageVector = ThreeDots,
+                            contentDescription = "Info"
+                        )
                     }
+
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = MaterialTheme.colorScheme.primaryContainer,
@@ -214,62 +217,89 @@ fun GroupOpinionListScreen(
             )
         },
         snackbarHost = { SnackbarHost(snackbarHostState) },
-        floatingActionButton = {
-            FloatingActionButton(
-                onClick = onAddOpinionClick,
-                containerColor = MaterialTheme.colorScheme.primaryContainer,
-                contentColor = MaterialTheme.colorScheme.onPrimaryContainer
-            ) {
-                Icon(
-                    imageVector = Icons.Default.Add,
-                    contentDescription = stringResource(Res.string.add_new_comment)
-                )
-            }
-        },
-        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection)
+        modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
     ) { paddingValues ->
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
         ) {
-            when {
-                uiState.isLoading -> {
-                    CircularProgressIndicator(
-                        modifier = Modifier.align(Alignment.Center)
-                    )
-                }
+            // Contenido principal con padding para dejar espacio al botón CTA en la parte inferior
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)
+                    .padding(bottom = 80.dp) // Espacio para el botón CTA
+            ) {
+                when {
+                    uiState.isLoading -> {
+                        CircularProgressIndicator(
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
 
-                uiState.error != null -> {
-                    ErrorScreen(
-                        onRetry = { viewModel.refreshOpinions() }
-                    )
-                }
+                    uiState.error != null -> {
+                        ErrorScreen(
+                            onRetry = { viewModel.refreshOpinions() }
+                        )
+                    }
 
-                uiState.opinions.isEmpty() -> {
-                    EmptyOpinionsMessage()
-                }
+                    uiState.opinions.isEmpty() -> {
+                        EmptyOpinionsMessage()
+                    }
 
-                else -> {
-                    LazyColumn(
-                        contentPadding = PaddingValues(16.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp)
-                    ) {
-                        items(uiState.opinions) { opinion ->
-                            MediaOpinionItem(
-                                opinion = opinion,
-                                onClick = { onOpinionClick(opinion) },
-                                onRateClick = {
-                                    selectedOpinion = opinion
-                                    showRatingSheet = true
-                                },
-                                onShowMessage = { message ->
-                                    scope.launch {
-                                        snackbarHostState.showSnackbar(message)
+                    else -> {
+                        LazyColumn(
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            contentPadding = PaddingValues(16.dp)
+                        ) {
+                            items(uiState.opinions) { opinion ->
+                                MediaOpinionItem(
+                                    opinion = opinion,
+                                    onClick = { onOpinionClick(opinion) },
+                                    onRateClick = {
+                                        selectedOpinion = opinion
+                                        showRatingSheet = true
+                                    },
+                                    onShowMessage = { message ->
+                                        scope.launch {
+                                            snackbarHostState.showSnackbar(message)
+                                        }
                                     }
-                                }
-                            )
+                                )
+                            }
                         }
+                    }
+                }
+            }
+
+            // Botón CTA fijo en la parte inferior
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .fillMaxWidth()
+                    .zIndex(1f)
+                    .background(Color.Transparent),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                        .padding(bottom = paddingValues.calculateBottomPadding())
+                        .background(Color.Transparent)
+                        .fillMaxWidth()
+                ) {
+                    Button(
+                        onClick = onAddOpinionClick,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = MaterialTheme.colorScheme.primary
+                        )
+                    ) {
+                        Text(
+                            text = stringResource(Res.string.create_critic_button),
+                            style = MaterialTheme.typography.labelLarge
+                        )
                     }
                 }
             }
@@ -369,10 +399,10 @@ private fun GroupInfoBottomSheet(
                     style = MaterialTheme.typography.titleLarge,
                     color = MaterialTheme.colorScheme.onSurface
                 )
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
             }
-            
+
             // Código de invitación
             item {
                 Text(
@@ -380,9 +410,9 @@ private fun GroupInfoBottomSheet(
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                
+
                 Spacer(modifier = Modifier.height(8.dp))
-                
+
                 Card(
                     shape = RoundedCornerShape(8.dp),
                     colors = CardDefaults.cardColors(
@@ -420,10 +450,10 @@ private fun GroupInfoBottomSheet(
                         }
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(16.dp))
             }
-            
+
             // Título de miembros
             item {
                 Text(
@@ -431,10 +461,10 @@ private fun GroupInfoBottomSheet(
                     style = MaterialTheme.typography.titleSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
-                
+
                 Spacer(modifier = Modifier.height(8.dp))
             }
-            
+
             // Tarjeta con miembros (usamos directamente los ítems en la LazyColumn principal)
             item {
                 Card(
@@ -490,10 +520,10 @@ private fun GroupInfoBottomSheet(
                         }
                     }
                 }
-                
+
                 Spacer(modifier = Modifier.height(24.dp))
             }
-            
+
             // Botón salir del grupo
             item {
                 Button(
@@ -507,7 +537,7 @@ private fun GroupInfoBottomSheet(
                     Text(stringResource(Res.string.leave_group))
                 }
             }
-            
+
             // Botón eliminar grupo (solo para propietarios)
             if (isOwner) {
                 item {
@@ -535,7 +565,7 @@ private fun GroupInfoBottomSheet(
                     }
                 }
             }
-            
+
             // Botón cerrar
             item {
                 Spacer(modifier = Modifier.height(8.dp))
@@ -546,7 +576,7 @@ private fun GroupInfoBottomSheet(
                 ) {
                     Text(stringResource(Res.string.close))
                 }
-                
+
                 // Espaciado extra para evitar que el contenido quede bajo gestos de navegación
                 Spacer(modifier = Modifier.height(8.dp))
             }

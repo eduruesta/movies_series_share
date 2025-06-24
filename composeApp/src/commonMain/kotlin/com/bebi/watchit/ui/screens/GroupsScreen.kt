@@ -1,5 +1,6 @@
 package com.bebi.watchit.ui.screens
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -20,6 +22,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -50,6 +53,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -57,6 +61,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
@@ -74,6 +79,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.accept
+import moviesseriesshare.composeapp.generated.resources.add_new_comment
 import moviesseriesshare.composeapp.generated.resources.already_have_account
 import moviesseriesshare.composeapp.generated.resources.auth_error
 import moviesseriesshare.composeapp.generated.resources.auth_subtitle
@@ -81,7 +87,9 @@ import moviesseriesshare.composeapp.generated.resources.back_button
 import moviesseriesshare.composeapp.generated.resources.cancel
 import moviesseriesshare.composeapp.generated.resources.complete_fields
 import moviesseriesshare.composeapp.generated.resources.create_account
+import moviesseriesshare.composeapp.generated.resources.create_critic_button
 import moviesseriesshare.composeapp.generated.resources.create_group
+import moviesseriesshare.composeapp.generated.resources.create_group_button
 import moviesseriesshare.composeapp.generated.resources.create_your_first_group
 import moviesseriesshare.composeapp.generated.resources.dont_have_account
 import moviesseriesshare.composeapp.generated.resources.email
@@ -177,29 +185,9 @@ class GroupsScreen(private val deepLinkInviteCode: String? = null) : Screen {
                         scrollBehavior = scrollBehavior,
                         onJoinGroupClicked = { showJoinGroupSheet = true },
                     )
-                },
-                floatingActionButton = {
-                    firebaseUser?.let { user ->
-                        FloatingActionButton(
-                            onClick = {
-                                navigator.push(
-                                    CreateGroupScreen(
-                                        userId = user.uid,
-                                        userName = user.displayName ?: "Usuario",
-                                        userEmail = user.email ?: ""
-                                    )
-                                )
-                            },
-                            containerColor = MaterialTheme.colorScheme.primaryContainer
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Add,
-                                contentDescription = stringResource(Res.string.create_group)
-                            )
-                        }
-                    }
                 }
-            ) { paddingValues ->
+
+                ) { paddingValues ->
                 GroupsContent(
                     paddingValues = paddingValues,
                     uiState = uiState,
@@ -224,6 +212,50 @@ class GroupsScreen(private val deepLinkInviteCode: String? = null) : Screen {
                         },
                         prefilledCode = prefilledCode
                     )
+                }
+
+                Box(modifier = Modifier.fillMaxSize()) {
+                    // Botón CTA fijo en la parte inferior
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomCenter)
+                            .fillMaxWidth()
+                            .zIndex(1f)
+                            .background(Color.Transparent),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .padding(horizontal = 16.dp, vertical = 12.dp)
+                                .padding(bottom = paddingValues.calculateBottomPadding())
+                                .background(Color.Transparent)
+                                .fillMaxWidth()
+                        ) {
+                            Button(
+                                onClick = {
+                                    firebaseUser?.let { user ->
+                                        navigator.push(
+                                            CreateGroupScreen(
+                                                userId = user.uid,
+                                                userName = user.displayName ?: "Usuario",
+                                                userEmail = user.email ?: ""
+                                            )
+                                        )
+                                    }
+                                },
+                                modifier = Modifier.fillMaxWidth(),
+                                shape = RoundedCornerShape(8.dp),
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = MaterialTheme.colorScheme.primary
+                                )
+                            ) {
+                                Text(
+                                    text = stringResource(Res.string.create_group_button),
+                                    style = MaterialTheme.typography.labelLarge
+                                )
+                            }
+                        }
+                    }
                 }
             }
         } else {

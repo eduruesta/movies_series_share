@@ -168,7 +168,10 @@ class HomeScreen : Screen {
 
         // Animar el contenido principal cuando se abre/cierra el drawer
         val drawerOffset = if (drawerState.targetValue == DrawerValue.Open) 240.dp else 0.dp
-        val contentOffset = androidx.compose.animation.core.animateDpAsState(targetValue = drawerOffset, label = "drawerAnimation")
+        val contentOffset = androidx.compose.animation.core.animateDpAsState(
+            targetValue = drawerOffset,
+            label = "drawerAnimation"
+        )
 
         ModalNavigationDrawer(
             drawerState = drawerState,
@@ -316,13 +319,15 @@ class HomeScreen : Screen {
                             verticalArrangement = Arrangement.Center,
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            HomeSearchBar(mediaOpinionFormViewModel = mediaOpinionFormViewModel, modifier)
                             // El resto del contenido normal
                             LazyColumn(
                                 modifier = Modifier
                                     .fillMaxSize(),
                                 contentPadding = PaddingValues(bottom = 16.dp)
                             ) {
+                                item {
+                                    HomeSearchBar(mediaOpinionFormViewModel = mediaOpinionFormViewModel)
+                                }
 
                                 // Group recommendations section - mostrar solo si hay datos, no está vacío Y el usuario está autenticado
                                 if (currentUser != null && mediaOpinionUiState.groupCritics.isNotEmpty()) {

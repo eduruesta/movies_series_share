@@ -16,7 +16,6 @@
 		7D9C67322DB8245B009AD613 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7D9C67312DB8245B009AD613 /* ContentView.swift */; };
 		7D9C67442DB986BD009AD613 /* SplashScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 7D9C67432DB986BD009AD613 /* SplashScreen.storyboard */; };
 		7DBCDC362DB99EF3008A3AA9 /* logo.png in Resources */ = {isa = PBXBuildFile; fileRef = 7DBCDC352DB99EF3008A3AA9 /* logo.png */; };
-		7DBCDC382DC8F021008A3AA9 /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7DBCDC372DC8F021008A3AA9 /* GoogleService-Info.plist */; };
 		7DBCDC3A2DC8F09D008A3AA9 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 7DBCDC392DC8F09D008A3AA9 /* FirebaseAuth */; };
 		7DBCDC3C2DC8F09D008A3AA9 /* FirebaseAuthCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = 7DBCDC3B2DC8F09D008A3AA9 /* FirebaseAuthCombine-Community */; };
 		7DBCDC3F2DC8F259008A3AA9 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 7DBCDC3E2DC8F259008A3AA9 /* GoogleSignIn */; };
@@ -26,6 +25,7 @@
 		7DC86CD72DD26A8C00E46BF6 /* GoogleSignIn in Frameworks */ = {isa = PBXBuildFile; productRef = 7DC86CD62DD26A8C00E46BF6 /* GoogleSignIn */; };
 		7DC86CD92DD26A8C00E46BF6 /* GoogleSignInSwift in Frameworks */ = {isa = PBXBuildFile; productRef = 7DC86CD82DD26A8C00E46BF6 /* GoogleSignInSwift */; };
 		7DC86CDC2DD26CB600E46BF6 /* iosApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7DC86CDB2DD26CB600E46BF6 /* iosApp.swift */; };
+		7DDF55962E101ACA00B3CC5F /* GoogleService-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = 7DDF55952E101ACA00B3CC5F /* GoogleService-Info.plist */; };
 		A93A953F29CC810D00F8E227 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A93A953E29CC810D00F8E227 /* Assets.xcassets */; };
 		A93A954229CC810D00F8E227 /* Preview Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A93A954129CC810D00F8E227 /* Preview Assets.xcassets */; };
 /* End PBXBuildFile section */
@@ -35,8 +35,8 @@
 		7D9C673B2DB96A57009AD613 /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		7D9C67432DB986BD009AD613 /* SplashScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = SplashScreen.storyboard; sourceTree = "<group>"; };
 		7DBCDC352DB99EF3008A3AA9 /* logo.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = logo.png; sourceTree = "<group>"; };
-		7DBCDC372DC8F021008A3AA9 /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; name = "GoogleService-Info.plist"; path = "../GoogleService-Info.plist"; sourceTree = "<group>"; };
 		7DC86CDB2DD26CB600E46BF6 /* iosApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iosApp.swift; sourceTree = "<group>"; };
+		7DDF55952E101ACA00B3CC5F /* GoogleService-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "GoogleService-Info.plist"; sourceTree = "<group>"; };
 		A93A953729CC810C00F8E227 /* MoviesSeriesShare.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MoviesSeriesShare.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A93A953E29CC810D00F8E227 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		A93A954129CC810D00F8E227 /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
@@ -96,13 +96,13 @@
 		A93A953929CC810C00F8E227 /* iosApp */ = {
 			isa = PBXGroup;
 			children = (
+				7DDF55952E101ACA00B3CC5F /* GoogleService-Info.plist */,
 				7DC86CDB2DD26CB600E46BF6 /* iosApp.swift */,
 				7DBCDC352DB99EF3008A3AA9 /* logo.png */,
 				7D9C67312DB8245B009AD613 /* ContentView.swift */,
 				A93A953E29CC810D00F8E227 /* Assets.xcassets */,
 				A93A954029CC810D00F8E227 /* Preview Content */,
 				7D9C67432DB986BD009AD613 /* SplashScreen.storyboard */,
-				7DBCDC372DC8F021008A3AA9 /* GoogleService-Info.plist */,
 			);
 			path = iosApp;
 			sourceTree = "<group>";
@@ -187,9 +187,9 @@
 			files = (
 				A93A954229CC810D00F8E227 /* Preview Assets.xcassets in Resources */,
 				7DBCDC362DB99EF3008A3AA9 /* logo.png in Resources */,
+				7DDF55962E101ACA00B3CC5F /* GoogleService-Info.plist in Resources */,
 				A93A953F29CC810D00F8E227 /* Assets.xcassets in Resources */,
 				7D9C67442DB986BD009AD613 /* SplashScreen.storyboard in Resources */,
-				7DBCDC382DC8F021008A3AA9 /* GoogleService-Info.plist in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -352,7 +352,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_ASSET_PATHS = "\"iosApp/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
@@ -366,7 +366,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.4.3;
+				MARKETING_VERSION = 1.4.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bebi.app.watchit;
 				PRODUCT_NAME = MoviesSeriesShare;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
@@ -384,7 +384,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 2;
+				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"iosApp/Preview Content\"";
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
@@ -398,7 +398,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MARKETING_VERSION = 1.4.3;
+				MARKETING_VERSION = 1.4.4;
 				PRODUCT_BUNDLE_IDENTIFIER = com.bebi.app.watchit;
 				PRODUCT_NAME = MoviesSeriesShare;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";

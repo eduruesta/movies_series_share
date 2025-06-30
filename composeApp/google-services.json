@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "764447091440-f885d1i1j83tusn900afp5tb99dpmvqi.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.bebi.app.watchit",
+            "certificate_hash": "d7f699feff0c98440587889ccdd64322c4e4681a"
+          }
+        },
+        {
           "client_id": "764447091440-n518vbrqnjrej9s6jvt2ai3em5f8441l.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {

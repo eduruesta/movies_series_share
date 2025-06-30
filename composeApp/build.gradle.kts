@@ -112,11 +112,19 @@ android {
         targetSdk = 35
 
         applicationId = "com.bebi.app.watchit"
-        versionCode = 8
-        versionName = "1.1.0"
+        versionCode = 16
+        versionName = "1.2.5"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
+
+    buildTypes {
+        getByName("release") {
+            isMinifyEnabled = false
+            isShrinkResources = false
+        }
+    }
+
 }
 
 //https://developer.android.com/develop/ui/compose/testing#setup

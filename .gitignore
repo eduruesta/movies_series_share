@@ -18,3 +18,8 @@ Pods/
 *.gpg
 *yarn.lock
 /composeApp/release/composeApp-release.aab
+/composeApp/debug/composeApp-debug.aab
+/composeApp/release/composeApp-release.apk
+/composeApp/release/baselineProfiles/0/composeApp-release.dm
+/composeApp/release/baselineProfiles/1/composeApp-release.dm
+/composeApp/release/output-metadata.json

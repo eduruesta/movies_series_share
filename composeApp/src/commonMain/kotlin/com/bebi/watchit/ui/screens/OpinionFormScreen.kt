@@ -53,11 +53,13 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
+import com.bebi.watchit.analytics.AnalyticsManager
 import com.bebi.watchit.ui.components.SearchResultsDropdown
 import com.bebi.watchit.ui.components.StarRating
 import com.bebi.watchit.viewmodel.MediaOpinionFormViewModel
 import com.bebi.watchit.viewmodel.MediaOpinionFormViewModel.SearchUiMessage
 import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.analytics.analytics
 import dev.gitlive.firebase.auth.auth
 import kotlinx.coroutines.launch
 import moviesseriesshare.composeapp.generated.resources.Res
@@ -91,6 +93,9 @@ data class OpinionFormScreen(val id: String? = null) : Screen {
         val snackbarHostState = remember { SnackbarHostState() }
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         val keyboardController = LocalSoftwareKeyboardController.current
+        
+        // Trackear vista de pantalla
+        AnalyticsManager.trackScreenView(Firebase.analytics, "Opinion Form Screen")
         
         // Obtener el usuario actual para guardar su nombre
         val auth = Firebase.auth
@@ -165,6 +170,8 @@ data class OpinionFormScreen(val id: String? = null) : Screen {
                             onClick = {
                                 keyboardController?.hide()
                                 viewModel.searchMedia(viewModel.title)
+                                // Trackear búsqueda de medios
+                                AnalyticsManager.trackMediaSearch(Firebase.analytics, viewModel.title, 0) // El contador se actualizará cuando lleguen resultados
                             },
                             modifier = Modifier
                                 .background(
@@ -197,7 +204,15 @@ data class OpinionFormScreen(val id: String? = null) : Screen {
                         Box(modifier = Modifier.fillMaxWidth()) {
                             SearchResultsDropdown(
                                 results = viewModel.searchResults,
-                                onItemSelected = { viewModel.selectMediaItem(it) },
+                                onItemSelected = { 
+                                    viewModel.selectMediaItem(it)
+                                    // Trackear selección de resultado
+                                    AnalyticsManager.trackUiElementClick(
+                                        Firebase.analytics,
+                                        elementName = "search_result_item",
+                                        screenName = "Opinion Form Screen"
+                                    )
+                                },
                                 onDismiss = { viewModel.closeSearchResults() },
                                 getFullPosterUrl = { posterPath ->
                                     if (posterPath != null) {
@@ -223,6 +238,17 @@ data class OpinionFormScreen(val id: String? = null) : Screen {
                                 rating = viewModel.rating,
                                 maxRating = 10,
                                 onRatingChanged = { viewModel.updateRating(it) }
+                            )
+                        }
+                    }
+
+                    // Trackear valoración cuando cambia
+                    LaunchedEffect(viewModel.rating) {
+                        if (viewModel.rating > 0f) {
+                            AnalyticsManager.trackRating(
+                                Firebase.analytics,
+                                mediaTitle = viewModel.title,
+                                rating = viewModel.rating
                             )
                         }
                     }
@@ -304,7 +330,16 @@ data class OpinionFormScreen(val id: String? = null) : Screen {
                     Spacer(modifier = Modifier.height(16.dp))
 
                     Button(
-                        onClick = { viewModel.saveOpinion(groupId = id, viewModel.id) },
+                        onClick = {
+                            viewModel.saveOpinion(groupId = id, viewModel.id)
+                            // Trackear creación de opinión
+                            AnalyticsManager.trackOpinionCreation(
+                                Firebase.analytics,
+                                mediaTitle = viewModel.title,
+                                rating = viewModel.rating,
+                                hasComment = viewModel.comments.isNotEmpty()
+                            )
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         enabled = viewModel.title.isNotBlank() && viewModel.rating > 0f
                     ) {

@@ -84,6 +84,12 @@
     <string name="recommendation_remove_error">Error al eliminar: %1$s</string>
     <string name="recommendation_save_error">Error al guardar: %1$s</string>
 
+    <!-- Comentarios de usuarios -->
+    <string name="username_field">Nombre de usuario</string>
+    <string name="username_placeholder">Tu nombre de usuario</string>
+    <string name="comment_label">Comentario</string>
+    <string name="username_required">El nombre de usuario es obligatorio</string>
+
     <!-- Menu -->
     <string name="your_recommendations">Recomendaciones Guardadas</string>
     <string name="app_name">Criticly</string>

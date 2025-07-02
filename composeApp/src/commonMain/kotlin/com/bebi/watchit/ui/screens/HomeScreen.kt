@@ -60,6 +60,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
+import com.bebi.watchit.analytics.AnalyticsManager
 import com.bebi.watchit.model.MediaOpinion
 import com.bebi.watchit.ui.components.AppDrawerContent
 import com.bebi.watchit.ui.components.ErrorScreen
@@ -74,6 +75,7 @@ import com.bebi.watchit.viewmodel.TrendingMoviesViewModel
 import com.bebi.watchit.viewmodel.TrendingSeriesViewModel
 import com.bebi.watchit.viewmodel.UpcomingMoviesViewModel
 import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.analytics.analytics
 import dev.gitlive.firebase.auth.auth
 import kotlinx.coroutines.launch
 import moviesseriesshare.composeapp.generated.resources.Res
@@ -99,6 +101,9 @@ class HomeScreen : Screen {
         val navigator = LocalNavigator.currentOrThrow
         val snackbarHostState = remember { SnackbarHostState() }
         val scope = rememberCoroutineScope()
+
+        // Tracking de vista de pantalla
+        AnalyticsManager.trackScreenView(Firebase.analytics, "Home Screen")
 
         val auth = Firebase.auth
         val authStateFlow = remember { auth.authStateChanged }
@@ -355,6 +360,12 @@ class HomeScreen : Screen {
                                         items = trendingMoviesState.mediaItems,
                                         isLoading = trendingMoviesState.isLoading,
                                         onItemClick = { media ->
+                                            // Tracking de clic en película/serie
+                                            AnalyticsManager.trackUiElementClick(
+                                                Firebase.analytics,
+                                                elementName = "trending_movie_item", 
+                                                screenName = "Home Screen"
+                                            )
                                             navigator.push(
                                                 MediaDetailScreen(
                                                     tmdbMediaOpinion = media
@@ -375,6 +386,12 @@ class HomeScreen : Screen {
                                         items = topMoviesState.mediaItems,
                                         isLoading = topMoviesState.isLoading,
                                         onItemClick = { media ->
+                                            // Tracking de clic en película/serie
+                                            AnalyticsManager.trackUiElementClick(
+                                                Firebase.analytics,
+                                                elementName = "top_movie_item", 
+                                                screenName = "Home Screen"
+                                            )
                                             navigator.push(
                                                 MediaDetailScreen(
                                                     tmdbMediaOpinion = media
@@ -415,6 +432,12 @@ class HomeScreen : Screen {
                                         items = trendingSeriesState.mediaItems,
                                         isLoading = trendingSeriesState.isLoading,
                                         onItemClick = { media ->
+                                            // Tracking de clic en película/serie
+                                            AnalyticsManager.trackUiElementClick(
+                                                Firebase.analytics,
+                                                elementName = "trending_series_item", 
+                                                screenName = "Home Screen"
+                                            )
                                             navigator.push(
                                                 MediaDetailScreen(
                                                     tmdbMediaOpinion = media
@@ -435,6 +458,12 @@ class HomeScreen : Screen {
                                         items = topSeriesState.mediaItems,
                                         isLoading = topSeriesState.isLoading,
                                         onItemClick = { media ->
+                                            // Tracking de clic en película/serie
+                                            AnalyticsManager.trackUiElementClick(
+                                                Firebase.analytics,
+                                                elementName = "top_series_item", 
+                                                screenName = "Home Screen"
+                                            )
                                             navigator.push(
                                                 MediaDetailScreen(
                                                     tmdbMediaOpinion = media

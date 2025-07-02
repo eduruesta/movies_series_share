@@ -34,9 +34,12 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.bebi.watchit.analytics.AnalyticsManager
 import com.bebi.watchit.ui.components.SavedRecommendationItem
 import com.bebi.watchit.ui.components.SearchTopAppBar
 import com.bebi.watchit.viewmodel.SavedRecommendationViewModel
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.analytics.analytics
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.empty_recommendations_message
 import moviesseriesshare.composeapp.generated.resources.recommendation_not_saved
@@ -89,12 +92,23 @@ class SavedRecommendationScreen : Screen {
             viewModel.loadSavedRecommendations()
         }
 
+        // Trackear vista de pantalla
+        AnalyticsManager.trackScreenView(Firebase.analytics, "Saved Recommendations Screen")
+
         Scaffold(
             topBar = {
                 SearchTopAppBar(
                     title = stringResource(Res.string.your_recommendations),
                     navigationIcon = {
-                        IconButton(onClick = { navigator.pop() }) {
+                        IconButton(onClick = { 
+                            navigator.pop() 
+                            // Trackear clic en botón de navegación
+                            AnalyticsManager.trackUiElementClick(
+                                Firebase.analytics,
+                                elementName = "back_button",
+                                screenName = "Saved Recommendations Screen"
+                            )
+                        }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = "Volver atrás"
@@ -104,6 +118,10 @@ class SavedRecommendationScreen : Screen {
                     onNavigationIconClick = { navigator.pop() },
                     onSearchQueryChanged = { query ->
                         viewModel.updateSearchQuery(query)
+                        // Trackear búsqueda si tiene suficientes caracteres
+                        if (query.length > 2) {
+                            AnalyticsManager.trackMediaSearch(Firebase.analytics, query, uiState.filteredRecommendations.size)
+                        }
                     },
                     scrollBehavior = scrollBehavior,
                     placeHolderText = stringResource(Res.string.search_recommendations)
@@ -159,8 +177,26 @@ class SavedRecommendationScreen : Screen {
                                         // Asegurarnos de que el id sea pasado como Long
                                         val opinionId: Long = savedRecommendation.opinionId
                                         navigator.push(MediaDetailScreen(opinionId = opinionId))
+                                        // Trackear clic en recomendación guardada
+                                        AnalyticsManager.trackUiElementClick(
+                                            Firebase.analytics,
+                                            elementName = "saved_recommendation_item",
+                                            screenName = "Saved Recommendations Screen"
+                                        )
+                                        AnalyticsManager.trackMediaView(
+                                            Firebase.analytics,
+                                            mediaId = savedRecommendation.opinionId.toString(),
+                                            mediaTitle = savedRecommendation.title,
+                                            mediaType = "saved_recommendation"
+                                        )
                                     },
                                     onRemoveClick = {
+                                        // Trackear eliminación de recomendación
+                                        AnalyticsManager.trackRemoveFromFavorites(
+                                            Firebase.analytics,
+                                            mediaId = savedRecommendation.opinionId.toString(),
+                                            mediaTitle = savedRecommendation.title
+                                        )
                                         viewModel.removeRecommendation(
                                             recommendation = savedRecommendation
                                         ) { message ->
@@ -181,6 +217,13 @@ class SavedRecommendationScreen : Screen {
                 uiState.error?.let { errorMessage ->
                     LaunchedEffect(errorMessage) {
                         snackbarHostState.showSnackbar(errorMessage)
+                        // Trackear error
+                        AnalyticsManager.trackError(
+                            Firebase.analytics,
+                            errorType = "saved_recommendations_error",
+                            errorMessage = errorMessage,
+                            screenName = "Saved Recommendations Screen"
+                        )
                     }
                 }
             }

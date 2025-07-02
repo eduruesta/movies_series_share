@@ -72,6 +72,12 @@
     <string name="recommendation_remove_error">Error removing: %1$s</string>
     <string name="recommendation_save_error">Error saving: %1$s</string>
 
+    <!-- User Comments -->
+    <string name="username_field">Username</string>
+    <string name="username_placeholder">Your username</string>
+    <string name="comment_label">Comment</string>
+    <string name="username_required">Username is required</string>
+
     <!-- Menu -->
     <string name="your_recommendations">Saved Recommendations</string>
     <string name="app_name">Criticly</string>
@@ -88,7 +94,6 @@
     <string name="search_recommendations">Search recommendations...</string>
     <string name="search">Search...</string>
     <string name="available_in">Available in:</string>
-
 
     <string name="empty_recommendations_message">You don't have any saved recommendations yet. Add recommendations from the main screen to see them here.</string>
 

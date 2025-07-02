@@ -44,10 +44,12 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.bebi.watchit.analytics.AnalyticsManager
 import com.bebi.watchit.theme.LocalThemeIsDark
 import com.bebi.watchit.ui.components.logout
 import dev.burnoo.compose.remembersetting.rememberStringSetting
 import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.analytics.analytics
 import dev.gitlive.firebase.auth.FirebaseUser
 import dev.gitlive.firebase.auth.auth
 import kotlinx.coroutines.Dispatchers
@@ -78,13 +80,24 @@ class SettingsScreen : Screen {
         val scope = rememberCoroutineScope()
         var firebaseUser: FirebaseUser? by remember { mutableStateOf(auth.currentUser) }
 
+        // Trackear vista de pantalla
+        AnalyticsManager.trackScreenView(Firebase.analytics, "Settings Screen")
+        
         androidx.compose.runtime.key(refreshTrigger) {
             Scaffold(
                 topBar = {
                     TopAppBar(
                         title = { Text(stringResource(Res.string.settings)) },
                         navigationIcon = {
-                            IconButton(onClick = { navigator.pop() }) {
+                            IconButton(onClick = { 
+                                navigator.pop()
+                                // Trackear clic en botón de navegación
+                                AnalyticsManager.trackUiElementClick(
+                                    Firebase.analytics,
+                                    elementName = "back_button",
+                                    screenName = "Settings Screen"
+                                )
+                            }) {
                                 Icon(
                                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                     contentDescription = stringResource(Res.string.back_button)
@@ -127,6 +140,12 @@ class SettingsScreen : Screen {
                                 LogoutSection(
                                     onLogout = {
                                         scope.launch {
+                                            // Trackear cierre de sesión
+                                            AnalyticsManager.trackUiElementClick(
+                                                Firebase.analytics,
+                                                elementName = "logout_button",
+                                                screenName = "Settings Screen"
+                                            )
                                             auth.signOut()
                                             withContext(Dispatchers.Main) {
                                                 firebaseUser = auth.currentUser
@@ -274,6 +293,12 @@ private fun ThemeSection() {
                 onCheckedChange = { 
                     isDarkTheme.value = it
                     savedIsDark = it.toString()
+                    // Trackear cambio de tema
+                    AnalyticsManager.trackUiElementClick(
+                        Firebase.analytics,
+                        elementName = "theme_toggle",
+                        screenName = "Settings Screen"
+                    )
                 }
             )
         }
@@ -354,7 +379,15 @@ private fun LogoutSection(
             },
             dismissButton = {
                 Button(
-                    onClick = { showLogoutDialog = false },
+                    onClick = { 
+                        showLogoutDialog = false 
+                        // Trackear cancelación de cierre de sesión
+                        AnalyticsManager.trackUiElementClick(
+                            Firebase.analytics,
+                            elementName = "cancel_logout",
+                            screenName = "Settings Screen"
+                        )
+                    },
                     colors = ButtonDefaults.buttonColors(
                         containerColor = MaterialTheme.colorScheme.surfaceVariant,
                         contentColor = MaterialTheme.colorScheme.onSurfaceVariant

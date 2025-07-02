@@ -87,10 +87,11 @@ import moviesseriesshare.composeapp.generated.resources.add_new_comment
 import moviesseriesshare.composeapp.generated.resources.back_button
 import moviesseriesshare.composeapp.generated.resources.cancel
 import moviesseriesshare.composeapp.generated.resources.cast
+import moviesseriesshare.composeapp.generated.resources.comment_label
 import moviesseriesshare.composeapp.generated.resources.comments
 import moviesseriesshare.composeapp.generated.resources.delete_from_recommendations
-import moviesseriesshare.composeapp.generated.resources.genre
-import moviesseriesshare.composeapp.generated.resources.information
+import moviesseriesshare.composeapp.generated.resources.username_placeholder
+import moviesseriesshare.composeapp.generated.resources.username_required
 import moviesseriesshare.composeapp.generated.resources.loading_cast
 import moviesseriesshare.composeapp.generated.resources.loading_cast_issue
 import moviesseriesshare.composeapp.generated.resources.loading_details
@@ -99,7 +100,7 @@ import moviesseriesshare.composeapp.generated.resources.loading_recommendation_i
 import moviesseriesshare.composeapp.generated.resources.loading_title
 import moviesseriesshare.composeapp.generated.resources.media_list_title
 import moviesseriesshare.composeapp.generated.resources.opinion_count
-import moviesseriesshare.composeapp.generated.resources.platform
+import moviesseriesshare.composeapp.generated.resources.username_field
 import moviesseriesshare.composeapp.generated.resources.recommendation_already_saved
 import moviesseriesshare.composeapp.generated.resources.recommendation_not_saved
 import moviesseriesshare.composeapp.generated.resources.recommendation_remove_error
@@ -241,6 +242,7 @@ data class MediaDetailScreen(
         }
 
         if (showCommentDialog) {
+            var showUsernameError by remember { mutableStateOf(false) }
             AlertDialog(
                 onDismissRequest = { showCommentDialog = false },
                 title = { Text(stringResource(Res.string.add_new_comment)) },
@@ -252,11 +254,18 @@ data class MediaDetailScreen(
                         // Campo para el nombre del autor
                         OutlinedTextField(
                             value = uiState.username,
-                            onValueChange = { viewModel.updateUsername(it) },
+                            onValueChange = { 
+                                viewModel.updateUsername(it)
+                                showUsernameError = false
+                            },
                             modifier = Modifier.fillMaxWidth(),
-                            placeholder = { Text("Tu nombre de usuario") },
-                            label = { Text("Nombre de usuario") },
-                            singleLine = true
+                            placeholder = { Text(stringResource(Res.string.username_placeholder)) },
+                            label = { Text(stringResource(Res.string.username_field)) },
+                            singleLine = true,
+                            isError = showUsernameError,
+                            supportingText = if (showUsernameError) {
+                                { Text(stringResource(Res.string.username_required)) }
+                            } else null
                         )
 
                         // Campo para el comentario
@@ -265,7 +274,7 @@ data class MediaDetailScreen(
                             onValueChange = { viewModel.updateNewComment(it) },
                             modifier = Modifier.fillMaxWidth(),
                             placeholder = { Text(stringResource(Res.string.write_your_comment)) },
-                            label = { Text("Comentario") },
+                            label = { Text(stringResource(Res.string.comment_label)) },
                             minLines = 3
                         )
                     }
@@ -275,11 +284,12 @@ data class MediaDetailScreen(
                         onClick = {
                             // Verificar que haya un nombre de usuario
                             if (uiState.username.isBlank()) {
-                                // Si no hay nombre, podríamos mostrar un error o usar "Anónimo"
-                                viewModel.updateUsername("Anónimo")
+                                // Mostrar error si no hay nombre de usuario
+                                showUsernameError = true
+                            } else {
+                                viewModel.addComment(uiState.newComment, uiState.username)
+                                showCommentDialog = false
                             }
-                            viewModel.addComment(uiState.newComment, uiState.username)
-                            showCommentDialog = false
                         },
                         enabled = uiState.newComment.isNotBlank()
                     ) {

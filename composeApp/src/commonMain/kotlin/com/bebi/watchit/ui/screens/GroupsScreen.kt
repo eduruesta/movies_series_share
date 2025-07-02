@@ -65,6 +65,7 @@ import androidx.compose.ui.zIndex
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.bebi.watchit.analytics.AnalyticsManager
 import com.bebi.watchit.data.models.GroupResponse
 import com.bebi.watchit.ui.components.GoogleSignIn
 import com.bebi.watchit.ui.components.groupAdd
@@ -72,6 +73,7 @@ import com.bebi.watchit.ui.components.passwordIcon
 import com.bebi.watchit.viewmodel.GroupsUiState
 import com.bebi.watchit.viewmodel.GroupsViewModel
 import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.analytics.analytics
 import dev.gitlive.firebase.auth.FirebaseUser
 import dev.gitlive.firebase.auth.auth
 import kotlinx.coroutines.Dispatchers
@@ -399,10 +401,14 @@ class GroupsScreen(private val deepLinkInviteCode: String? = null) : Screen {
                                             withContext(Dispatchers.Main) {
                                                 isLoggedInSuccess = true
                                                 firebaseUser = auth.currentUser
+                                                val method = if (isRegistrationMode) "register" else "email"
+                                                AnalyticsManager.trackLoginSuccess(Firebase.analytics, method)
                                             }
                                         } catch (e: Exception) {
                                             withContext(Dispatchers.Main) {
                                                 snackbarHostState.showSnackbar(authErrorText)
+                                                val method = if (isRegistrationMode) "register" else "email"
+                                                AnalyticsManager.trackLoginError(Firebase.analytics, method, e.message ?: "Unknown error")
                                             }
                                         }
                                     }
@@ -426,8 +432,11 @@ class GroupsScreen(private val deepLinkInviteCode: String? = null) : Screen {
                                 isLoggedInSuccess = true
                                 val firebase = result.getOrNull()
                                 firebaseUser = firebase
+                                AnalyticsManager.trackLoginSuccess(Firebase.analytics, "google")
                             } else {
                                 println("Error Result: ${result.exceptionOrNull()?.message}")
+                                val errorMessage = result.exceptionOrNull()?.message ?: "Unknown error"
+                                AnalyticsManager.trackLoginError(Firebase.analytics, "google", errorMessage)
                             }
 
                         }

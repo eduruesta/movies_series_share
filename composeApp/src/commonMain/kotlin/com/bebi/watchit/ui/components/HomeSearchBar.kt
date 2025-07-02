@@ -30,7 +30,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import com.bebi.watchit.analytics.AnalyticsManager
 import com.bebi.watchit.viewmodel.MediaOpinionFormViewModel
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.analytics.analytics
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.search_where_movies_series
 import org.jetbrains.compose.resources.stringResource
@@ -59,6 +62,8 @@ fun HomeSearchBar(
             keyboardActions = KeyboardActions(
                 onSearch = {
                     mediaOpinionFormViewModel.searchMedia(searchQuery)
+                    keyboardController?.hide()
+                    AnalyticsManager.trackMediaSearch(Firebase.analytics, searchQuery, 0) // El conteo se actualizará cuando lleguen los resultados
                 }
             )
         )
@@ -67,6 +72,7 @@ fun HomeSearchBar(
             onClick = {
                 keyboardController?.hide()
                 mediaOpinionFormViewModel.searchMedia(searchQuery)
+                AnalyticsManager.trackMediaSearch(Firebase.analytics, searchQuery, 0) // El conteo se actualizará cuando lleguen los resultados
             },
             modifier = Modifier.align(Alignment.Bottom).height(56.dp)
                 .background(

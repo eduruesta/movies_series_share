@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.bebi.watchit.analytics.AnalyticsManager
 import com.bebi.watchit.model.MediaOpinion
 import com.bebi.watchit.ui.components.ErrorScreen
 import com.bebi.watchit.ui.components.MediaOpinionItem
@@ -44,6 +45,7 @@ import com.bebi.watchit.ui.components.RatingBottomSheet
 import com.bebi.watchit.ui.components.SearchTopAppBar
 import com.bebi.watchit.viewmodel.MediaOpinionViewModel
 import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.analytics.analytics
 import dev.gitlive.firebase.auth.FirebaseUser
 import dev.gitlive.firebase.auth.auth
 import kotlinx.coroutines.launch
@@ -68,6 +70,9 @@ class AllGroupRecommendationsScreen : Screen {
         val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
         val scope = rememberCoroutineScope()
         
+        // Trackear vista de pantalla
+        AnalyticsManager.trackScreenView(Firebase.analytics,"All Group Recommendations Screen")
+        
         // Obtener el usuario autenticado
         val auth = remember { Firebase.auth }
         val firebaseUser: FirebaseUser? by remember { mutableStateOf(auth.currentUser) }
@@ -90,7 +95,15 @@ class AllGroupRecommendationsScreen : Screen {
                 SearchTopAppBar(
                     title = stringResource(Res.string.group_recommendations),
                     navigationIcon = {
-                        IconButton(onClick = { navigator.pop() }) {
+                        IconButton(onClick = { 
+                            navigator.pop() 
+                            // Trackear clic en botón de navegación
+                            AnalyticsManager.trackUiElementClick(
+                                Firebase.analytics,
+                                elementName = "back_button",
+                                screenName = "All Group Recommendations Screen"
+                            )
+                        }) {
                             Icon(
                                 imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                                 contentDescription = stringResource(Res.string.back_button)
@@ -100,6 +113,10 @@ class AllGroupRecommendationsScreen : Screen {
                     onNavigationIconClick = { navigator.pop() },
                     onSearchQueryChanged = { query ->
                         mediaOpinionViewModel.updateSearchQuery(query)
+                        // Trackear búsqueda
+                        if (query.length > 2) {
+                            AnalyticsManager.trackMediaSearch(Firebase.analytics, query, uiState.filteredGroupCritics.size)
+                        }
                     },
                     scrollBehavior = scrollBehavior,
                     placeHolderText = stringResource(Res.string.search)
@@ -164,10 +181,28 @@ class AllGroupRecommendationsScreen : Screen {
                                     opinion = media,
                                     onClick = {
                                         navigator.push(MediaDetailScreen(media.id))
+                                        // Trackear clic en item de medios
+                                        AnalyticsManager.trackUiElementClick(
+                                            Firebase.analytics,
+                                            elementName = "group_recommendation_item",
+                                            screenName = "All Group Recommendations Screen"
+                                        )
+                                        AnalyticsManager.trackMediaView(
+                                            Firebase.analytics,
+                                            mediaId = media.id.toString(),
+                                            mediaTitle = media.title,
+                                            mediaType = "unknown"
+                                        )
                                     },
                                     onRateClick = {
                                         selectedOpinion = media
                                         showRatingSheet = true
+                                        // Trackear clic en calificar
+                                        AnalyticsManager.trackUiElementClick(
+                                            Firebase.analytics,
+                                            elementName = "rate_button",
+                                            screenName = "All Group Recommendations Screen"
+                                        )
                                     },
                                     onShowMessage = { message ->
                                         scope.launch {
@@ -197,6 +232,12 @@ class AllGroupRecommendationsScreen : Screen {
                     mediaOpinionViewModel.submitRating(opinion, rating) { success ->
                         if (success) {
                             showRatingSheet = false
+                            // Trackear envío de calificación
+                            AnalyticsManager.trackRating(
+                                Firebase.analytics,
+                                mediaTitle = opinion.title,
+                                rating = rating.toFloat()
+                            )
                         }
                     }
                 }

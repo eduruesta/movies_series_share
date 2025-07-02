@@ -42,7 +42,10 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.bebi.watchit.analytics.AnalyticsManager
 import com.bebi.watchit.viewmodel.GroupsViewModel
+import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.analytics.analytics
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.back_button
 import moviesseriesshare.composeapp.generated.resources.create_group
@@ -67,6 +70,9 @@ data class CreateGroupScreen(
 
         val viewModel = koinInject<GroupsViewModel> { parametersOf(userId, userName, userEmail) }
 
+        // Trackear vista de pantalla
+        AnalyticsManager.trackScreenView(Firebase.analytics, "Create Group Screen")
+
         var groupName by remember { mutableStateOf("") }
         var groupDescription by remember { mutableStateOf("") }
         var isLoading by remember { mutableStateOf(false) }
@@ -78,7 +84,19 @@ data class CreateGroupScreen(
             if (!uiState.isLoading && isLoading && uiState.error == null) {
                 // Si ha terminado de cargar sin errores, volvemos a la pantalla anterior
                 navigator.pop()
-                navigator.push(GroupOpinionList(uiState.groups.last { it.createdBy == userId }, openGroupInfo = true))
+                navigator.push(
+                    GroupOpinionList(
+                        uiState.groups.last { it.createdBy == userId },
+                        openGroupInfo = true
+                    )
+                )
+
+                // Trackear éxito en la creación del grupo
+                AnalyticsManager.trackUiElementClick(
+                    Firebase.analytics,
+                    elementName = "group_creation_success",
+                    screenName = "Create Group Screen"
+                )
             }
             isLoading = uiState.isLoading
         }
@@ -95,10 +113,17 @@ data class CreateGroupScreen(
                 } else {
                     isLoading = true
                     viewModel.createGroup(groupName, groupDescription)
-                    // No navegamos inmediatamente, esperamos a que termine la operación
                 }
             },
-            onBackPressed = { navigator.pop() },
+            onBackPressed = {
+                navigator.pop()
+                // Trackear clic en botón de volver
+                AnalyticsManager.trackUiElementClick(
+                    Firebase.analytics,
+                    elementName = "back_button",
+                    screenName = "Create Group Screen"
+                )
+            },
             showNameError = hasAttemptedCreate && groupName.isEmpty(),
             isLoading = isLoading,
             error = uiState.error,
@@ -110,6 +135,13 @@ data class CreateGroupScreen(
             if (uiState.error != null) {
                 snackbarHostState.showSnackbar(uiState.error ?: "Error")
                 isLoading = false
+                // Trackear error en la creación del grupo
+                AnalyticsManager.trackError(
+                    Firebase.analytics,
+                    errorType = "group_creation_error",
+                    errorMessage = uiState.error ?: "Unknown error",
+                    screenName = "Create Group Screen"
+                )
             }
         }
     }
@@ -146,7 +178,15 @@ private fun CreateGroupContent(
             TopAppBar(
                 title = { Text(stringResource(Res.string.create_group)) },
                 navigationIcon = {
-                    IconButton(onClick = onBackPressed) {
+                    IconButton(onClick = {
+                        onBackPressed()
+                        // Trackear clic en botón de volver en la topbar
+                        AnalyticsManager.trackUiElementClick(
+                            Firebase.analytics,
+                            elementName = "topbar_back_button",
+                            screenName = "Create Group Screen"
+                        )
+                    }) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = stringResource(Res.string.back_button)
@@ -221,7 +261,15 @@ private fun CreateGroupContent(
                     Spacer(modifier = Modifier.height(24.dp))
 
                     Button(
-                        onClick = onCreateGroup,
+                        onClick = {
+                            onCreateGroup()
+                            // Trackear intento de creación de grupo
+                            AnalyticsManager.trackUiElementClick(
+                                Firebase.analytics,
+                                elementName = "create_group_button",
+                                screenName = "Create Group Screen"
+                            )
+                        },
                         enabled = isNameValid && isDescriptionValid,
                         modifier = Modifier.fillMaxWidth()
                     ) {

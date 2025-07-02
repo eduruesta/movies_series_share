@@ -52,6 +52,8 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -62,6 +64,7 @@ import androidx.compose.ui.zIndex
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.bebi.watchit.analytics.AnalyticsManager
 import com.bebi.watchit.data.models.GroupResponse
 import com.bebi.watchit.model.MediaOpinion
 import com.bebi.watchit.rememberShareManager
@@ -76,6 +79,7 @@ import com.bebi.watchit.viewmodel.GroupsViewModel
 import com.bebi.watchit.viewmodel.MediaOpinionFormViewModel
 import com.bebi.watchit.viewmodel.MediaOpinionViewModel
 import dev.gitlive.firebase.Firebase
+import dev.gitlive.firebase.analytics.analytics
 import dev.gitlive.firebase.auth.FirebaseUser
 import dev.gitlive.firebase.auth.auth
 import kotlinx.coroutines.delay
@@ -123,6 +127,8 @@ data class GroupOpinionList(private val group: GroupResponse, val openGroupInfo:
             )
         }
 
+        AnalyticsManager.trackScreenView(Firebase.analytics, "Group Opinion List Screen")
+
         val scope = rememberCoroutineScope()
         val uiState by viewModel.uiState.collectAsState()
 
@@ -134,18 +140,48 @@ data class GroupOpinionList(private val group: GroupResponse, val openGroupInfo:
         GroupOpinionListScreen(
             uiState = uiState,
             groupName = group.name,
-            onBackPressed = { navigator.pop() },
-            onOpinionClick = { opinion -> navigator.push(MediaDetailScreen(opinion.id)) },
+            onBackPressed = {
+                navigator.pop()
+                AnalyticsManager.trackUiElementClick(
+                    Firebase.analytics,
+                    elementName = "back_button",
+                    screenName = "Group Opinion List Screen"
+                )
+            },
+            onOpinionClick = { opinion ->
+                navigator.push(MediaDetailScreen(opinion.id))
+                AnalyticsManager.trackUiElementClick(
+                    Firebase.analytics,
+                    elementName = "opinion_item",
+                    screenName = "Group Opinion List Screen"
+                )
+                AnalyticsManager.trackMediaView(
+                    Firebase.analytics,
+                    mediaId = opinion.id.toString(),
+                    mediaTitle = opinion.title,
+                    mediaType = opinion.mediaType ?: "unknown"
+                )
+            },
             onAddOpinionClick = {
                 opinionViewModel.setGroupIdForNextSave(group.id)
                 val username = firebaseUser?.displayName ?: "Usuario"
                 opinionViewModel.setUsernameForNextSave(username)
                 navigator.push(OpinionFormScreen(group.id))
+                AnalyticsManager.trackUiElementClick(
+                    Firebase.analytics,
+                    elementName = "add_opinion_button",
+                    screenName = "Group Opinion List Screen",
+                )
             },
             groupInfo = group,
             groupsViewModel = groupsViewModel,
             onLeaveGroup = {
                 scope.launch {
+                    AnalyticsManager.trackUiElementClick(
+                        Firebase.analytics,
+                        elementName = "leave_group_button",
+                        screenName = "Group Opinion List Screen",
+                    )
                     groupsViewModel.leaveGroup(group.id)
                     delay(400)
                     navigator.pop()
@@ -153,6 +189,11 @@ data class GroupOpinionList(private val group: GroupResponse, val openGroupInfo:
             },
             onDeleteGroup = {
                 scope.launch {
+                    AnalyticsManager.trackUiElementClick(
+                        Firebase.analytics,
+                        elementName = "delete_group_button",
+                        screenName = "Group Opinion List Screen",
+                    )
                     groupsViewModel.deleteGroup(group.id)
                     delay(400)
                     navigator.pop()
@@ -189,7 +230,6 @@ fun GroupOpinionListScreen(
     var showGroupInfoDialog by remember { mutableStateOf(false) }
     var showGroupInfo by remember { mutableStateOf(openGroupInfo) }
 
-
     Scaffold(
         topBar = {
             TopAppBar(
@@ -204,7 +244,14 @@ fun GroupOpinionListScreen(
                 },
                 actions = {
 
-                    IconButton(onClick = { showGroupInfoDialog = true }) {
+                    IconButton(onClick = {
+                        showGroupInfoDialog = true
+                        AnalyticsManager.trackUiElementClick(
+                            Firebase.analytics,
+                            elementName = "group_info_button",
+                            screenName = "Group Opinion List Screen"
+                        )
+                    }) {
                         Icon(
                             imageVector = ThreeDots,
                             contentDescription = "Info"
@@ -242,7 +289,20 @@ fun GroupOpinionListScreen(
 
                     uiState.error != null -> {
                         ErrorScreen(
-                            onRetry = { viewModel.refreshOpinions() }
+                            onRetry = {
+                                viewModel.refreshOpinions()
+                                AnalyticsManager.trackUiElementClick(
+                                    Firebase.analytics,
+                                    elementName = "retry_button",
+                                    screenName = "Group Opinion List Screen"
+                                )
+                            }
+                        )
+                        AnalyticsManager.trackError(
+                            Firebase.analytics,
+                            errorType = "group_opinions_error",
+                            errorMessage = uiState.error ?: "Unknown error",
+                            screenName = "Group Opinion List Screen"
                         )
                     }
 
@@ -262,6 +322,11 @@ fun GroupOpinionListScreen(
                                     onRateClick = {
                                         selectedOpinion = opinion
                                         showRatingSheet = true
+                                        AnalyticsManager.trackUiElementClick(
+                                            Firebase.analytics,
+                                            elementName = "rate_button",
+                                            screenName = "Group Opinion List Screen",
+                                        )
                                     },
                                     onShowMessage = { message ->
                                         scope.launch {
@@ -292,7 +357,14 @@ fun GroupOpinionListScreen(
                         .fillMaxWidth()
                 ) {
                     Button(
-                        onClick = onAddOpinionClick,
+                        onClick = {
+                            onAddOpinionClick()
+                            AnalyticsManager.trackUiElementClick(
+                                Firebase.analytics,
+                                elementName = "create_critic_button",
+                                screenName = "Group Opinion List Screen"
+                            )
+                        },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(8.dp),
                         colors = ButtonDefaults.buttonColors(
@@ -323,6 +395,11 @@ fun GroupOpinionListScreen(
                     if (success) {
                         viewModel.refreshOpinions()
                         showRatingSheet = false
+                        AnalyticsManager.trackRating(
+                            Firebase.analytics,
+                            mediaTitle = opinion.title,
+                            rating = rating.toFloat()
+                        )
                     } else {
                         scope.launch {
                             snackbarHostState.showSnackbar("No se pudo actualizar la calificación")
@@ -431,6 +508,12 @@ private fun GroupInfoBottomSheet(
                     modifier = Modifier.fillMaxWidth().clickable {
                         scope.launch {
                             shareManager.shareText(member)
+                            AnalyticsManager.trackShareOpinion(
+                                Firebase.analytics,
+                                mediaId = groupInfo.id,
+                                mediaTitle = groupInfo.name,
+                                shareType = "group_invite_icon"
+                            )
                         }
                     }
                 ) {
@@ -450,6 +533,12 @@ private fun GroupInfoBottomSheet(
                             onClick = {
                                 scope.launch {
                                     shareManager.shareText(member)
+                                    AnalyticsManager.trackShareOpinion(
+                                        Firebase.analytics,
+                                        mediaId = groupInfo.id,
+                                        mediaTitle = groupInfo.name,
+                                        shareType = "group_invite_icon"
+                                    )
                                 }
                             }
                         ) {

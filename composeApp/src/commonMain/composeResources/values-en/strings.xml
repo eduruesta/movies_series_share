@@ -195,5 +195,6 @@
     <!-- Error Screen Strings -->
     <string name="connection_error">Connection to the server was lost. Please try again.</string>
     <string name="retry">Retry</string>
+    <string name="no_content_available">No content available</string>
 
 </resources>

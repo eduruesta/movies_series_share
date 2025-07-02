@@ -27,6 +27,8 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.focus.FocusManager
+import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
@@ -45,6 +47,7 @@ fun HomeSearchBar(
 ) {
     var searchQuery by rememberSaveable { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
 
     Row(
         modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
@@ -63,6 +66,7 @@ fun HomeSearchBar(
                 onSearch = {
                     mediaOpinionFormViewModel.searchMedia(searchQuery)
                     keyboardController?.hide()
+                    focusManager.clearFocus()
                     AnalyticsManager.trackMediaSearch(Firebase.analytics, searchQuery, 0) // El conteo se actualizará cuando lleguen los resultados
                 }
             )
@@ -71,6 +75,7 @@ fun HomeSearchBar(
         IconButton(
             onClick = {
                 keyboardController?.hide()
+                focusManager.clearFocus()
                 mediaOpinionFormViewModel.searchMedia(searchQuery)
                 AnalyticsManager.trackMediaSearch(Firebase.analytics, searchQuery, 0) // El conteo se actualizará cuando lleguen los resultados
             },

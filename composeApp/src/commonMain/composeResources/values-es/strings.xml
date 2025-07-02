@@ -4,7 +4,7 @@
     <string name="run">Run</string>
     <string name="stop">Stop</string>
     <string name="theme">Theme</string>
-    
+
     <!-- Opinion Form Strings -->
     <string name="new_opinion">Nueva Crítica</string>
     <string name="title_field">Nombre de Serie o Película</string>
@@ -50,7 +50,7 @@
     <string name="empty_list_message">No hay críticas disponibles. Crea tu primera crítica haciendo clic en el botón de abajo.</string>
     <string name="create_critic_button">Crear Crítica</string>
     <string name="opinion_count">%1$s (%2$s)</string>
-    
+
     <!-- Rating Strings -->
     <string name="rate_action">Calificar</string>
     <string name="rating_format">%s/10</string>
@@ -198,5 +198,6 @@
     <string name="content_description_rating">Puntuación</string>
     <string name="connection_error">Se perdió la conexión con el servidor. Inténtalo de nuevo.</string>
     <string name="retry">Reintentar</string>
+    <string name="no_content_available">No hay contenido disponible</string>
 
 </resources>

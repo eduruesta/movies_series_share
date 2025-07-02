@@ -81,6 +81,7 @@ import kotlinx.coroutines.launch
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.app_name
 import moviesseriesshare.composeapp.generated.resources.group_recommendations
+import moviesseriesshare.composeapp.generated.resources.no_content_available
 import moviesseriesshare.composeapp.generated.resources.see_all
 import moviesseriesshare.composeapp.generated.resources.top_movies
 import moviesseriesshare.composeapp.generated.resources.top_series
@@ -536,7 +537,6 @@ fun MediaCarouselSection(
                     SkeletonPosterCard()
                 }
             } else if (items.isEmpty()) {
-                // Mostrar mensaje cuando no hay elementos
                 item {
                     Box(
                         modifier = Modifier
@@ -545,7 +545,7 @@ fun MediaCarouselSection(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = "No hay contenido disponible",
+                            text = stringResource(Res.string.no_content_available),
                             style = MaterialTheme.typography.bodyMedium,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
                         )

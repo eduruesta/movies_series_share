@@ -8,9 +8,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -39,11 +36,13 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.bebi.watchit.analytics.AnalyticsManager
 import com.bebi.watchit.model.MediaOpinion
+import com.bebi.watchit.ui.components.Arrow_back
 import com.bebi.watchit.ui.components.ErrorScreen
 import com.bebi.watchit.ui.components.MediaOpinionItem
 import com.bebi.watchit.ui.components.RatingBottomSheet
 import com.bebi.watchit.ui.components.SearchTopAppBar
 import com.bebi.watchit.viewmodel.MediaOpinionViewModel
+import com.mohamedrejeb.calf.ui.progress.AdaptiveCircularProgressIndicator
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.analytics.analytics
 import dev.gitlive.firebase.auth.FirebaseUser
@@ -105,7 +104,7 @@ class AllGroupRecommendationsScreen : Screen {
                             )
                         }) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                imageVector = Arrow_back,
                                 contentDescription = stringResource(Res.string.back_button)
                             )
                         }
@@ -132,7 +131,7 @@ class AllGroupRecommendationsScreen : Screen {
             ) {
                 when {
                     uiState.isLoadingGroupCritics -> {
-                        CircularProgressIndicator(
+                        AdaptiveCircularProgressIndicator(
                             modifier = Modifier.align(Alignment.Center)
                         )
                     }

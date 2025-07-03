@@ -6,9 +6,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -35,9 +32,11 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.bebi.watchit.analytics.AnalyticsManager
+import com.bebi.watchit.ui.components.Arrow_back
 import com.bebi.watchit.ui.components.SavedRecommendationItem
 import com.bebi.watchit.ui.components.SearchTopAppBar
 import com.bebi.watchit.viewmodel.SavedRecommendationViewModel
+import com.mohamedrejeb.calf.ui.progress.AdaptiveCircularProgressIndicator
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.analytics.analytics
 import moviesseriesshare.composeapp.generated.resources.Res
@@ -110,7 +109,7 @@ class SavedRecommendationScreen : Screen {
                             )
                         }) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                imageVector = Arrow_back,
                                 contentDescription = "Volver atrás"
                             )
                         }
@@ -137,7 +136,7 @@ class SavedRecommendationScreen : Screen {
             ) {
                 when {
                     uiState.isLoading -> {
-                        CircularProgressIndicator(
+                        AdaptiveCircularProgressIndicator(
                             modifier = Modifier.align(Alignment.Center)
                         )
                     }

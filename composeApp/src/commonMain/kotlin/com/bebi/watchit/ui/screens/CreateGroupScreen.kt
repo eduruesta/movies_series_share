@@ -11,10 +11,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -43,7 +40,9 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.bebi.watchit.analytics.AnalyticsManager
+import com.bebi.watchit.ui.components.Arrow_back
 import com.bebi.watchit.viewmodel.GroupsViewModel
+import com.mohamedrejeb.calf.ui.progress.AdaptiveCircularProgressIndicator
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.analytics.analytics
 import moviesseriesshare.composeapp.generated.resources.Res
@@ -188,7 +187,7 @@ private fun CreateGroupContent(
                         )
                     }) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = Arrow_back,
                             contentDescription = stringResource(Res.string.back_button)
                         )
                     }
@@ -212,7 +211,7 @@ private fun CreateGroupContent(
                     modifier = Modifier.fillMaxSize(),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator()
+                    AdaptiveCircularProgressIndicator()
                 }
             } else {
                 Column(

@@ -16,18 +16,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -67,11 +60,15 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.bebi.watchit.analytics.AnalyticsManager
 import com.bebi.watchit.data.models.GroupResponse
+import com.bebi.watchit.ui.components.Arrow_back
+import com.bebi.watchit.ui.components.Email
 import com.bebi.watchit.ui.components.GoogleSignIn
+import com.bebi.watchit.ui.components.Person
 import com.bebi.watchit.ui.components.groupAdd
 import com.bebi.watchit.ui.components.passwordIcon
 import com.bebi.watchit.viewmodel.GroupsUiState
 import com.bebi.watchit.viewmodel.GroupsViewModel
+import com.mohamedrejeb.calf.ui.progress.AdaptiveCircularProgressIndicator
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.analytics.analytics
 import dev.gitlive.firebase.auth.FirebaseUser
@@ -81,7 +78,6 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.accept
-import moviesseriesshare.composeapp.generated.resources.add_new_comment
 import moviesseriesshare.composeapp.generated.resources.already_have_account
 import moviesseriesshare.composeapp.generated.resources.auth_error
 import moviesseriesshare.composeapp.generated.resources.auth_subtitle
@@ -89,8 +85,6 @@ import moviesseriesshare.composeapp.generated.resources.back_button
 import moviesseriesshare.composeapp.generated.resources.cancel
 import moviesseriesshare.composeapp.generated.resources.complete_fields
 import moviesseriesshare.composeapp.generated.resources.create_account
-import moviesseriesshare.composeapp.generated.resources.create_critic_button
-import moviesseriesshare.composeapp.generated.resources.create_group
 import moviesseriesshare.composeapp.generated.resources.create_group_button
 import moviesseriesshare.composeapp.generated.resources.create_your_first_group
 import moviesseriesshare.composeapp.generated.resources.dont_have_account
@@ -270,7 +264,7 @@ class GroupsScreen(private val deepLinkInviteCode: String? = null) : Screen {
                         navigationIcon = {
                             IconButton(onClick = { navigator.pop() }) {
                                 Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    imageVector = Arrow_back,
                                     contentDescription = stringResource(Res.string.back_button)
                                 )
                             }
@@ -321,7 +315,7 @@ class GroupsScreen(private val deepLinkInviteCode: String? = null) : Screen {
                                 modifier = Modifier.fillMaxWidth(),
                                 leadingIcon = {
                                     Icon(
-                                        imageVector = Icons.Default.Person,
+                                        imageVector = Person,
                                         contentDescription = null
                                     )
                                 },
@@ -338,7 +332,7 @@ class GroupsScreen(private val deepLinkInviteCode: String? = null) : Screen {
                             modifier = Modifier.fillMaxWidth(),
                             leadingIcon = {
                                 Icon(
-                                    imageVector = Icons.Default.Email,
+                                    imageVector = Email,
                                     contentDescription = null
                                 )
                             },
@@ -540,7 +534,7 @@ private fun GroupsTopBar(
         navigationIcon = {
             IconButton(onClick = { onBackClicked() }) {
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    imageVector = Arrow_back,
                     contentDescription = stringResource(Res.string.back_button)
                 )
             }
@@ -576,7 +570,7 @@ private fun GroupsContent(
     ) {
         when {
             uiState.isLoading -> {
-                CircularProgressIndicator()
+                AdaptiveCircularProgressIndicator()
             }
 
             uiState.groups.isEmpty() -> {

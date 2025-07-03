@@ -19,11 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -54,10 +50,13 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
 import com.bebi.watchit.analytics.AnalyticsManager
+import com.bebi.watchit.ui.components.Arrow_back
 import com.bebi.watchit.ui.components.SearchResultsDropdown
 import com.bebi.watchit.ui.components.StarRating
+import com.bebi.watchit.ui.components.searchIcon
 import com.bebi.watchit.viewmodel.MediaOpinionFormViewModel
 import com.bebi.watchit.viewmodel.MediaOpinionFormViewModel.SearchUiMessage
+import com.mohamedrejeb.calf.ui.progress.AdaptiveCircularProgressIndicator
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.analytics.analytics
 import dev.gitlive.firebase.auth.auth
@@ -126,7 +125,7 @@ data class OpinionFormScreen(val id: String? = null) : Screen {
                         navigationIcon = {
                             IconButton(onClick = { navigator.pop() }) {
                                 Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    imageVector = Arrow_back,
                                     contentDescription = stringResource(Res.string.back_button)
                                 )
                             }
@@ -185,14 +184,14 @@ data class OpinionFormScreen(val id: String? = null) : Screen {
                                     modifier = Modifier.size(24.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
-                                    CircularProgressIndicator(
+                                    AdaptiveCircularProgressIndicator(
                                         color = MaterialTheme.colorScheme.onPrimary,
                                         modifier = Modifier.size(24.dp)
                                     )
                                 }
                             } else {
                                 Icon(
-                                    imageVector = Icons.Default.Search,
+                                    imageVector = searchIcon,
                                     contentDescription = "Buscar",
                                     tint = MaterialTheme.colorScheme.onPrimary
                                 )
@@ -356,7 +355,7 @@ data class OpinionFormScreen(val id: String? = null) : Screen {
                         .clickable(enabled = false) { /* Prevenir clics */ },
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(
+                    AdaptiveCircularProgressIndicator(
                         modifier = Modifier.size(100.dp),
                         color = MaterialTheme.colorScheme.primary
                     )

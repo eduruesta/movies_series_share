@@ -5,9 +5,6 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -46,7 +43,7 @@ fun StarRating(
             }
             
             Icon(
-                imageVector = if (isFilled) Icons.Filled.Star else Icons.Outlined.Star,
+                imageVector = if (isFilled) StarFilled else Star,
                 contentDescription = "Star $i",
                 tint = if (isFilled) Color(0xFFFFD700) else Color.Gray,
                 modifier = starModifier

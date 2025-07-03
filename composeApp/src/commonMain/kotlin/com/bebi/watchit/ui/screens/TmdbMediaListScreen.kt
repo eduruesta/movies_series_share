@@ -10,9 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -42,6 +39,7 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import com.bebi.watchit.data.remote.model.TmdbMediaItem
 import com.bebi.watchit.data.repository.TmdbRepository
 import com.bebi.watchit.model.MediaOpinion
+import com.bebi.watchit.ui.components.Arrow_back
 import com.bebi.watchit.ui.components.ErrorScreen
 import com.bebi.watchit.ui.components.MediaOpinionItem
 import com.bebi.watchit.ui.components.RatingBottomSheet
@@ -52,6 +50,7 @@ import com.bebi.watchit.viewmodel.TopSeriesViewModel
 import com.bebi.watchit.viewmodel.TrendingMoviesViewModel
 import com.bebi.watchit.viewmodel.TrendingSeriesViewModel
 import com.bebi.watchit.viewmodel.UpcomingMoviesViewModel
+import com.mohamedrejeb.calf.ui.progress.AdaptiveCircularProgressIndicator
 import kotlinx.coroutines.launch
 import moviesseriesshare.composeapp.generated.resources.Res
 import moviesseriesshare.composeapp.generated.resources.back_button
@@ -104,7 +103,7 @@ abstract class TmdbMediaListScreen : Screen {
                     navigationIcon = {
                         IconButton(onClick = { navigator.pop() }) {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                imageVector = Arrow_back,
                                 contentDescription = stringResource(Res.string.back_button)
                             )
                         }
@@ -127,7 +126,7 @@ abstract class TmdbMediaListScreen : Screen {
             ) {
                 when {
                     uiState.isLoading -> {
-                        CircularProgressIndicator(
+                        AdaptiveCircularProgressIndicator(
                             modifier = Modifier.align(Alignment.Center)
                         )
                     }
@@ -219,7 +218,7 @@ abstract class TmdbMediaListScreen : Screen {
                                             .padding(8.dp),
                                         contentAlignment = Alignment.Center
                                     ) {
-                                        CircularProgressIndicator(
+                                        AdaptiveCircularProgressIndicator(
                                             modifier = Modifier.size(24.dp)
                                         )
                                     }

@@ -18,19 +18,12 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Delete
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.rounded.Share
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -52,8 +45,6 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -68,16 +59,20 @@ import com.bebi.watchit.analytics.AnalyticsManager
 import com.bebi.watchit.data.models.GroupResponse
 import com.bebi.watchit.model.MediaOpinion
 import com.bebi.watchit.rememberShareManager
+import com.bebi.watchit.ui.components.Arrow_back
+import com.bebi.watchit.ui.components.Delete
 import com.bebi.watchit.ui.components.ErrorScreen
-import com.bebi.watchit.ui.components.Info
 import com.bebi.watchit.ui.components.MediaOpinionItem
+import com.bebi.watchit.ui.components.Person
 import com.bebi.watchit.ui.components.RatingBottomSheet
+import com.bebi.watchit.ui.components.Share
 import com.bebi.watchit.ui.components.ThreeDots
 import com.bebi.watchit.viewmodel.GroupDetailUiState
 import com.bebi.watchit.viewmodel.GroupDetailViewModel
 import com.bebi.watchit.viewmodel.GroupsViewModel
 import com.bebi.watchit.viewmodel.MediaOpinionFormViewModel
 import com.bebi.watchit.viewmodel.MediaOpinionViewModel
+import com.mohamedrejeb.calf.ui.progress.AdaptiveCircularProgressIndicator
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.analytics.analytics
 import dev.gitlive.firebase.auth.FirebaseUser
@@ -85,7 +80,6 @@ import dev.gitlive.firebase.auth.auth
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import moviesseriesshare.composeapp.generated.resources.Res
-import moviesseriesshare.composeapp.generated.resources.add_new_comment
 import moviesseriesshare.composeapp.generated.resources.back_button
 import moviesseriesshare.composeapp.generated.resources.cancel_button
 import moviesseriesshare.composeapp.generated.resources.close
@@ -237,7 +231,7 @@ fun GroupOpinionListScreen(
                 navigationIcon = {
                     IconButton(onClick = onBackPressed) {
                         Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            imageVector = Arrow_back,
                             contentDescription = stringResource(Res.string.back_button)
                         )
                     }
@@ -282,7 +276,7 @@ fun GroupOpinionListScreen(
             ) {
                 when {
                     uiState.isLoading -> {
-                        CircularProgressIndicator(
+                        AdaptiveCircularProgressIndicator(
                             modifier = Modifier.align(Alignment.Center)
                         )
                     }
@@ -543,7 +537,7 @@ private fun GroupInfoBottomSheet(
                             }
                         ) {
                             Icon(
-                                imageVector = Icons.Rounded.Share,
+                                imageVector = Share,
                                 contentDescription = stringResource(Res.string.copy_code)
                             )
                         }
@@ -586,7 +580,7 @@ private fun GroupInfoBottomSheet(
                                 ) {
                                     Box(contentAlignment = Alignment.Center) {
                                         Icon(
-                                            imageVector = Icons.Default.Person,
+                                            imageVector = Person,
                                             contentDescription = null,
                                             tint = MaterialTheme.colorScheme.onPrimary,
                                             modifier = Modifier.size(20.dp)
@@ -640,7 +634,7 @@ private fun GroupInfoBottomSheet(
                             horizontalArrangement = Arrangement.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Delete,
+                                imageVector = Delete,
                                 contentDescription = null
                             )
                             Spacer(modifier = Modifier.width(8.dp))

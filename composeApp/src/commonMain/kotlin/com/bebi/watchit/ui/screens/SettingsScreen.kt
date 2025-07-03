@@ -10,21 +10,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
@@ -46,7 +40,11 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.bebi.watchit.analytics.AnalyticsManager
 import com.bebi.watchit.theme.LocalThemeIsDark
+import com.bebi.watchit.ui.components.Arrow_back
+import com.bebi.watchit.ui.components.Email
+import com.bebi.watchit.ui.components.Person
 import com.bebi.watchit.ui.components.logout
+import com.mohamedrejeb.calf.ui.progress.AdaptiveCircularProgressIndicator
 import dev.burnoo.compose.remembersetting.rememberStringSetting
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.analytics.analytics
@@ -99,7 +97,7 @@ class SettingsScreen : Screen {
                                 )
                             }) {
                                 Icon(
-                                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                                    imageVector = Arrow_back,
                                     contentDescription = stringResource(Res.string.back_button)
                                 )
                             }
@@ -159,7 +157,7 @@ class SettingsScreen : Screen {
                     }
 
                     if (isLoading) {
-                        CircularProgressIndicator(
+                        AdaptiveCircularProgressIndicator(
                             modifier = Modifier.align(Alignment.Center)
                         )
 
@@ -204,7 +202,7 @@ private fun ProfileSection(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    imageVector = Icons.Default.Email,
+                    imageVector = Email,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )
@@ -224,7 +222,7 @@ private fun ProfileSection(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Icon(
-                    imageVector = Icons.Default.Person,
+                    imageVector = Person,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )

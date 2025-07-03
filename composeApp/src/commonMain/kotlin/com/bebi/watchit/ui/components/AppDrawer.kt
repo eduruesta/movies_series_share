@@ -9,10 +9,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -98,7 +94,7 @@ fun AppDrawerContent(
             NavigationDrawerItem(
                 icon = {
                     Icon(
-                        Icons.Default.Person,
+                        Person,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary
                     )
@@ -123,7 +119,7 @@ fun AppDrawerContent(
             NavigationDrawerItem(
                 icon = {
                     Icon(
-                        Icons.Default.Star,
+                        Star,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary
                     )
@@ -139,7 +135,7 @@ fun AppDrawerContent(
             NavigationDrawerItem(
                 icon = {
                     Icon(
-                        Icons.Default.Star,
+                        Star,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary
                     )
@@ -164,7 +160,7 @@ fun AppDrawerContent(
             NavigationDrawerItem(
                 icon = {
                     Icon(
-                        Icons.Default.Star,
+                        Star,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary
                     )
@@ -180,7 +176,7 @@ fun AppDrawerContent(
             NavigationDrawerItem(
                 icon = {
                     Icon(
-                        Icons.Default.Star,
+                        Star,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary
                     )
@@ -196,7 +192,7 @@ fun AppDrawerContent(
             NavigationDrawerItem(
                 icon = {
                     Icon(
-                        Icons.Default.Star,
+                        Star,
                         contentDescription = null,
                         tint = MaterialTheme.colorScheme.primary
                     )
@@ -216,7 +212,7 @@ fun AppDrawerContent(
         NavigationDrawerItem(
             icon = {
                 Icon(
-                    Icons.Default.Settings,
+                    Settings,
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.primary
                 )

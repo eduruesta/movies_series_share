@@ -24,16 +24,10 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
@@ -72,7 +66,10 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import coil3.compose.AsyncImage
 import com.bebi.watchit.model.MediaOpinion
 import com.bebi.watchit.model.SavedRecommendation
+import com.bebi.watchit.ui.components.Add
+import com.bebi.watchit.ui.components.Arrow_back
 import com.bebi.watchit.ui.components.ErrorScreen
+import com.bebi.watchit.ui.components.Person
 import com.bebi.watchit.ui.components.StarRating
 import com.bebi.watchit.ui.components.bookmark
 import com.bebi.watchit.ui.components.bookmarkCheck
@@ -80,6 +77,7 @@ import com.bebi.watchit.ui.util.formatWithOneDecimal
 import com.bebi.watchit.viewmodel.MediaDetailViewModel
 import com.bebi.watchit.viewmodel.RecommendationMessage
 import com.bebi.watchit.viewmodel.SavedRecommendationViewModel
+import com.mohamedrejeb.calf.ui.progress.AdaptiveCircularProgressIndicator
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import moviesseriesshare.composeapp.generated.resources.Res
@@ -90,8 +88,6 @@ import moviesseriesshare.composeapp.generated.resources.cast
 import moviesseriesshare.composeapp.generated.resources.comment_label
 import moviesseriesshare.composeapp.generated.resources.comments
 import moviesseriesshare.composeapp.generated.resources.delete_from_recommendations
-import moviesseriesshare.composeapp.generated.resources.username_placeholder
-import moviesseriesshare.composeapp.generated.resources.username_required
 import moviesseriesshare.composeapp.generated.resources.loading_cast
 import moviesseriesshare.composeapp.generated.resources.loading_cast_issue
 import moviesseriesshare.composeapp.generated.resources.loading_details
@@ -100,7 +96,6 @@ import moviesseriesshare.composeapp.generated.resources.loading_recommendation_i
 import moviesseriesshare.composeapp.generated.resources.loading_title
 import moviesseriesshare.composeapp.generated.resources.media_list_title
 import moviesseriesshare.composeapp.generated.resources.opinion_count
-import moviesseriesshare.composeapp.generated.resources.username_field
 import moviesseriesshare.composeapp.generated.resources.recommendation_already_saved
 import moviesseriesshare.composeapp.generated.resources.recommendation_not_saved
 import moviesseriesshare.composeapp.generated.resources.recommendation_remove_error
@@ -110,6 +105,9 @@ import moviesseriesshare.composeapp.generated.resources.recommendation_saved
 import moviesseriesshare.composeapp.generated.resources.save
 import moviesseriesshare.composeapp.generated.resources.save_to_recommendations
 import moviesseriesshare.composeapp.generated.resources.synopsis_field
+import moviesseriesshare.composeapp.generated.resources.username_field
+import moviesseriesshare.composeapp.generated.resources.username_placeholder
+import moviesseriesshare.composeapp.generated.resources.username_required
 import moviesseriesshare.composeapp.generated.resources.without_comment
 import moviesseriesshare.composeapp.generated.resources.write_your_comment
 import org.jetbrains.compose.resources.InternalResourceApi
@@ -322,7 +320,7 @@ data class MediaDetailScreen(
                     navigationIcon = {
                         IconButton(onClick = { navigator.pop() }) {
                             Icon(
-                                imageVector = Icons.Default.ArrowBack,
+                                imageVector = Arrow_back,
                                 contentDescription = stringResource(Res.string.back_button)
                             )
                         }
@@ -343,7 +341,7 @@ data class MediaDetailScreen(
                         horizontalAlignment = Alignment.CenterHorizontally,
                         verticalArrangement = Arrangement.Center
                     ) {
-                        CircularProgressIndicator()
+                        AdaptiveCircularProgressIndicator()
                         Spacer(modifier = Modifier.height(16.dp))
                         Text(stringResource(Res.string.loading_details))
                     }
@@ -447,7 +445,7 @@ data class MediaDetailScreen(
                                                     verticalAlignment = Alignment.CenterVertically
                                                 ) {
                                                     Icon(
-                                                        imageVector = Icons.Default.Person,
+                                                        imageVector = Person,
                                                         contentDescription = null,
                                                         tint = MaterialTheme.colorScheme.primary,
                                                         modifier = Modifier.size(16.dp)
@@ -621,7 +619,7 @@ data class MediaDetailScreen(
                                                     horizontalAlignment = Alignment.CenterHorizontally,
                                                     verticalArrangement = Arrangement.spacedBy(8.dp)
                                                 ) {
-                                                    CircularProgressIndicator()
+                                                    AdaptiveCircularProgressIndicator()
                                                     Text(
                                                         text = stringResource(Res.string.loading_cast),
                                                         style = MaterialTheme.typography.bodyLarge
@@ -675,7 +673,7 @@ data class MediaDetailScreen(
                                                                     contentAlignment = Alignment.Center
                                                                 ) {
                                                                     Icon(
-                                                                        imageVector = Icons.Default.Person,
+                                                                        imageVector = Person,
                                                                         contentDescription = null,
                                                                         tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                                                         modifier = Modifier.size(32.dp)
@@ -720,7 +718,7 @@ data class MediaDetailScreen(
                                                     horizontalAlignment = Alignment.CenterHorizontally,
                                                     verticalArrangement = Arrangement.spacedBy(8.dp)
                                                 ) {
-                                                    CircularProgressIndicator()
+                                                    AdaptiveCircularProgressIndicator()
                                                     Text(
                                                         text = stringResource(Res.string.loading_recommendation),
                                                         style = MaterialTheme.typography.bodyLarge
@@ -952,7 +950,7 @@ data class MediaDetailScreen(
                                                 modifier = Modifier.align(Alignment.CenterHorizontally)
                                             ) {
                                                 Icon(
-                                                    imageVector = Icons.Default.Add,
+                                                    imageVector = Add,
                                                     contentDescription = null,
                                                     modifier = Modifier.padding(end = 8.dp)
                                                 )

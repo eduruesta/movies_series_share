@@ -1,8 +1,9 @@
 [versions]
 
+calf = "0.8.0"
 kmpauthFirebase = "2.3.1"
 kotlin = "2.1.21"
-compose = "1.8.0-beta01"
+compose = "1.8.0"
 agp = "8.6.0"
 androidx-activityCompose = "1.10.1"
 androidx-uiTest = "1.7.8"
@@ -11,7 +12,7 @@ kotlinx-serialization = "1.8.0"
 koin = "4.0.3"
 coil = "3.1.0"
 room = "2.7.0"
-ksp = "2.1.20-1.0.32"
+ksp = "2.1.21-2.0.1"
 buildConfig = "5.4.0"
 androidx-lifeCycle = "2.8.0"
 voyager = "1.1.0-beta03"
@@ -79,6 +80,12 @@ remember-settings = { module = "dev.burnoo:compose-remember-setting", version.re
 androidx-ui-android = { group = "androidx.compose.ui", name = "ui-android", version.ref = "uiAndroid" }
 
 napier = { module = "io.github.aakira:napier", version.ref = "napier" }
+
+# Calf - Compose Adaptive Look & Feel
+calf-ui = { module = "com.mohamedrejeb.calf:calf-ui", version.ref = "calf" }
+calf-file-picker = { module = "com.mohamedrejeb.calf:calf-file-picker", version.ref = "calf" }
+calf-permissions = { module = "com.mohamedrejeb.calf:calf-permissions", version.ref = "calf" }
+calf-webview = { module = "com.mohamedrejeb.calf:calf-webview", version.ref = "calf" }
 
 
 

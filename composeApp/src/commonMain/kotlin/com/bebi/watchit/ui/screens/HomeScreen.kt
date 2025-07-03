@@ -21,12 +21,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -63,8 +59,10 @@ import coil3.compose.AsyncImage
 import com.bebi.watchit.analytics.AnalyticsManager
 import com.bebi.watchit.model.MediaOpinion
 import com.bebi.watchit.ui.components.AppDrawerContent
+import com.bebi.watchit.ui.components.Arrow_forward
 import com.bebi.watchit.ui.components.ErrorScreen
 import com.bebi.watchit.ui.components.HomeSearchBar
+import com.bebi.watchit.ui.components.Menu
 import com.bebi.watchit.ui.components.SearchResultsDropdown
 import com.bebi.watchit.ui.components.SkeletonPosterCard
 import com.bebi.watchit.viewmodel.MediaOpinionFormViewModel
@@ -74,6 +72,7 @@ import com.bebi.watchit.viewmodel.TopSeriesViewModel
 import com.bebi.watchit.viewmodel.TrendingMoviesViewModel
 import com.bebi.watchit.viewmodel.TrendingSeriesViewModel
 import com.bebi.watchit.viewmodel.UpcomingMoviesViewModel
+import com.mohamedrejeb.calf.ui.progress.AdaptiveCircularProgressIndicator
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.analytics.analytics
 import dev.gitlive.firebase.auth.auth
@@ -255,7 +254,7 @@ class HomeScreen : Screen {
                             }
                         }) {
                             Icon(
-                                imageVector = Icons.Default.Menu,
+                                imageVector = Menu,
                                 contentDescription = "Menu"
                             )
                         }
@@ -282,7 +281,7 @@ class HomeScreen : Screen {
                                 .zIndex(1f),
                             contentAlignment = Alignment.Center
                         ) {
-                            CircularProgressIndicator(
+                            AdaptiveCircularProgressIndicator(
                                 modifier = Modifier.size(48.dp)
                             )
                         }
@@ -520,7 +519,7 @@ fun MediaCarouselSection(
                     style = MaterialTheme.typography.bodyMedium
                 )
                 Icon(
-                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
+                    imageVector = Arrow_forward,
                     contentDescription = null,
                     modifier = Modifier.size(24.dp)
                 )

@@ -11,11 +11,6 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.filled.Menu
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -125,7 +120,7 @@ fun SearchTopAppBar(
                                 }
                             }) {
                                 Icon(
-                                    imageVector = if (isSearchActive) Icons.AutoMirrored.Filled.ArrowBack else Icons.Default.Menu,
+                                    imageVector = if (isSearchActive) Arrow_back else Menu,
                                     contentDescription = if (isSearchActive) "Cerrar búsqueda" else "Abrir menú"
                                 )
                             }
@@ -139,7 +134,7 @@ fun SearchTopAppBar(
                                     }
                                 ) {
                                     Icon(
-                                        imageVector = Icons.Default.Close,
+                                        imageVector = Close,
                                         contentDescription = "Limpiar búsqueda"
                                     )
                                 }
@@ -167,7 +162,7 @@ fun SearchTopAppBar(
                     isSearchActive = true
                 }) {
                     Icon(
-                        imageVector = Icons.Default.Search,
+                        imageVector = searchIcon,
                         contentDescription = "Buscar"
                     )
                 }
@@ -182,7 +177,7 @@ fun SearchTopAppBar(
                     enabled = searchQuery.text.isNotEmpty()
                 ) {
                     Icon(
-                        imageVector = Icons.Default.Search,
+                        imageVector = searchIcon,
                         contentDescription = "Buscar",
                         tint = if (searchQuery.text.isEmpty())
                             MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f)

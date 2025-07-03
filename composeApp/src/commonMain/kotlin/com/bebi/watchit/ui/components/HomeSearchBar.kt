@@ -11,9 +11,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Search
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -27,13 +24,13 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.focus.FocusManager
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.bebi.watchit.analytics.AnalyticsManager
 import com.bebi.watchit.viewmodel.MediaOpinionFormViewModel
+import com.mohamedrejeb.calf.ui.progress.AdaptiveCircularProgressIndicator
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.analytics.analytics
 import moviesseriesshare.composeapp.generated.resources.Res
@@ -44,7 +41,7 @@ import org.jetbrains.compose.resources.stringResource
 @Composable
 fun HomeSearchBar(
     mediaOpinionFormViewModel: MediaOpinionFormViewModel
-) {
+    ) {
     var searchQuery by rememberSaveable { mutableStateOf("") }
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
@@ -90,14 +87,14 @@ fun HomeSearchBar(
                     modifier = Modifier.size(24.dp),
                     contentAlignment = Alignment.Center
                 ) {
-                    CircularProgressIndicator(
+                    AdaptiveCircularProgressIndicator(
                         color = MaterialTheme.colorScheme.onPrimary,
                         modifier = Modifier.size(24.dp)
                     )
                 }
             } else {
                 Icon(
-                    imageVector = Icons.Default.Search,
+                    imageVector = searchIcon,
                     contentDescription = "Buscar",
                     tint = MaterialTheme.colorScheme.onPrimary
                 )

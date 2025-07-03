@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
-import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
@@ -28,10 +27,10 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.bebi.watchit.model.MediaOpinion
+import com.mohamedrejeb.calf.ui.progress.AdaptiveCircularProgressIndicator
 import moviesseriesshare.composeapp.generated.resources.Res
-import moviesseriesshare.composeapp.generated.resources.rate_action
 import moviesseriesshare.composeapp.generated.resources.qualifying
-
+import moviesseriesshare.composeapp.generated.resources.rate_action
 import org.jetbrains.compose.resources.stringResource
 
 /**
@@ -112,7 +111,7 @@ fun RatingBottomSheet(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.Center
                     ) {
-                        CircularProgressIndicator(
+                        AdaptiveCircularProgressIndicator(
                             modifier = Modifier.size(18.dp),
                             strokeWidth = 2.dp,
                             color = MaterialTheme.colorScheme.onPrimary

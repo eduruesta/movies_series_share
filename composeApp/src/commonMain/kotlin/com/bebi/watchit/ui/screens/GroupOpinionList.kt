@@ -18,7 +18,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -72,6 +71,8 @@ import com.bebi.watchit.viewmodel.GroupDetailViewModel
 import com.bebi.watchit.viewmodel.GroupsViewModel
 import com.bebi.watchit.viewmodel.MediaOpinionFormViewModel
 import com.bebi.watchit.viewmodel.MediaOpinionViewModel
+import com.mohamedrejeb.calf.ui.dialog.AdaptiveAlertDialog
+import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosStyle
 import com.mohamedrejeb.calf.ui.progress.AdaptiveCircularProgressIndicator
 import dev.gitlive.firebase.Firebase
 import dev.gitlive.firebase.analytics.analytics
@@ -662,66 +663,42 @@ private fun GroupInfoBottomSheet(
     }
 
     if (showDeleteConfirmation) {
-        AlertDialog(
-            onDismissRequest = { showDeleteConfirmation = false },
-            title = { Text(stringResource(Res.string.delete_group)) },
-            text = {
-                Text(stringResource(Res.string.delete_group_confirmation))
+        AdaptiveAlertDialog(
+            onConfirm = {
+                onDeleteGroup()
+                showDeleteConfirmation = false
+                onDismiss()
             },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        onDeleteGroup()
-                        showDeleteConfirmation = false
-                        onDismiss()
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error
-                    )
-                ) {
-                    Text(stringResource(Res.string.delete_button))
-                }
-            },
-            dismissButton = {
-                OutlinedButton(onClick = { showDeleteConfirmation = false }) {
-                    Text(stringResource(Res.string.cancel_button))
-                }
-            }
+            onDismiss = { showDeleteConfirmation = false },
+            title = stringResource(Res.string.delete_group),
+            text = stringResource(Res.string.delete_group_confirmation),
+            confirmText = stringResource(Res.string.delete_button),
+            dismissText = stringResource(Res.string.cancel_button),
+            iosDialogStyle = AlertDialogIosStyle.Alert
         )
     }
 
     if (showLeaveConfirmation) {
-        AlertDialog(
-            onDismissRequest = { showLeaveConfirmation = false },
-            title = { Text(stringResource(Res.string.leave_group_title)) },
-            text = {
-                Text(
-                    if (isOwner)
-                        stringResource(Res.string.leave_group_owner_message)
-                    else stringResource(Res.string.leave_group_confirmation)
-                )
+        AdaptiveAlertDialog(
+            onDismiss = { showLeaveConfirmation = false },
+            title = stringResource(Res.string.leave_group_title),
+            text =
+                if (isOwner)
+                    stringResource(Res.string.leave_group_owner_message)
+                else stringResource(Res.string.leave_group_confirmation),
+            onConfirm = {
+
+                onLeaveGroup()
+                showLeaveConfirmation = false
             },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        onLeaveGroup()
-                        showLeaveConfirmation = false
-                        onDismiss()
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.errorContainer
-                    )
-                ) {
-                    Text(stringResource(Res.string.leave_button))
-                }
-            },
-            dismissButton = {
-                OutlinedButton(onClick = { showLeaveConfirmation = false }) {
-                    Text(stringResource(Res.string.cancel_button))
-                }
-            }
+
+            confirmText = stringResource(Res.string.leave_button),
+            dismissText = stringResource(Res.string.cancel_button),
+            iosDialogStyle = AlertDialogIosStyle.Alert
         )
+
     }
+
 }
 
 @Composable

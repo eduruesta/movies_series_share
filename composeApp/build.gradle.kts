@@ -31,6 +31,7 @@ kotlin {
         it.binaries.framework {
             baseName = "ComposeApp"
             isStatic = true
+            export(libs.calf.ui)
         }
     }
 
@@ -74,8 +75,7 @@ kotlin {
 
             implementation(libs.napier)
 
-            // Calf - Compose Adaptive Look & Feel
-            implementation("com.mohamedrejeb.calf:calf-ui:${libs.versions.calf.get()}")
+            api(libs.calf.ui)
             implementation("com.mohamedrejeb.calf:calf-file-picker:${libs.versions.calf.get()}")
             implementation("com.mohamedrejeb.calf:calf-permissions:${libs.versions.calf.get()}")
             implementation("com.mohamedrejeb.calf:calf-webview:${libs.versions.calf.get()}")

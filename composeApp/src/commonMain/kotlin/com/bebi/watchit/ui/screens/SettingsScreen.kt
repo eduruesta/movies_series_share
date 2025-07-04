@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalCalfUiApi::class)
+
 package com.bebi.watchit.ui.screens
 
 import androidx.compose.foundation.layout.Box
@@ -10,9 +12,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.selection.selectable
-import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -44,6 +43,9 @@ import com.bebi.watchit.ui.components.Arrow_back
 import com.bebi.watchit.ui.components.Email
 import com.bebi.watchit.ui.components.Person
 import com.bebi.watchit.ui.components.logout
+import com.mohamedrejeb.calf.ui.ExperimentalCalfUiApi
+import com.mohamedrejeb.calf.ui.dialog.AdaptiveAlertDialog
+import com.mohamedrejeb.calf.ui.dialog.uikit.AlertDialogIosStyle
 import com.mohamedrejeb.calf.ui.progress.AdaptiveCircularProgressIndicator
 import dev.burnoo.compose.remembersetting.rememberStringSetting
 import dev.gitlive.firebase.Firebase
@@ -80,14 +82,14 @@ class SettingsScreen : Screen {
 
         // Trackear vista de pantalla
         AnalyticsManager.trackScreenView(Firebase.analytics, "Settings Screen")
-        
+
         androidx.compose.runtime.key(refreshTrigger) {
             Scaffold(
                 topBar = {
                     TopAppBar(
                         title = { Text(stringResource(Res.string.settings)) },
                         navigationIcon = {
-                            IconButton(onClick = { 
+                            IconButton(onClick = {
                                 navigator.pop()
                                 // Trackear clic en botón de navegación
                                 AnalyticsManager.trackUiElementClick(
@@ -126,15 +128,15 @@ class SettingsScreen : Screen {
                                     email = firebaseUser?.email ?: "",
                                     username = firebaseUser?.displayName ?: ""
                                 )
-                                
+
                                 Spacer(modifier = Modifier.height(24.dp))
                             }
-                            
+
                             ThemeSection()
-                            
+
                             if (firebaseUser != null) {
                                 Spacer(modifier = Modifier.height(24.dp))
-                                
+
                                 LogoutSection(
                                     onLogout = {
                                         scope.launch {
@@ -206,17 +208,17 @@ private fun ProfileSection(
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )
-                
+
                 Spacer(modifier = Modifier.width(16.dp))
-                
+
                 Text(
                     text = email,
                     style = MaterialTheme.typography.bodyLarge
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(16.dp))
-            
+
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 modifier = Modifier.fillMaxWidth()
@@ -226,9 +228,9 @@ private fun ProfileSection(
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onPrimaryContainer
                 )
-                
+
                 Spacer(modifier = Modifier.width(16.dp))
-                
+
                 Text(
                     text = if (username.isNotEmpty()) username else email.substringBefore("@"),
                     style = MaterialTheme.typography.bodyLarge
@@ -242,13 +244,13 @@ private fun ProfileSection(
 private fun ThemeSection() {
     val isDarkTheme = LocalThemeIsDark.current
     val isDark by isDarkTheme
-    
+
     // Add persistent setting for dark mode
     var savedIsDark by rememberStringSetting(
         key = "savedIsDarkMode",
         defaultValue = isDark.toString()
     )
-    
+
     // Apply saved setting when component is launched
     LaunchedEffect(Unit) {
         val darkModeSetting = savedIsDark.toBoolean()
@@ -288,7 +290,7 @@ private fun ThemeSection() {
 
             Switch(
                 checked = isDark,
-                onCheckedChange = { 
+                onCheckedChange = {
                     isDarkTheme.value = it
                     savedIsDark = it.toString()
                     // Trackear cambio de tema
@@ -353,47 +355,18 @@ private fun LogoutSection(
     }
 
     if (showLogoutDialog) {
-        AlertDialog(
-            onDismissRequest = { showLogoutDialog = false },
-            title = {
-                Text(stringResource(Res.string.logout))
+        AdaptiveAlertDialog(
+            onDismiss = { showLogoutDialog = false },
+            title = stringResource(Res.string.logout),
+            text = stringResource(Res.string.logout_confirmation),
+            onConfirm = {
+                showLogoutDialog = false
+                onLogout()
             },
-            text = {
-                Text(stringResource(Res.string.logout_confirmation))
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        showLogoutDialog = false
-                        onLogout()
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.error,
-                        contentColor = MaterialTheme.colorScheme.onError
-                    )
-                ) {
-                    Text(stringResource(Res.string.confirm))
-                }
-            },
-            dismissButton = {
-                Button(
-                    onClick = { 
-                        showLogoutDialog = false 
-                        // Trackear cancelación de cierre de sesión
-                        AnalyticsManager.trackUiElementClick(
-                            Firebase.analytics,
-                            elementName = "cancel_logout",
-                            screenName = "Settings Screen"
-                        )
-                    },
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceVariant,
-                        contentColor = MaterialTheme.colorScheme.onSurfaceVariant
-                    )
-                ) {
-                    Text(stringResource(Res.string.cancel))
-                }
-            }
+
+            confirmText = stringResource(Res.string.confirm),
+            dismissText = stringResource(Res.string.cancel),
+            iosDialogStyle = AlertDialogIosStyle.Alert
         )
     }
 }

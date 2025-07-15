@@ -68,8 +68,12 @@ import com.bebi.watchit.model.MediaOpinion
 import com.bebi.watchit.model.SavedRecommendation
 import com.bebi.watchit.ui.components.Add
 import com.bebi.watchit.ui.components.Arrow_back
+import com.bebi.watchit.ui.components.CastSection
+import com.bebi.watchit.ui.components.CommentsSection
 import com.bebi.watchit.ui.components.ErrorScreen
+import com.bebi.watchit.ui.components.MediaInfoSection
 import com.bebi.watchit.ui.components.Person
+import com.bebi.watchit.ui.components.RecommendationsSection
 import com.bebi.watchit.ui.components.StarRating
 import com.bebi.watchit.ui.components.bookmark
 import com.bebi.watchit.ui.components.bookmarkCheck
@@ -385,165 +389,43 @@ data class MediaDetailScreen(
 
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
-
-                            Text(
-                                text = opinion.title,
-                                style = MaterialTheme.typography.headlineMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                StarRating(
-                                    rating = opinion.averageRating,
-                                    maxRating = 1,
-                                )
-                                val ratingText = if (opinion.ratingCount > 0) {
-                                    val formattedRating =
-                                        opinion.averageRating.formatWithOneDecimal()
-                                    stringResource(
-                                        Res.string.opinion_count,
-                                        formattedRating,
-                                        opinion.ratingCount.toString()
+                        MediaInfoSection(
+                            opinion = opinion,
+                            isSaved = isSaved,
+                            onBookmarkClick = {
+                                if (isSaved) {
+                                    val recommendation = SavedRecommendation(
+                                        opinionId = opinion.id,
+                                        title = opinion.title,
+                                        posterUrl = opinion.posterUrl,
+                                        rating = opinion.averageRating,
+                                        genre = opinion.genre,
+                                        backdropUrl = opinion.backdropUrl,
+                                        overview = opinion.synopsis,
+                                        platform = opinion.platform
                                     )
+                                    savedViewModel.removeRecommendation(
+                                        recommendation = recommendation
+                                    ) { message ->
+                                        if (message is RecommendationMessage.Removed) {
+                                            isSaved = false
+                                        }
+                                        lastRecommendationMessage = message
+                                    }
                                 } else {
-                                    "${opinion.rating}"
-                                }
-
-                                Text(
-                                    text = ratingText,
-                                    style = MaterialTheme.typography.bodyMedium
-                                )
-
-                                if (opinion.year.isNotEmpty()) {
-                                    Row(
-                                        verticalAlignment = Alignment.CenterVertically
-                                    ) {
-                                        FilledTonalButton(
-                                            onClick = { },
-                                            modifier = Modifier.height(32.dp).padding(start = 8.dp),
-                                            contentPadding = PaddingValues(horizontal = 8.dp)
-                                        ) {
-                                            Text(
-                                                extractYearFromDate(opinion.year),
-                                                style = MaterialTheme.typography.labelMedium
-                                            )
+                                    savedViewModel.saveRecommendation(
+                                        opinion = opinion
+                                    ) { message ->
+                                        if (message is RecommendationMessage.Saved) {
+                                            isSaved = true
                                         }
-
-                                        if (!opinion.username.isNullOrEmpty()) {
-                                            FilledTonalButton(
-                                                onClick = { },
-                                                modifier = Modifier.height(32.dp)
-                                                    .padding(start = 8.dp),
-                                                contentPadding = PaddingValues(
-                                                    horizontal = 8.dp,
-                                                )
-                                            ) {
-                                                Row(
-                                                    verticalAlignment = Alignment.CenterVertically
-                                                ) {
-                                                    Icon(
-                                                        imageVector = Person,
-                                                        contentDescription = null,
-                                                        tint = MaterialTheme.colorScheme.primary,
-                                                        modifier = Modifier.size(16.dp)
-                                                    )
-                                                    Spacer(modifier = Modifier.width(4.dp))
-                                                    Text(
-                                                        text = opinion.username,
-                                                        style = MaterialTheme.typography.labelMedium,
-                                                        color = MaterialTheme.colorScheme.primary
-                                                    )
-                                                }
-                                            }
-                                        }
-
-                                        // Icono de bookmark
-                                        Icon(
-                                            imageVector = if (isSaved) bookmarkCheck else bookmark,
-                                            contentDescription = if (isSaved)
-                                                stringResource(Res.string.delete_from_recommendations) else
-                                                stringResource(Res.string.save_to_recommendations),
-                                            tint = MaterialTheme.colorScheme.primary,
-                                            modifier = Modifier
-                                                .size(40.dp)
-                                                .padding(start = 8.dp)
-                                                .clickable {
-                                                    if (isSaved) {
-                                                        val recommendation = SavedRecommendation(
-                                                            opinionId = opinion.id,
-                                                            title = opinion.title,
-                                                            posterUrl = opinion.posterUrl,
-                                                            rating = opinion.averageRating,
-                                                            genre = opinion.genre,
-                                                            backdropUrl = opinion.backdropUrl,
-                                                            overview = opinion.synopsis,
-                                                            platform = opinion.platform
-                                                        )
-                                                        savedViewModel.removeRecommendation(
-                                                            recommendation = recommendation
-                                                        ) { message ->
-                                                            if (message is RecommendationMessage.Removed) {
-                                                                isSaved = false
-                                                            }
-                                                            lastRecommendationMessage = message
-                                                        }
-                                                    } else {
-                                                        savedViewModel.saveRecommendation(
-                                                            opinion = opinion
-                                                        ) { message ->
-                                                            if (message is RecommendationMessage.Saved) {
-                                                                isSaved = true
-                                                            }
-                                                            lastRecommendationMessage = message
-                                                        }
-                                                    }
-                                                }
-                                        )
+                                        lastRecommendationMessage = message
                                     }
                                 }
                             }
+                        )
 
-                            Spacer(modifier = Modifier.height(16.dp))
-
-                            if (opinion.genre.isNotEmpty()) {
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.Start,
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    FilledTonalButton(
-                                        onClick = { },
-                                        modifier = Modifier
-                                            .defaultMinSize(minHeight = 32.dp)
-                                            .padding(end = 8.dp)
-
-                                    ) {
-                                        Text(
-                                            text = opinion.genre,
-                                            style = MaterialTheme.typography.labelMedium
-                                        )
-                                    }
-
-                                    if (opinion.platform.isNotEmpty()) {
-                                        FilledTonalButton(
-                                            onClick = { },
-                                            modifier = Modifier
-                                                .defaultMinSize(minHeight = 32.dp),
-
-                                            ) {
-                                            Text(
-                                                text = opinion.platform,
-                                                style = MaterialTheme.typography.labelMedium
-                                            )
-                                        }
-                                    }
-                                }
-
-                            }
+                        Column(modifier = Modifier.fillMaxWidth().padding(16.dp)) {
 
 
                             // Sistema de pestañas (Tabs)
@@ -608,355 +490,27 @@ data class MediaDetailScreen(
 
                                     // Cast
                                     selectedTab == 1 -> {
-                                        val castList = uiState.cast
-                                        if (uiState.isLoadingCast) {
-                                            Box(
-                                                modifier = Modifier.fillMaxWidth()
-                                                    .padding(vertical = 32.dp),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Column(
-                                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                                                ) {
-                                                    AdaptiveCircularProgressIndicator()
-                                                    Text(
-                                                        text = stringResource(Res.string.loading_cast),
-                                                        style = MaterialTheme.typography.bodyLarge
-                                                    )
-                                                }
-                                            }
-                                        } else if (castList.isNullOrEmpty()) {
-                                            Box(
-                                                modifier = Modifier.fillMaxWidth()
-                                                    .padding(vertical = 32.dp),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Text(
-                                                    text = stringResource(Res.string.loading_cast_issue),
-                                                    style = MaterialTheme.typography.bodyLarge
-                                                )
-                                            }
-                                        } else {
-                                            LazyColumn(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .height(300.dp),
-                                                contentPadding = PaddingValues(vertical = 8.dp),
-                                                verticalArrangement = Arrangement.spacedBy(12.dp)
-                                            ) {
-                                                items(castList) { castMember ->
-                                                    Row(
-                                                        modifier = Modifier.fillMaxWidth(),
-                                                        verticalAlignment = Alignment.CenterVertically
-                                                    ) {
-                                                        val imageUrl =
-                                                            if (!castMember.profilePath.isNullOrEmpty()) {
-                                                                "https://image.tmdb.org/t/p/w185${castMember.profilePath}"
-                                                            } else {
-                                                                null
-                                                            }
-
-                                                        Card(
-                                                            modifier = Modifier.size(60.dp)
-                                                        ) {
-                                                            if (imageUrl != null) {
-                                                                AsyncImage(
-                                                                    model = imageUrl,
-                                                                    contentDescription = castMember.name,
-                                                                    contentScale = ContentScale.Crop,
-                                                                    modifier = Modifier.fillMaxSize()
-                                                                )
-                                                            } else {
-                                                                Box(
-                                                                    modifier = Modifier.fillMaxSize(),
-                                                                    contentAlignment = Alignment.Center
-                                                                ) {
-                                                                    Icon(
-                                                                        imageVector = Person,
-                                                                        contentDescription = null,
-                                                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                                        modifier = Modifier.size(32.dp)
-                                                                    )
-                                                                }
-                                                            }
-                                                        }
-
-                                                        Column(
-                                                            modifier = Modifier.padding(start = 16.dp)
-                                                        ) {
-                                                            Text(
-                                                                text = castMember.name,
-                                                                style = MaterialTheme.typography.bodyLarge,
-                                                                fontWeight = FontWeight.SemiBold
-                                                            )
-
-                                                            if (!castMember.character.isNullOrEmpty()) {
-                                                                Text(
-                                                                    text = castMember.character,
-                                                                    style = MaterialTheme.typography.bodyMedium,
-                                                                    color = MaterialTheme.colorScheme.onSurfaceVariant
-                                                                )
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-                                        }
+                                        CastSection(
+                                            castList = uiState.cast,
+                                            isLoadingCast = uiState.isLoadingCast
+                                        )
                                     }
 
                                     // Similar
                                     selectedTab == 2 -> {
-                                        if (uiState.isLoadingRecommendationsMedia) {
-                                            // Mostrar indicador de carga
-                                            Box(
-                                                modifier = Modifier.fillMaxWidth()
-                                                    .padding(vertical = 32.dp),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Column(
-                                                    horizontalAlignment = Alignment.CenterHorizontally,
-                                                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                                                ) {
-                                                    AdaptiveCircularProgressIndicator()
-                                                    Text(
-                                                        text = stringResource(Res.string.loading_recommendation),
-                                                        style = MaterialTheme.typography.bodyLarge
-                                                    )
-                                                }
-                                            }
-                                        } else if (uiState.recommendationsMedia.isEmpty()) {
-                                            Box(
-                                                modifier = Modifier.fillMaxWidth()
-                                                    .padding(vertical = 32.dp),
-                                                contentAlignment = Alignment.Center
-                                            ) {
-                                                Text(
-                                                    text = stringResource(Res.string.loading_recommendation_issue),
-                                                    style = MaterialTheme.typography.bodyLarge
-                                                )
-                                            }
-                                        } else {
-                                            // Mostrar la lista de medios similares
-                                            LazyColumn(
-                                                modifier = Modifier
-                                                    .fillMaxWidth()
-                                                    .height(300.dp),
-                                                contentPadding = PaddingValues(vertical = 8.dp),
-                                                verticalArrangement = Arrangement.spacedBy(12.dp)
-                                            ) {
-                                                items(
-                                                    items = uiState.recommendationsMedia,
-                                                    key = { it.id }
-                                                ) { recommendation ->
-                                                    Row(
-                                                        modifier = Modifier
-                                                            .fillMaxWidth()
-                                                            .padding(8.dp),
-                                                        verticalAlignment = Alignment.CenterVertically
-                                                    ) {
-                                                        // Imagen del poster
-                                                        if (recommendation.posterPath != null) {
-                                                            AsyncImage(
-                                                                model = "https://image.tmdb.org/t/p/w185${recommendation.posterPath}",
-                                                                contentDescription = recommendation.title,
-                                                                contentScale = ContentScale.Crop,
-                                                                modifier = Modifier
-                                                                    .width(60.dp)
-                                                                    .height(90.dp)
-                                                                    .clip(RoundedCornerShape(8.dp))
-                                                                    .border(
-                                                                        width = 1.dp,
-                                                                        color = Color.Transparent,
-                                                                        shape = RoundedCornerShape(8.dp)
-                                                                    ),
-                                                            )
-                                                        } else {
-                                                            Box(
-                                                                modifier = Modifier
-                                                                    .width(60.dp)
-                                                                    .height(90.dp),
-                                                                contentAlignment = Alignment.Center
-                                                            ) {
-                                                                Icon(
-                                                                    imageVector = placeholder,
-                                                                    contentDescription = null,
-                                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                                    modifier = Modifier.size(32.dp)
-                                                                )
-                                                            }
-                                                        }
-
-                                                        Column(
-                                                            modifier = Modifier.padding(start = 16.dp)
-                                                        ) {
-                                                            Text(
-                                                                text = recommendation.title
-                                                                    ?: recommendation.name
-                                                                    ?: "",
-                                                                style = MaterialTheme.typography.bodyLarge,
-                                                                fontWeight = FontWeight.SemiBold,
-                                                                maxLines = 2,
-                                                                overflow = TextOverflow.Ellipsis
-                                                            )
-
-                                                            Spacer(modifier = Modifier.height(4.dp))
-
-                                                            Row(
-                                                                verticalAlignment = Alignment.CenterVertically
-                                                            ) {
-                                                                StarRating(
-                                                                    rating = recommendation.voteAverage?.toFloat()
-                                                                        ?: 0f,
-                                                                    maxRating = 1
-                                                                )
-
-                                                                Text(
-                                                                    text = (recommendation.voteAverage?.toString()
-                                                                        ?: "0.0"),
-                                                                    style = MaterialTheme.typography.bodyMedium
-                                                                )
-
-                                                                if (recommendation.releaseDate != null) {
-                                                                    Text(
-                                                                        text = " • ${
-                                                                            extractYearFromDate(
-                                                                                recommendation.releaseDate
-                                                                            )
-                                                                        }",
-                                                                        style = MaterialTheme.typography.bodyMedium
-                                                                    )
-                                                                }
-                                                            }
-
-                                                            if (recommendation.overview != null) {
-                                                                Text(
-                                                                    text = recommendation.overview,
-                                                                    style = MaterialTheme.typography.bodySmall,
-                                                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                                                    maxLines = 2,
-                                                                    overflow = TextOverflow.Ellipsis,
-                                                                    modifier = Modifier.padding(top = 4.dp)
-                                                                )
-                                                            }
-                                                        }
-                                                    }
-
-                                                }
-                                            }
-                                        }
+                                        RecommendationsSection(
+                                            recommendationsMedia = uiState.recommendationsMedia,
+                                            isLoadingRecommendationsMedia = uiState.isLoadingRecommendationsMedia
+                                        )
                                     }
 
                                     // Comentarios (solo si hay groupId)
                                     !isTmbdMediaOpinion && selectedTab == 3 && opinion.groupId != null -> {
-                                        Column(
-                                            modifier = Modifier.fillMaxWidth()
-                                        ) {
-                                            if (opinion.comments.isEmpty()) {
-                                                Box(
-                                                    modifier = Modifier.fillMaxWidth()
-                                                        .padding(vertical = 32.dp),
-                                                    contentAlignment = Alignment.Center
-                                                ) {
-                                                    Text(
-                                                        text = stringResource(Res.string.without_comment),
-                                                        style = MaterialTheme.typography.bodyMedium
-                                                    )
-                                                }
-                                            } else {
-                                                Column(
-                                                    modifier = Modifier.fillMaxWidth(),
-                                                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                                                ) {
-                                                    opinion.comments.forEachIndexed { index, comment ->
-                                                        val isEven = index % 2 == 0
-                                                        val backgroundColor = if (isEven)
-                                                            MaterialTheme.colorScheme.primaryContainer
-                                                        else
-                                                            MaterialTheme.colorScheme.secondaryContainer
-
-                                                        val contentColor = if (isEven)
-                                                            MaterialTheme.colorScheme.onPrimaryContainer
-                                                        else
-                                                            MaterialTheme.colorScheme.onSecondaryContainer
-
-                                                        val alignment = if (isEven)
-                                                            Arrangement.Start
-                                                        else
-                                                            Arrangement.End
-
-                                                        Row(
-                                                            modifier = Modifier.fillMaxWidth(),
-                                                            horizontalArrangement = alignment
-                                                        ) {
-                                                            Card(
-                                                                modifier = Modifier
-                                                                    .widthIn(max = 280.dp)
-                                                                    .padding(vertical = 4.dp),
-                                                                colors = CardDefaults.cardColors(
-                                                                    containerColor = backgroundColor,
-                                                                    contentColor = contentColor
-                                                                ),
-                                                                shape = RoundedCornerShape(
-                                                                    topStart = if (!isEven) 12.dp else 4.dp,
-                                                                    topEnd = if (isEven) 12.dp else 4.dp,
-                                                                    bottomStart = 12.dp,
-                                                                    bottomEnd = 12.dp
-                                                                )
-                                                            ) {
-                                                                Column(
-                                                                    modifier = Modifier.padding(12.dp)
-                                                                ) {
-                                                                    // Nombre del autor, estilo WhatsApp
-                                                                    Text(
-                                                                        text = comment.username,
-                                                                        style = MaterialTheme.typography.labelMedium.copy(
-                                                                            fontWeight = FontWeight.Bold,
-                                                                            color = if (isEven)
-                                                                                MaterialTheme.colorScheme.primary
-                                                                            else
-                                                                                MaterialTheme.colorScheme.secondary
-                                                                        ),
-                                                                        modifier = Modifier.padding(
-                                                                            bottom = 4.dp
-                                                                        )
-                                                                    )
-
-                                                                    // Contenido del mensaje
-                                                                    Text(
-                                                                        text = comment.text,
-                                                                        style = MaterialTheme.typography.bodyMedium
-                                                                    )
-                                                                }
-                                                            }
-                                                        }
-                                                    }
-                                                }
-                                            }
-
-                                            if (uiState.commentError != null) {
-                                                Text(
-                                                    text = uiState.commentError.toString(),
-                                                    color = MaterialTheme.colorScheme.error,
-                                                    style = MaterialTheme.typography.bodySmall,
-                                                    modifier = Modifier.padding(top = 8.dp)
-                                                )
-                                            }
-
-                                            Spacer(modifier = Modifier.height(24.dp))
-
-                                            Button(
-                                                onClick = { showCommentDialog = true },
-                                                modifier = Modifier.align(Alignment.CenterHorizontally)
-                                            ) {
-                                                Icon(
-                                                    imageVector = Add,
-                                                    contentDescription = null,
-                                                    modifier = Modifier.padding(end = 8.dp)
-                                                )
-                                                Text(stringResource(Res.string.add_new_comment))
-                                            }
-                                        }
+                                        CommentsSection(
+                                            comments = opinion.comments,
+                                            commentError = uiState.commentError?.toString(),
+                                            onAddCommentClick = { showCommentDialog = true }
+                                        )
                                     }
 
                                     // Si no hay información para mostrar

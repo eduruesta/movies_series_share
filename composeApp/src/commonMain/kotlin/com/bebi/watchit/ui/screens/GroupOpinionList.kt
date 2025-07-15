@@ -127,7 +127,6 @@ data class GroupOpinionList(private val group: GroupResponse, val openGroupInfo:
         val scope = rememberCoroutineScope()
         val uiState by viewModel.uiState.collectAsState()
 
-        // Forzar la actualización de las opiniones cada vez que se navega a esta pantalla
         LaunchedEffect(Unit) {
             viewModel.refreshOpinions()
         }
@@ -268,12 +267,11 @@ fun GroupOpinionListScreen(
             modifier = Modifier
                 .fillMaxSize()
         ) {
-            // Contenido principal con padding para dejar espacio al botón CTA en la parte inferior
             Box(
                 modifier = Modifier
                     .fillMaxSize()
                     .padding(paddingValues)
-                    .padding(bottom = 80.dp) // Espacio para el botón CTA
+                    .padding(bottom = 80.dp)
             ) {
                 when {
                     uiState.isLoading -> {
@@ -296,7 +294,7 @@ fun GroupOpinionListScreen(
                         AnalyticsManager.trackError(
                             Firebase.analytics,
                             errorType = "group_opinions_error",
-                            errorMessage = uiState.error ?: "Unknown error",
+                            errorMessage = uiState.error,
                             screenName = "Group Opinion List Screen"
                         )
                     }
@@ -335,7 +333,6 @@ fun GroupOpinionListScreen(
                 }
             }
 
-            // Botón CTA fijo en la parte inferior
             Box(
                 modifier = Modifier
                     .align(Alignment.BottomCenter)

@@ -69,7 +69,6 @@ data class CreateGroupScreen(
 
         val viewModel = koinInject<GroupsViewModel> { parametersOf(userId, userName, userEmail) }
 
-        // Trackear vista de pantalla
         AnalyticsManager.trackScreenView(Firebase.analytics, "Create Group Screen")
 
         var groupName by remember { mutableStateOf("") }
@@ -81,7 +80,6 @@ data class CreateGroupScreen(
 
         LaunchedEffect(uiState.groups, uiState.isLoading) {
             if (!uiState.isLoading && isLoading && uiState.error == null) {
-                // Si ha terminado de cargar sin errores, volvemos a la pantalla anterior
                 navigator.pop()
                 navigator.push(
                     GroupOpinionList(
@@ -90,7 +88,6 @@ data class CreateGroupScreen(
                     )
                 )
 
-                // Trackear éxito en la creación del grupo
                 AnalyticsManager.trackUiElementClick(
                     Firebase.analytics,
                     elementName = "group_creation_success",
@@ -134,7 +131,6 @@ data class CreateGroupScreen(
             if (uiState.error != null) {
                 snackbarHostState.showSnackbar(uiState.error ?: "Error")
                 isLoading = false
-                // Trackear error en la creación del grupo
                 AnalyticsManager.trackError(
                     Firebase.analytics,
                     errorType = "group_creation_error",

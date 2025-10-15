@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -21,6 +23,7 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -91,9 +94,28 @@ abstract class TmdbMediaListScreen : Screen {
 
         val uiState by viewModel.uiState.collectAsState()
         
-        LaunchedEffect(navigator) {
-            viewModel.updateSearchQuery("")
-            viewModel.loadMediaList()
+        // Estado para manejar la posición del scroll
+        val listState = rememberLazyListState(
+            initialFirstVisibleItemIndex = uiState.scrollPosition,
+            initialFirstVisibleItemScrollOffset = uiState.scrollOffset
+        )
+        
+        // Guardar posición del scroll cuando se navegue hacia atrás
+        DisposableEffect(Unit) {
+            onDispose {
+                viewModel.saveScrollPosition(
+                    listState.firstVisibleItemIndex,
+                    listState.firstVisibleItemScrollOffset
+                )
+            }
+        }
+        
+        LaunchedEffect(Unit) {
+            // Solo cargar si no hay datos previos
+            if (uiState.mediaItems.isEmpty()) {
+                viewModel.updateSearchQuery("")
+                viewModel.loadMediaList()
+            }
         }
 
         Scaffold(
@@ -157,6 +179,7 @@ abstract class TmdbMediaListScreen : Screen {
 
                     else -> {
                         LazyColumn(
+                            state = listState,
                             modifier = Modifier
                                 .fillMaxSize(),
                             contentPadding = PaddingValues(16.dp),
@@ -175,6 +198,11 @@ abstract class TmdbMediaListScreen : Screen {
                                 MediaOpinionItem(
                                     opinion = mediaItem,
                                     onClick = {
+                                        // Guardar posición antes de navegar
+                                        viewModel.saveScrollPosition(
+                                            listState.firstVisibleItemIndex,
+                                            listState.firstVisibleItemScrollOffset
+                                        )
                                         navigator.push(
                                             MediaDetailScreen(
                                                 tmdbMediaOpinion = mediaItem

@@ -20,6 +20,12 @@ interface TmdbCacheDao {
     fun getCachedMediaByCategory(category: String): Flow<List<TmdbCachedMedia>>
 
     /**
+     * Obtiene todos los medios cacheados para una categoría de forma síncrona
+     */
+    @Query("SELECT * FROM tmdb_cache WHERE category = :category")
+    suspend fun getCachedMediaByCategorySync(category: String): List<TmdbCachedMedia>
+
+    /**
      * Inserta un medio en la caché
      */
     @Insert(onConflict = OnConflictStrategy.REPLACE)

@@ -39,10 +39,35 @@ abstract class TmdbMediaListViewModel(
     protected abstract val cacheCategory: String
 
     init {
-        loadMediaList() // Cargamos los datos automáticamente al inicializar el ViewModel
+        // Solo cargar si no hay datos previos en caché
+        loadMediaListIfEmpty()
     }
 
     protected abstract suspend fun loadMediaItems(page: Int): Result<List<TmdbMediaItem>>
+
+    /**
+     * Carga la lista solo si está vacía o es la primera vez
+     */
+    private fun loadMediaListIfEmpty() {
+        viewModelScope.launch {
+            // Intentar cargar desde caché primero
+            val cachedData = loadFromCacheSync()
+            if (cachedData.isNotEmpty()) {
+                val mediaOpinions = cachedData.map { convertToMediaOpinion(it) }
+                _uiState.update {
+                    it.copy(
+                        mediaItems = mediaOpinions,
+                        filteredMediaItems = mediaOpinions,
+                        isLoading = false
+                    )
+                }
+                return@launch
+            }
+            
+            // Si no hay caché, cargar desde red
+            loadMediaList()
+        }
+    }
 
     /**
      * Carga la lista de medios según la implementación específica
@@ -292,6 +317,23 @@ abstract class TmdbMediaListViewModel(
     /**
      * Intenta cargar datos desde la caché local
      */
+    /**
+     * Carga datos de caché de forma síncrona
+     */
+    private suspend fun loadFromCacheSync(): List<TmdbMediaItem> {
+        return try {
+            val hasCache = tmdbCacheDao.hasCacheForCategory(cacheCategory) > 0
+            if (hasCache) {
+                val cachedItems = tmdbCacheDao.getCachedMediaByCategorySync(cacheCategory)
+                cachedItems.map { convertCachedToTmdbItem(it) }
+            } else {
+                emptyList()
+            }
+        } catch (e: Exception) {
+            emptyList()
+        }
+    }
+
     private suspend fun loadFromCache() {
         try {
             // Verificamos si hay datos en caché
@@ -351,6 +393,23 @@ abstract class TmdbMediaListViewModel(
     /**
      * Convierte un TmdbCachedMedia a MediaOpinion para usar en la UI
      */
+    /**
+     * Convierte TmdbCachedMedia a TmdbMediaItem
+     */
+    private fun convertCachedToTmdbItem(cachedMedia: TmdbCachedMedia): TmdbMediaItem {
+        return TmdbMediaItem(
+            id = cachedMedia.id.toInt(),
+            title = if (cachedMedia.mediaType == "movie") cachedMedia.title else null,
+            name = if (cachedMedia.mediaType == "tv") cachedMedia.title else null,
+            overview = cachedMedia.overview,
+            posterPath = cachedMedia.posterPath,
+            backdropPath = cachedMedia.backdropPath,
+            voteAverage = cachedMedia.voteAverage,
+            releaseDate = cachedMedia.releaseDate,
+            mediaType = cachedMedia.mediaType
+        )
+    }
+
     private fun convertCachedMediaToOpinion(cachedMedia: TmdbCachedMedia): MediaOpinion {
         return MediaOpinion(
             id = cachedMedia.id,
@@ -423,6 +482,18 @@ abstract class TmdbMediaListViewModel(
                     filteredMediaItems = filteredItems
                 )
             }
+        }
+    }
+
+    /**
+     * Guarda la posición actual del scroll
+     */
+    fun saveScrollPosition(firstVisibleItemIndex: Int, firstVisibleItemScrollOffset: Int) {
+        _uiState.update { 
+            it.copy(
+                scrollPosition = firstVisibleItemIndex,
+                scrollOffset = firstVisibleItemScrollOffset
+            )
         }
     }
 
@@ -551,7 +622,9 @@ abstract class TmdbMediaListViewModel(
         val searchQuery: String = "",
         val currentPage: Int = 1,
         val hasReachedEnd: Boolean = false,
-        val isRating: Boolean = false
+        val isRating: Boolean = false,
+        val scrollPosition: Int = 0,
+        val scrollOffset: Int = 0
     )
 }
 

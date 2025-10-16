@@ -1,7 +1,7 @@
 package com.bebi.watchit.di.module
 
 import androidx.sqlite.driver.bundled.BundledSQLiteDriver
-import com.bebi.app.watchit.BuildConfig
+import com.bebi.moviesseriesshare.BuildConfig
 import com.bebi.watchit.data.database.AppDatabase
 import com.bebi.watchit.data.database.AppDatabaseConstructor
 import com.bebi.watchit.data.database.DatabaseFactory

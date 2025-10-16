@@ -109,14 +109,14 @@ kotlin {
 }
 
 android {
-    namespace = "com.bebi.app.watchit"
+    namespace = "com.bebi.moviesseriesshare"
     compileSdk = 35
 
     defaultConfig {
         minSdk = 24
         targetSdk = 35
 
-        applicationId = "com.bebi.app.watchit"
+        applicationId = "com.bebi.moviesseriesshare"
         versionCode = 17
         versionName = "1.2.6"
 
@@ -139,7 +139,7 @@ dependencies {
 }
 
 buildConfig {
-    packageName = "com.bebi.app.watchit"
+    packageName = "com.bebi.moviesseriesshare"
     val properties = Properties()
     properties.load(project.rootProject.file("local.properties").reader())
     val apiKey = properties.getProperty("api_key")

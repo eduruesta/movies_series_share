@@ -1,6 +1,6 @@
 package com.bebi.watchit.data.remote
 
-import com.bebi.app.watchit.BuildConfig
+import com.bebi.moviesseriesshare.BuildConfig
 import com.bebi.watchit.data.myCountry
 import com.bebi.watchit.data.myLang
 import com.bebi.watchit.data.remote.model.TmdbCreditsResponse

@@ -1,6 +1,6 @@
 package com.bebi.watchit
 
-import com.bebi.app.watchit.BuildConfig
+import com.bebi.moviesseriesshare.BuildConfig
 import com.mmk.kmpauth.google.GoogleAuthCredentials
 import com.mmk.kmpauth.google.GoogleAuthProvider
 

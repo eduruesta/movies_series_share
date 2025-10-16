@@ -12,6 +12,15 @@ captures
 local.properties
 /.idea/
 /.kotlin/
+
+# Security - Never commit these files
+google-services.json
+*.json
+BuildConfig.kt
+*.keystore
+*.p12
+*.key
+*.pem
 xcuserdata/
 Pods/
 *.jks

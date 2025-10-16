@@ -117,7 +117,7 @@ android {
         targetSdk = 35
 
         applicationId = "com.bebi.moviesseriesshare"
-        versionCode = 17
+        versionCode = 18
         versionName = "1.2.6"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
